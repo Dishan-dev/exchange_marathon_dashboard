@@ -529,13 +529,6 @@ export default function TeamDashboard() {
             viewport={{ once: true }}
             transition={{ duration: 0.6, delay: 0.1 }}
           >
-            <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
-              <h3 className="text-xl font-bold text-white md:text-2xl">Mini Team Leaderboard</h3>
-              <p className="rounded-xl border border-slate-700/70 bg-slate-900/70 px-3 py-2 text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">
-                {leaderboardRows.length} ranked entries
-              </p>
-            </div>
-
             <div className="overflow-hidden rounded-3xl border border-slate-800/70 bg-slate-900/65 shadow-xl shadow-black/30">
               <div className="overflow-x-auto">
                 <table className="w-full min-w-170 border-collapse text-left">
@@ -595,10 +588,6 @@ export default function TeamDashboard() {
             viewport={{ once: true }}
             transition={{ duration: 0.6, delay: 0.2 }}
           >
-            <div className="mb-5 flex items-center justify-between">
-              <h3 className="text-xl font-bold text-white md:text-2xl">Individual Points | Growth</h3>
-              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">Hover for detail</p>
-            </div>
             <div className="grid gap-6 md:grid-cols-2">
               {chartDefs.filter((chart) => chart.type !== "stacked-bar").map((chart, chartIdx) => {
                 const maxVal = Math.max(...((chart.entries as any[]) || []).map((e: any) => e.value || 0));
