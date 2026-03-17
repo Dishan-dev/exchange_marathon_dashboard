@@ -37,6 +37,30 @@ interface TeamData {
   weeklyGrowth: number;
 }
 
+const rankColors = {
+  1: "#FFD700", // Gold
+  2: "#C0C0C0", // Silver
+  3: "#CD7F32", // Bronze
+};
+
+const glimmerAnimation = `
+  @keyframes glimmer {
+    0% { transform: translateX(-100%) rotate(45deg); }
+    100% { transform: translateX(200%) rotate(45deg); }
+  }
+`;
+
+function GlimmerOverlay() {
+  return (
+    <div className="absolute inset-0 z-0 pointer-events-none overflow-hidden">
+      <div 
+        className="absolute inset-0 w-1/2 h-full bg-gradient-to-r from-transparent via-white/10 to-transparent skew-x-12 opacity-30"
+        style={{ animation: 'glimmer 3s infinite linear' }}
+      />
+    </div>
+  );
+}
+
 const teamDataMap: Record<string, TeamData> = {
   b2b: {
     name: "B2B",
@@ -185,9 +209,8 @@ const teamColorMap: Record<string, string> = {
 
 const quickInsights = [
   { label: "Most Improved Team", value: "B2B Hunters", growth: "+12.4%" },
-  { label: "Top Contributor", value: "Alex Johnson", growth: "+8 actions" },
+  { label: "Top Swapper", value: "Alex Johnson", growth: "+8 actions" },
   { label: "Fastest Growth Category", value: "Outreach", growth: "+28%" },
-  { label: "Last Updated", value: "2 minutes ago", growth: "Real-time" },
 ];
 
 const vibrantBarColors = [
@@ -220,34 +243,23 @@ function MiniTeamCard({
     <button
       type="button"
       onClick={onSelect}
-      className={`group relative w-full rounded-2xl border p-8 text-left transition-all duration-500 overflow-hidden
-      ${
-      isLeader
-        ? "border-white/10 bg-white/5 shadow-2xl shadow-black/50"
-        : "border-white/5 bg-white/[0.02] hover:border-white/20"
-    } glass-premium hover:scale-[1.02]`}>
-      
-      <div 
-        className="absolute inset-0 opacity-0 group-hover:opacity-10 transition-opacity duration-500"
-        style={{ background: `radial-gradient(circle at 100% 0%, ${teamColor}, transparent 70%)` }}
-      />
+      className={`group relative w-full rounded-2xl border p-8 text-left transition-all duration-500 overflow-hidden ${
+        isLeader
+          ? "border-[#FFD700]/50 bg-linear-to-br from-[#FFD700]/15 via-[#003339] to-[#FFD700]/10 shadow-[0_0_40px_rgba(255,215,0,0.25)] ring-2 ring-[#FFD700]/40"
+          : "border-white/5 bg-white/[0.02] hover:border-white/20"
+      } glass-premium hover:scale-[1.02]`}
+    >
+      {isLeader && <GlimmerOverlay />}
 
-      <div className="absolute right-4 top-4 rounded-full border border-white/10 bg-white/5 px-3 py-1 text-[10px] font-black uppercase tracking-widest text-white/40">
-        MISSION XP
-      </div>
-      
       <div className="relative z-10">
         <div className="flex items-center gap-4 mb-8">
-          <div 
-            className="h-14 w-14 rounded-xl flex items-center justify-center text-3xl shadow-lg ring-1 ring-white/10"
-            style={{ 
-              background: `linear-gradient(135deg, ${teamColor}44, ${teamColor}11)`,
-            }}
-          >
-            {team.icon}
-          </div>
           <div>
-            <h3 className="text-2xl font-black text-[#F7F7F8] tracking-tight">{team.name}</h3>
+            <h3 
+              className={`text-2xl font-black tracking-tight ${isLeader ? "text-[#FFD700]" : "text-[#F7F7F8]"}`}
+              style={isLeader ? { textShadow: '0 0 15px rgba(115, 255, 255, 0.2)' } : {}}
+            >
+              {team.name}
+            </h3>
             <div className="flex items-center gap-2 mt-1">
               <span className={`h-2 w-2 rounded-full ${isLeader ? "bg-[var(--level-up)]" : "bg-white/20"}`} />
               <p className="text-[10px] font-bold text-white/40 uppercase tracking-widest">RANK #{team.rank}</p>
@@ -257,11 +269,11 @@ function MiniTeamCard({
 
         <div className="grid grid-cols-2 gap-6 mb-8">
           <div>
-            <p className="text-[10px] font-bold text-white/30 uppercase tracking-[0.2em] mb-1">Combat Power</p>
+            <p className="text-[10px] font-bold text-white/30 uppercase tracking-[0.2em] mb-1">Total Performance</p>
             <p className="text-3xl font-black text-[#F7F7F8] tabular-nums">{team.points.toLocaleString()}</p>
           </div>
           <div>
-            <p className="text-[10px] font-bold text-white/30 uppercase tracking-[0.2em] mb-1">Cycle Surge</p>
+            <p className="text-[10px] font-bold text-white/30 uppercase tracking-[0.2em] mb-1">Weekly Growth</p>
             <p className="text-3xl font-black tabular-nums" style={{ color: teamColor }}>
               +{team.growth}
             </p>
@@ -270,7 +282,7 @@ function MiniTeamCard({
 
         <div className="space-y-3">
           <div className="flex justify-between items-end">
-            <p className="text-[10px] font-bold text-white/30 uppercase tracking-[0.2em]">Efficiency Rating</p>
+            <p className="text-[10px] font-bold text-white/30 uppercase tracking-[0.2em]">Conversion Rate</p>
             <p className="text-xs font-black text-white/60">{(team.points / 13.5).toFixed(1)}%</p>
           </div>
           <div className="w-full h-2 rounded-full bg-white/5 overflow-hidden border border-white/5">
@@ -286,9 +298,6 @@ function MiniTeamCard({
               }}
             />
           </div>
-          <p className="text-[9px] font-bold uppercase tracking-[0.3em] text-white/20 text-center pt-2 group-hover:text-white/40 transition-colors">
-            Tap to deploy squad details
-          </p>
         </div>
       </div>
     </button>
@@ -312,11 +321,8 @@ function PerformerModal({
     <div className="relative">
       <div className="flex items-start justify-between gap-4 border-b border-white/5 pb-8">
         <div className="flex items-center gap-6">
-          <div className="h-16 w-16 rounded-2xl flex items-center justify-center text-4xl glass shadow-2xl">
-            {team.icon}
-          </div>
           <div>
-            <p className="text-[10px] font-black uppercase tracking-[0.4em] text-white/30 mb-1">Squad Tactical View</p>
+            <p className="text-[10px] font-black uppercase tracking-[0.4em] text-white/30 mb-1">Squad Overview</p>
             <h3 className="text-4xl font-black text-[#F7F7F8] tracking-tighter">{team.name}</h3>
           </div>
         </div>
@@ -332,10 +338,11 @@ function PerformerModal({
         {/* Left Section: Podium Arena */}
         <div className="lg:col-span-7 flex flex-col">
           <div className="flex-1 rounded-[2.5rem] border border-white/5 bg-white/[0.02] p-10 glass-premium flex flex-col">
-            <p className="text-[10px] font-black uppercase tracking-[0.4em] text-white/20 mb-12 text-center">Elite Podium Authority</p>
+            <p className="text-[10px] font-black uppercase tracking-[0.4em] text-white/20 mb-12 text-center">Top Performers</p>
             <div className="flex-1 flex items-end justify-center gap-4 sm:gap-8 min-h-[400px]">
               {podiumOrder.map((performer, index) => {
                 const isFirst = performer === first;
+                const pRankNum = isFirst ? '1' : index === 0 ? '2' : '3';
                 return (
                   <div key={performer.name} className="flex flex-1 flex-col items-center group/podium max-w-[160px]">
                     <div className="mb-6 flex h-16 w-16 items-center justify-center rounded-2xl glass-premium text-base font-black text-white shadow-2xl group-hover/podium:scale-110 transition-transform duration-500">
@@ -349,16 +356,16 @@ function PerformerModal({
                       className={`flex w-full flex-col items-center justify-center rounded-2xl ${podiumHeights[index]} px-4 py-8 shadow-2xl transition-all duration-700 relative`}
                       style={{ 
                         background: isFirst 
-                          ? `linear-gradient(135deg, #FFD700 0%, #FFA500 100%)` 
+                          ? 'linear-gradient(135deg, #FFD700 0%, #FFA500 100%)' 
                           : index === 0 
-                            ? `linear-gradient(135deg, #E0E0E0 0%, #9E9E9E 100%)`
-                            : `linear-gradient(135deg, #CD7F32 0%, #8B4513 100%)`,
-                        boxShadow: isFirst ? `0 15px 40px rgba(255, 215, 0, 0.25)` : 'none',
+                            ? 'linear-gradient(135deg, #E0E0E0 0%, #9E9E9E 100%)'
+                            : 'linear-gradient(135deg, #CD7F32 0%, #8B4513 100%)',
+                        boxShadow: isFirst ? '0 15px 40px rgba(255, 215, 0, 0.25)' : 'none',
                       }}
                     >
                       <div className="absolute inset-x-0 bottom-0 top-0 bg-white/10 opacity-20 pointer-events-none rounded-2xl" />
                       <span className="text-[10px] font-black uppercase tracking-[0.3em] text-white/90 relative z-10">
-                        #{isFirst ? '1' : index === 0 ? '2' : '3'}
+                        #{pRankNum}
                       </span>
                       <span className="mt-4 text-4xl font-black text-white relative z-10">{performer.score}</span>
                     </div>
@@ -374,27 +381,36 @@ function PerformerModal({
           <div className="flex-1 rounded-[2.5rem] border border-white/5 bg-white/[0.02] p-8 glass-premium flex flex-col">
             <h4 className="text-[10px] font-black uppercase tracking-[0.4em] text-white/20 mb-8 px-2">Squad Leaderboard</h4>
             <div className="flex-1 space-y-3 overflow-y-auto max-h-[600px] pr-2 custom-scrollbar">
-              {team.performers.map((performer, index) => (
-                <div key={performer.name} className="group/row flex items-center gap-4 rounded-2xl border border-white/5 bg-white/[0.02] p-4 hover:bg-white/[0.06] hover:border-white/10 transition-all duration-300">
-                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-white/5 text-sm font-black text-white/40 group-hover/row:text-white transition-colors">
-                    #{index + 1}
+               {team.performers.map((performer, index) => {
+                const rank = index + 1;
+                const rColor = rank <= 3 ? rankColors[rank as keyof typeof rankColors] : 'transparent';
+                return (
+                  <div key={performer.name} className="group/row flex items-center gap-4 rounded-2xl border border-white/5 bg-white/[0.02] p-4 hover:bg-white/[0.06] hover:border-white/10 transition-all duration-300 overflow-hidden relative">
+                    {rank <= 3 && <GlimmerOverlay />}
+                    <div 
+                      className="relative z-10 flex h-10 w-10 shrink-0 items-center justify-center rounded-xl text-sm font-black transition-colors"
+                      style={{ 
+                        backgroundColor: rank <= 3 ? `${rColor}22` : 'rgba(255,255,255,0.05)',
+                        color: rank <= 3 ? rColor : 'rgba(255,255,255,0.4)',
+                        border: rank <= 3 ? `1px solid ${rColor}44` : 'none'
+                      }}
+                    >
+                      #{rank}
+                    </div>
+                    <div className="relative z-10 flex h-12 w-12 shrink-0 items-center justify-center rounded-xl glass-premium text-lg font-black text-white shadow-lg">
+                      {performer.avatar}
+                    </div>
+                    <div className="relative z-10 min-w-0 flex-1">
+                      <p className="text-sm font-black text-[#F7F7F8] truncate">{performer.name}</p>
+                      <p className="text-[9px] font-bold uppercase tracking-wider text-white/25 mt-1 group-hover/row:text-white/40 transition-colors">{performer.role}</p>
+                    </div>
+                    <div className="relative z-10 text-right shrink-0">
+                      <p className="text-xl font-black text-white tabular-nums tracking-tighter">{performer.score}</p>
+                      <p className="text-[8px] font-black text-white/10">XP TOTAL</p>
+                    </div>
                   </div>
-                  <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl glass-premium text-lg font-black text-white shadow-lg">
-                    {performer.avatar}
-                  </div>
-                  <div className="min-w-0 flex-1">
-                    <p className="text-sm font-black text-[#F7F7F8] truncate">{performer.name}</p>
-                    <p className="text-[9px] font-bold uppercase tracking-wider text-white/25 mt-1 group-hover/row:text-white/40 transition-colors">{performer.role}</p>
-                  </div>
-                  <div className="text-right shrink-0">
-                    <p className="text-xl font-black text-white tabular-nums tracking-tighter">{performer.score}</p>
-                    <p className="text-[8px] font-black text-white/10">XP TOTAL</p>
-                  </div>
-                </div>
-              ))}
-            </div>
-            <div className="mt-8 pt-8 border-t border-white/5 text-center">
-              <p className="text-[10px] font-black uppercase tracking-widest text-[#39A8AD]/60">All agents active and synchronized</p>
+                );
+              })}
             </div>
           </div>
         </div>
@@ -473,6 +489,7 @@ export default function TeamDashboard() {
 
   return (
     <div className="min-h-screen bg-linear-to-br from-[#051B1D] via-[#003339] to-[#051B1D]">
+      <style>{glimmerAnimation}</style>
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
@@ -489,7 +506,7 @@ export default function TeamDashboard() {
               </div>
               <div>
                 <h1 className="text-2xl font-black tracking-tight text-[#F7F7F8] capitalize">
-                  {teamParam} <span className="opacity-40">Arena</span>
+                  {teamParam} <span className="opacity-40">Dashboard</span>
                 </h1>
                 <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-white/40 mt-1">
                   System Online &bull; Season 2026
@@ -503,7 +520,7 @@ export default function TeamDashboard() {
                 className="group flex items-center gap-2 px-5 py-2.5 text-xs font-black uppercase tracking-widest rounded-full glass border border-white/10 hover:bg-white/5 transition-all"
               >
                 <span className="opacity-40 group-hover:-translate-x-1 transition-transform">←</span>
-                Exit Arena
+                Exit Dashboard
               </Link>
             </div>
           </div>
@@ -513,7 +530,6 @@ export default function TeamDashboard() {
           <header className="relative py-12 text-center overflow-hidden rounded-3xl glass-premium border-white/5">
             <div className="absolute inset-0 opacity-10" style={{ background: `radial-gradient(circle at 50% 50%, ${teamColor}, transparent 70%)` }} />
             <div className="relative z-10">
-              <p className="text-[10px] font-black uppercase tracking-[0.4em] text-white/40 mb-4">Current Competition Phase</p>
               <h2 className="text-4xl md:text-7xl font-black tracking-tighter text-[#F7F7F8] mb-6">
                 THE <span style={{ color: teamColor }}>{teamData.name}</span> MARATHON
               </h2>
@@ -549,7 +565,7 @@ export default function TeamDashboard() {
             />
             
             <div className="relative z-10 mb-16 flex flex-col items-center">
-              <p className="text-[10px] font-black uppercase tracking-[0.5em] text-white/30 mb-2">Arena Rankings</p>
+              <p className="text-[10px] font-black uppercase tracking-[0.5em] text-white/30 mb-2">Performance Rankings</p>
               <h3 className="text-3xl font-black text-[#F7F7F8] tracking-widest uppercase">The Podium</h3>
             </div>
 
@@ -604,41 +620,53 @@ export default function TeamDashboard() {
             viewport={{ once: true }}
             transition={{ duration: 0.6, delay: 0.1 }}
           >
-            <div className="overflow-hidden rounded-3xl border border-[#00666B]/35 bg-[#003339]/65 shadow-xl shadow-black/30">
-              <div className="overflow-x-auto">
-                <table className="w-full min-w-170 border-collapse text-left">
-                  <thead>
-                    <tr className="bg-[#003339]/95">
-                      <th className="border-b border-[#00666B]/35 px-4 py-4 text-[11px] font-bold uppercase tracking-[0.16em] text-[#F7F7F8]/65">Performer</th>
-                      <th className="border-b border-[#00666B]/35 px-4 py-4 text-[11px] font-bold uppercase tracking-[0.16em] text-[#F7F7F8]/65">Team</th>
-                      <th className="border-b border-[#00666B]/35 px-4 py-4 text-right text-[11px] font-bold uppercase tracking-[0.16em] text-[#F7F7F8]/65">Points</th>
-                      <th className="border-b border-[#00666B]/35 px-4 py-4 text-right text-[11px] font-bold uppercase tracking-[0.16em] text-[#F7F7F8]/65">Growth</th>
-                      <th className="border-b border-[#00666B]/35 px-4 py-4 text-right text-[11px] font-bold uppercase tracking-[0.16em] text-[#F7F7F8]/65">Rank</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {leaderboardRows.map((row) => (
-                      <tr key={`${row.team}-${row.name}`} className="border-b border-[#00666B]/35 transition-colors hover:bg-[#39A8AD]/10">
-                        <td className="px-4 py-3">
-                          <p className="font-semibold text-[#F7F7F8]">{row.name}</p>
-                          <p className="text-xs text-[#73FFFF]/45">{row.role}</p>
-                        </td>
-                        <td className="px-4 py-3 text-sm font-medium text-[#F7F7F8]/80">{row.team}</td>
-                        <td className="px-4 py-3 text-right text-sm font-bold tabular-nums text-[#F7F7F8]">{row.score.toLocaleString()}</td>
-                        <td className="px-4 py-3 text-right text-sm font-semibold text-[#73FFFF]/85">+{row.growth}</td>
-                        <td className="px-4 py-3 text-right">
-                          <span className={`inline-flex h-8 w-8 items-center justify-center rounded-lg border text-xs font-bold ${
-                            row.rank === 1 ? "border-[#39A8AD]/60 bg-[#39A8AD]/20 text-[#73FFFF]" : row.rank === 2 ? "border-[#39A8AD]/50 bg-[#39A8AD]/20 text-[#F7F7F8]" : row.rank === 3 ? "border-[#00666B]/60 bg-[#00666B]/25 text-[#39A8AD]" : "border-[#00666B]/45 bg-[#00666B]/80 text-[#F7F7F8]/65"
-                          }`}>
-                            {row.rank}
-                          </span>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
+          <div className="overflow-hidden rounded-3xl border border-[#00666B]/35 bg-[#003339]/65 shadow-xl shadow-black/30">
+            <div className="min-w-[700px]">
+              {/* Header */}
+              <div className="grid grid-cols-12 gap-4 bg-[#003339]/95 px-6 py-4 text-[11px] font-bold uppercase tracking-[0.16em] text-[#F7F7F8]/65">
+                <div className="col-span-4">Performer</div>
+                <div className="col-span-3">Team</div>
+                <div className="col-span-2 text-right">Points</div>
+                <div className="col-span-2 text-right">Growth</div>
+                <div className="col-span-1 text-right">Rank</div>
+              </div>
+              
+              {/* Rows */}
+              <div className="divide-y divide-[#00666B]/35">
+                {leaderboardRows.map((row) => (
+                  <div key={`${row.team}-${row.name}`} className="group/row relative grid grid-cols-12 gap-4 px-6 py-4 items-center transition-colors hover:bg-[#39A8AD]/10 overflow-hidden">
+                    {row.rank <= 3 && <GlimmerOverlay />}
+                    
+                    <div className="col-span-4 relative z-10">
+                      <p className="font-semibold text-[#F7F7F8]">{row.name}</p>
+                      <p className="text-xs text-[#73FFFF]/45">{row.role}</p>
+                    </div>
+                    <div className="col-span-3 relative z-10 text-sm font-medium text-[#F7F7F8]/80">
+                      {row.team}
+                    </div>
+                    <div className="col-span-2 relative z-10 text-right text-sm font-bold tabular-nums text-[#F7F7F8]">
+                      {row.score.toLocaleString()}
+                    </div>
+                    <div className="col-span-2 relative z-10 text-right text-sm font-semibold text-[#73FFFF]/85">
+                      +{row.growth}
+                    </div>
+                    <div className="col-span-1 relative z-10 flex justify-end">
+                      <span 
+                        className="inline-flex h-8 w-8 items-center justify-center rounded-lg border text-xs font-bold transition-all"
+                        style={{ 
+                          borderColor: row.rank <= 3 ? `${rankColors[row.rank as keyof typeof rankColors]}66` : 'rgba(0,102,107,0.45)',
+                          backgroundColor: row.rank <= 1 ? `${rankColors[1]}33` : row.rank === 2 ? `${rankColors[2]}33` : row.rank === 3 ? `${rankColors[3]}33` : 'rgba(0,102,107,0.8)',
+                          color: row.rank <= 3 ? rankColors[row.rank as keyof typeof rankColors] : 'rgba(247,247,248,0.65)'
+                        }}
+                      >
+                        {row.rank}
+                      </span>
+                    </div>
+                  </div>
+                ))}
               </div>
             </div>
+          </div>
           </motion.section>
 
           <motion.section
@@ -649,7 +677,6 @@ export default function TeamDashboard() {
           >
             <div className="rounded-3xl border border-[#00666B]/35 bg-linear-to-br from-[#003339]/75 via-[#051B1D] to-[#003339]/75 p-5">
               <h4 className="text-lg font-bold text-[#F7F7F8]">Squad Matchups</h4>
-              <p className="mt-1 text-sm text-[#F7F7F8]/65">Click a team card to open its performer podium and detailed ranking.</p>
               <div className="mt-6 grid grid-cols-1 gap-6 md:grid-cols-2">
                 <MiniTeamCard team={leaderTeam} isLeader={true} onSelect={() => setSelectedMiniTeam(leaderTeam)} teamColor={teamColor} />
                 <MiniTeamCard team={secondTeam} isLeader={false} onSelect={() => setSelectedMiniTeam(secondTeam)} teamColor={teamColor} />
