@@ -243,7 +243,7 @@ function MiniTeamCard({
     <button
       type="button"
       onClick={onSelect}
-      className={`group relative w-full rounded-2xl border p-8 text-left transition-all duration-500 overflow-hidden ${
+      className={`group relative w-full rounded-2xl border p-6 sm:p-8 text-left transition-all duration-500 overflow-hidden ${
         isLeader
           ? "border-[#FFD700]/50 bg-linear-to-br from-[#FFD700]/15 via-[#003339] to-[#FFD700]/10 shadow-[0_0_40px_rgba(255,215,0,0.25)] ring-2 ring-[#FFD700]/40"
           : "border-white/5 bg-white/[0.02] hover:border-white/20"
@@ -255,7 +255,7 @@ function MiniTeamCard({
         <div className="flex items-center gap-4 mb-8">
           <div>
             <h3 
-              className={`text-2xl font-black tracking-tight ${isLeader ? "text-[#FFD700]" : "text-[#F7F7F8]"}`}
+              className={`text-xl sm:text-2xl font-black tracking-tight ${isLeader ? "text-[#FFD700]" : "text-[#F7F7F8]"}`}
               style={isLeader ? { textShadow: '0 0 15px rgba(115, 255, 255, 0.2)' } : {}}
             >
               {team.name}
@@ -267,14 +267,14 @@ function MiniTeamCard({
           </div>
         </div>
 
-        <div className="grid grid-cols-2 gap-6 mb-8">
+        <div className="grid grid-cols-2 gap-4 sm:gap-6 mb-8">
           <div>
             <p className="text-[10px] font-bold text-white/30 uppercase tracking-[0.2em] mb-1">Total Performance</p>
-            <p className="text-3xl font-black text-[#F7F7F8] tabular-nums">{team.points.toLocaleString()}</p>
+            <p className="text-2xl sm:text-3xl font-black text-[#F7F7F8] tabular-nums">{team.points.toLocaleString()}</p>
           </div>
           <div>
             <p className="text-[10px] font-bold text-white/30 uppercase tracking-[0.2em] mb-1">Weekly Growth</p>
-            <p className="text-3xl font-black tabular-nums" style={{ color: teamColor }}>
+            <p className="text-2xl sm:text-3xl font-black tabular-nums" style={{ color: teamColor }}>
               +{team.growth}
             </p>
           </div>
@@ -318,42 +318,43 @@ function PerformerModal({
   const podiumHeights = ["h-32", "h-44", "h-28"];
 
   return (
-    <div className="relative">
-      <div className="flex items-start justify-between gap-4 border-b border-white/5 pb-8">
-        <div className="flex items-center gap-6">
+    <div className="relative max-h-[85vh] overflow-y-auto custom-scrollbar pr-1">
+      <div className="sticky top-0 z-50 flex items-center justify-between gap-4 border-b border-white/5 bg-[#051C1E] pb-6">
+        <div className="flex items-center gap-4 sm:gap-6">
           <div>
-            <p className="text-[10px] font-black uppercase tracking-[0.4em] text-white/30 mb-1">Squad Overview</p>
-            <h3 className="text-4xl font-black text-[#F7F7F8] tracking-tighter">{team.name}</h3>
+            <p className="text-[9px] sm:text-[10px] font-black uppercase tracking-[0.4em] text-white/30 mb-1">Squad Overview</p>
+            <h3 className="text-2xl sm:text-4xl font-black text-[#F7F7F8] tracking-tighter">{team.name}</h3>
           </div>
         </div>
         <button
           onClick={onClose}
-          className="rounded-full border border-white/10 glass px-6 py-2.5 text-xs font-black uppercase tracking-widest text-white/60 transition-all hover:bg-white/5 hover:text-white"
+          className="rounded-full border border-white/10 glass px-4 sm:px-6 py-2 sm:py-2.5 text-[10px] sm:text-xs font-black uppercase tracking-widest text-white/60 transition-all hover:bg-white/5 hover:text-white shrink-0"
         >
           Dismiss
         </button>
       </div>
 
-      <div className="mt-12 grid gap-8 lg:grid-cols-12 items-stretch">
+      <div className="mt-8 sm:mt-12 grid gap-8 lg:grid-cols-12 items-stretch">
         {/* Left Section: Podium Arena */}
         <div className="lg:col-span-7 flex flex-col">
-          <div className="flex-1 rounded-[2.5rem] border border-white/5 bg-white/[0.02] p-10 glass-premium flex flex-col">
-            <p className="text-[10px] font-black uppercase tracking-[0.4em] text-white/20 mb-12 text-center">Top Performers</p>
-            <div className="flex-1 flex items-end justify-center gap-4 sm:gap-8 min-h-[400px]">
+          <div className="flex-1 rounded-[2rem] sm:rounded-[2.5rem] border border-white/5 bg-white/[0.02] p-6 sm:p-10 glass-premium flex flex-col">
+            <p className="text-[10px] font-black uppercase tracking-[0.4em] text-white/20 mb-8 sm:mb-12 text-center">Top Performers</p>
+            <div className="flex-1 flex items-end justify-center gap-2 sm:gap-8 min-h-[300px] sm:min-h-[400px]">
               {podiumOrder.map((performer, index) => {
                 const isFirst = performer === first;
                 const pRankNum = isFirst ? '1' : index === 0 ? '2' : '3';
+                const pHeight = isFirst ? 'h-36 sm:h-44' : index === 0 ? 'h-28 sm:h-32' : 'h-24 sm:h-28';
                 return (
-                  <div key={performer.name} className="flex flex-1 flex-col items-center group/podium max-w-[160px]">
-                    <div className="mb-6 flex h-16 w-16 items-center justify-center rounded-2xl glass-premium text-base font-black text-white shadow-2xl group-hover/podium:scale-110 transition-transform duration-500">
+                  <div key={performer.name} className="flex flex-1 flex-col items-center group/podium max-w-[120px] sm:max-w-[160px]">
+                    <div className="mb-4 sm:mb-6 flex h-12 w-12 sm:h-16 sm:w-16 items-center justify-center rounded-2xl glass-premium text-sm sm:text-base font-black text-white shadow-2xl group-hover/podium:scale-110 transition-transform duration-500">
                       {performer.avatar}
                     </div>
-                    <div className="mb-6 text-center">
-                      <p className="text-sm font-black text-[#F7F7F8] tracking-tight truncate w-full">{performer.name}</p>
-                      <p className="text-[9px] font-bold text-white/30 uppercase tracking-[0.2em] mt-1">{performer.role}</p>
+                    <div className="mb-4 sm:mb-6 text-center w-full">
+                      <p className="text-xs sm:text-sm font-black text-[#F7F7F8] tracking-tight truncate px-1">{performer.name}</p>
+                      <p className="text-[8px] sm:text-[9px] font-bold text-white/30 uppercase tracking-[0.2em] mt-1 truncate">{performer.role}</p>
                     </div>
                     <div 
-                      className={`flex w-full flex-col items-center justify-center rounded-2xl ${podiumHeights[index]} px-4 py-8 shadow-2xl transition-all duration-700 relative`}
+                      className={`flex w-full flex-col items-center justify-center rounded-2xl ${pHeight} px-2 sm:px-4 py-6 sm:py-8 shadow-2xl transition-all duration-700 relative`}
                       style={{ 
                         background: isFirst 
                           ? 'linear-gradient(135deg, #FFD700 0%, #FFA500 100%)' 
@@ -363,11 +364,11 @@ function PerformerModal({
                         boxShadow: isFirst ? '0 15px 40px rgba(255, 215, 0, 0.25)' : 'none',
                       }}
                     >
-                      <div className="absolute inset-x-0 bottom-0 top-0 bg-white/10 opacity-20 pointer-events-none rounded-2xl" />
+                      <div className="absolute inset-0 bg-white/10 opacity-20 pointer-events-none rounded-2xl" />
                       <span className="text-[10px] font-black uppercase tracking-[0.3em] text-white/90 relative z-10">
                         #{pRankNum}
                       </span>
-                      <span className="mt-4 text-4xl font-black text-white relative z-10">{performer.score}</span>
+                      <span className="mt-2 sm:mt-4 text-2xl sm:text-4xl font-black text-white relative z-10">{performer.score}</span>
                     </div>
                   </div>
                 );
@@ -378,9 +379,9 @@ function PerformerModal({
 
         {/* Right Section: Member Leaderboard */}
         <div className="lg:col-span-5 flex flex-col">
-          <div className="flex-1 rounded-[2.5rem] border border-white/5 bg-white/[0.02] p-8 glass-premium flex flex-col">
-            <h4 className="text-[10px] font-black uppercase tracking-[0.4em] text-white/20 mb-8 px-2">Squad Leaderboard</h4>
-            <div className="flex-1 space-y-3 overflow-y-auto max-h-[600px] pr-2 custom-scrollbar">
+          <div className="flex-1 rounded-[2rem] sm:rounded-[2.5rem] border border-white/5 bg-white/[0.02] p-6 sm:p-8 glass-premium flex flex-col">
+            <h4 className="text-[10px] font-black uppercase tracking-[0.4em] text-white/20 mb-6 sm:mb-8 px-2">Squad Leaderboard</h4>
+            <div className="flex-1 space-y-3 lg:overflow-y-auto lg:max-h-[600px] pr-2 custom-scrollbar">
                {team.performers.map((performer, index) => {
                 const rank = index + 1;
                 const rColor = rank <= 3 ? rankColors[rank as keyof typeof rankColors] : 'transparent';
@@ -495,58 +496,59 @@ export default function TeamDashboard() {
         animate={{ opacity: 1 }}
         transition={{ duration: 0.8 }}
       >
-        <nav className="sticky top-0 z-20 border-b border-white/5 bg-[var(--dark-teal-black)]/80 backdrop-blur-md">
-          <div className="mx-auto flex w-[92%] items-center justify-between py-6 lg:w-[80%]">
-            <div className="flex items-center gap-6">
+        <nav className="sticky top-0 z-40 border-b border-white/5 bg-[#051C1E]/80 backdrop-blur-md">
+          <div className="mx-auto flex w-full max-w-7xl items-center justify-between px-3 sm:px-8 py-4 sm:py-6">
+            <div className="flex items-center gap-3 sm:gap-6">
               <div 
-                className="h-12 w-12 rounded-xl flex items-center justify-center text-2xl glass-premium shadow-lg"
+                className="h-10 w-10 sm:h-12 sm:w-12 rounded-xl flex items-center justify-center text-xl sm:text-2xl glass-premium shadow-lg"
                 style={{ background: `linear-gradient(135deg, ${teamColor}44, transparent)` }}
               >
                 🏆
               </div>
               <div>
-                <h1 className="text-2xl font-black tracking-tight text-[#F7F7F8] capitalize">
+                <h1 className="text-xl sm:text-2xl font-black tracking-tight text-[#F7F7F8] capitalize">
                   {teamParam} <span className="opacity-40">Dashboard</span>
                 </h1>
-                <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-white/40 mt-1">
+                <p className="text-[9px] sm:text-[10px] font-bold uppercase tracking-[0.2em] text-white/40 mt-0.5 sm:mt-1">
                   System Online &bull; Season 2026
                 </p>
               </div>
             </div>
 
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-2 sm:gap-4">
               <Link
                 href="/"
-                className="group flex items-center gap-2 px-5 py-2.5 text-xs font-black uppercase tracking-widest rounded-full glass border border-white/10 hover:bg-white/5 transition-all"
+                className="group flex items-center gap-2 px-3 sm:px-5 py-2 sm:py-2.5 text-[10px] sm:text-xs font-black uppercase tracking-widest rounded-full glass border border-white/10 hover:bg-white/5 transition-all"
               >
                 <span className="opacity-40 group-hover:-translate-x-1 transition-transform">←</span>
-                Exit Dashboard
+                <span className="hidden xs:inline">Exit Dashboard</span>
+                <span className="xs:hidden">Exit</span>
               </Link>
             </div>
           </div>
         </nav>
 
-        <main className="mx-auto w-[92%] space-y-12 py-12 md:py-16 lg:w-[80%]">
-          <header className="relative py-12 text-center overflow-hidden rounded-3xl glass-premium border-white/5">
+        <main className="mx-auto w-[94%] sm:w-[92%] space-y-8 sm:space-y-12 py-8 sm:py-16 lg:w-[80%]">
+          <header className="relative py-8 sm:py-12 text-center overflow-hidden rounded-2xl sm:rounded-3xl glass-premium border-white/5 px-4">
             <div className="absolute inset-0 opacity-10" style={{ background: `radial-gradient(circle at 50% 50%, ${teamColor}, transparent 70%)` }} />
             <div className="relative z-10">
-              <h2 className="text-4xl md:text-7xl font-black tracking-tighter text-[#F7F7F8] mb-6">
+              <h2 className="text-3xl md:text-7xl font-black tracking-tighter text-[#F7F7F8] mb-4 sm:mb-6 leading-tight">
                 THE <span style={{ color: teamColor }}>{teamData.name}</span> MARATHON
               </h2>
-              <div className="flex flex-wrap items-center justify-center gap-8">
+              <div className="flex flex-wrap items-center justify-center gap-4 sm:gap-8">
                 <div className="flex flex-col items-center">
-                  <span className="text-2xl font-black text-white">{teamData.totalPoints.toLocaleString()}</span>
-                  <span className="text-[10px] font-bold uppercase tracking-widest text-white/30">Total Team XP</span>
+                  <span className="text-xl sm:text-2xl font-black text-white">{teamData.totalPoints.toLocaleString()}</span>
+                  <span className="text-[8px] sm:text-[10px] font-bold uppercase tracking-widest text-white/30">Total Team XP</span>
                 </div>
-                <div className="h-8 w-px bg-white/10 hidden sm:block" />
+                <div className="h-6 sm:h-8 w-px bg-white/10 hidden xs:block" />
                 <div className="flex flex-col items-center">
-                  <span className="text-2xl font-black text-[var(--level-up)]">+{teamData.weeklyGrowth}%</span>
-                  <span className="text-[10px] font-bold uppercase tracking-widest text-white/30">Weekly Surge</span>
+                  <span className="text-xl sm:text-2xl font-black text-[var(--level-up)]">+{teamData.weeklyGrowth}%</span>
+                  <span className="text-[8px] sm:text-[10px] font-bold uppercase tracking-widest text-white/30">Weekly Surge</span>
                 </div>
-                <div className="h-8 w-px bg-white/10 hidden sm:block" />
+                <div className="h-6 sm:h-8 w-px bg-white/10 hidden xs:block" />
                 <div className="flex flex-col items-center">
-                  <span className="text-2xl font-black text-[var(--xp-gold)]">{teamData.completedActions}</span>
-                  <span className="text-[10px] font-bold uppercase tracking-widest text-white/30">Milestones Hit</span>
+                  <span className="text-xl sm:text-2xl font-black text-[var(--xp-gold)]">{teamData.completedActions}</span>
+                  <span className="text-[8px] sm:text-[10px] font-bold uppercase tracking-widest text-white/30">Milestones Hit</span>
                 </div>
               </div>
             </div>
@@ -569,21 +571,22 @@ export default function TeamDashboard() {
               <h3 className="text-3xl font-black text-[#F7F7F8] tracking-widest uppercase">The Podium</h3>
             </div>
 
-            <div className="relative z-10 mx-auto flex h-96 max-w-4xl items-end justify-center gap-4 sm:gap-12">
+            <div className="relative z-10 mx-auto flex h-[350px] sm:h-96 max-w-4xl items-end justify-center gap-2 sm:gap-12">
               {podiumVisualOrder.map((performer, index) => {
                 const isChampion = index === 1;
+                const podHeight = index === 0 ? '140 sm:180' : index === 1 ? '200 sm:260' : '100 sm:140';
                 return (
-                  <div key={performer.name} className={`group flex flex-col items-center ${isChampion ? "w-[38%]" : "w-[31%]"}`}>
-                    <div className="mb-8 text-center">
-                      <p className={`truncate px-2 font-black tracking-tight ${isChampion ? "text-xl text-white" : "text-sm text-white/40"}`}>{performer.name}</p>
-                      <div className="mt-3 inline-flex items-center gap-2 rounded-full glass border border-white/10 px-4 py-1.5 shadow-xl">
-                        <span className="text-sm font-black text-white">{performer.score.toLocaleString()}</span>
-                        <span className="text-[9px] font-black uppercase tracking-widest text-white/30">XP</span>
+                  <div key={performer.name} className={`group flex flex-col items-center ${isChampion ? "w-[40%] sm:w-[38%]" : "w-[28%] sm:w-[31%]"}`}>
+                    <div className="mb-4 sm:mb-8 text-center w-full">
+                      <p className={`truncate px-1 font-black tracking-tight ${isChampion ? "text-base sm:text-xl text-white" : "text-[10px] sm:text-sm text-white/40"}`}>{performer.name}</p>
+                      <div className="mt-2 sm:mt-3 inline-flex items-center gap-1 sm:gap-2 rounded-full glass border border-white/10 px-2 sm:px-4 py-1 sm:py-1.5 shadow-xl">
+                        <span className="text-[10px] sm:text-sm font-black text-white">{performer.score.toLocaleString()}</span>
+                        <span className="text-[8px] sm:text-[9px] font-black uppercase tracking-widest text-white/30">XP</span>
                       </div>
                     </div>
                     <motion.div
                       initial={{ height: 0 }}
-                      whileInView={{ height: index === 0 ? 180 : index === 1 ? 260 : 140 }}
+                      whileInView={{ height: index === 0 ? 150 : index === 1 ? 230 : 110 }}
                       viewport={{ once: true }}
                       transition={{ duration: 1.5, delay: 0.2 + (index * 0.1), ease: "circOut" }}
                       className="relative w-full rounded-2xl border border-white/20 flex flex-col items-center justify-start pt-12 shadow-2xl group-hover:-translate-y-2 transition-transform duration-500"
@@ -623,34 +626,34 @@ export default function TeamDashboard() {
           <div className="overflow-hidden rounded-3xl border border-[#00666B]/35 bg-[#003339]/65 shadow-xl shadow-black/30">
             <div className="min-w-[700px]">
               {/* Header */}
-              <div className="grid grid-cols-12 gap-4 bg-[#003339]/95 px-6 py-4 text-[11px] font-bold uppercase tracking-[0.16em] text-[#F7F7F8]/65">
-                <div className="col-span-4">Performer</div>
-                <div className="col-span-3">Team</div>
-                <div className="col-span-2 text-right">Points</div>
-                <div className="col-span-2 text-right">Growth</div>
-                <div className="col-span-1 text-right">Rank</div>
+              <div className="grid grid-cols-12 gap-2 sm:gap-4 bg-[#003339]/95 px-4 sm:px-6 py-4 text-[9px] sm:text-[11px] font-bold uppercase tracking-[0.16em] text-[#F7F7F8]/65">
+                <div className="col-span-5 sm:col-span-4">Performer</div>
+                <div className="col-span-3 hidden sm:block">Team</div>
+                <div className="col-span-3 sm:col-span-2 text-right">Points</div>
+                <div className="col-span-2 hidden sm:block text-right">Growth</div>
+                <div className="col-span-4 sm:col-span-1 text-right">Rank</div>
               </div>
               
               {/* Rows */}
               <div className="divide-y divide-[#00666B]/35">
                 {leaderboardRows.map((row) => (
-                  <div key={`${row.team}-${row.name}`} className="group/row relative grid grid-cols-12 gap-4 px-6 py-4 items-center transition-colors hover:bg-[#39A8AD]/10 overflow-hidden">
+                  <div key={`${row.team}-${row.name}`} className="group/row relative grid grid-cols-12 gap-2 sm:gap-4 px-4 sm:px-6 py-4 items-center transition-colors hover:bg-[#39A8AD]/10 overflow-hidden">
                     {row.rank <= 3 && <GlimmerOverlay />}
                     
-                    <div className="col-span-4 relative z-10">
-                      <p className="font-semibold text-[#F7F7F8]">{row.name}</p>
-                      <p className="text-xs text-[#73FFFF]/45">{row.role}</p>
+                    <div className="col-span-5 sm:col-span-4 relative z-10">
+                      <p className="font-semibold text-sm sm:text-base text-[#F7F7F8] truncate">{row.name}</p>
+                      <p className="text-[10px] sm:text-xs text-[#73FFFF]/45 truncate">{row.role}</p>
                     </div>
-                    <div className="col-span-3 relative z-10 text-sm font-medium text-[#F7F7F8]/80">
+                    <div className="col-span-3 hidden sm:block relative z-10 text-sm font-medium text-[#F7F7F8]/80 truncate">
                       {row.team}
                     </div>
-                    <div className="col-span-2 relative z-10 text-right text-sm font-bold tabular-nums text-[#F7F7F8]">
+                    <div className="col-span-3 sm:col-span-2 relative z-10 text-right text-xs sm:text-sm font-bold tabular-nums text-[#F7F7F8]">
                       {row.score.toLocaleString()}
                     </div>
-                    <div className="col-span-2 relative z-10 text-right text-sm font-semibold text-[#73FFFF]/85">
+                    <div className="col-span-2 hidden sm:block relative z-10 text-right text-sm font-semibold text-[#73FFFF]/85">
                       +{row.growth}
                     </div>
-                    <div className="col-span-1 relative z-10 flex justify-end">
+                    <div className="col-span-4 sm:col-span-1 relative z-10 flex justify-end">
                       <span 
                         className="inline-flex h-8 w-8 items-center justify-center rounded-lg border text-xs font-bold transition-all"
                         style={{ 
@@ -675,9 +678,9 @@ export default function TeamDashboard() {
             viewport={{ once: true }}
             transition={{ duration: 0.6, delay: 0.2 }}
           >
-            <div className="rounded-3xl border border-[#00666B]/35 bg-linear-to-br from-[#003339]/75 via-[#051B1D] to-[#003339]/75 p-5">
-              <h4 className="text-lg font-bold text-[#F7F7F8]">Squad Matchups</h4>
-              <div className="mt-6 grid grid-cols-1 gap-6 md:grid-cols-2">
+            <div className="rounded-2xl sm:rounded-3xl border border-[#00666B]/35 bg-linear-to-br from-[#003339]/75 via-[#051B1D] to-[#003339]/75 p-4 sm:p-5">
+              <h4 className="text-base sm:text-lg font-bold text-[#F7F7F8]">Squad Matchups</h4>
+              <div className="mt-4 sm:mt-6 grid grid-cols-1 gap-4 sm:gap-6 md:grid-cols-2">
                 <MiniTeamCard team={leaderTeam} isLeader={true} onSelect={() => setSelectedMiniTeam(leaderTeam)} teamColor={teamColor} />
                 <MiniTeamCard team={secondTeam} isLeader={false} onSelect={() => setSelectedMiniTeam(secondTeam)} teamColor={teamColor} />
               </div>
@@ -694,9 +697,9 @@ export default function TeamDashboard() {
               {chartDefs.filter((chart) => chart.type !== "stacked-bar").map((chart, chartIdx) => {
                 const maxVal = Math.max(...((chart.entries as any[]) || []).map((e: any) => e.value || 0));
                 return (
-                  <div key={chart.title} className="rounded-3xl border border-[#00666B]/35 bg-[#003339]/65 p-6 shadow-xl shadow-black/20">
-                    <p className="text-xs font-semibold uppercase tracking-[0.22em] text-[#73FFFF]/45">{chart.subtitle}</p>
-                    <h4 className="mt-1 text-lg font-bold text-[#F7F7F8]">{chart.title}</h4>
+                  <div key={chart.title} className="rounded-2xl sm:rounded-3xl border border-[#00666B]/35 bg-[#003339]/65 p-4 sm:p-6 shadow-xl shadow-black/20">
+                    <p className="text-[10px] sm:text-xs font-semibold uppercase tracking-[0.22em] text-[#73FFFF]/45">{chart.subtitle}</p>
+                    <h4 className="mt-1 text-base sm:text-lg font-bold text-[#F7F7F8]">{chart.title}</h4>
                     <div className="mt-6 space-y-4">
                       {chart.type === "bar" ? (
                         (chart.entries as any[])?.map((entry: any, barIdx: number) => {
@@ -859,9 +862,9 @@ export default function TeamDashboard() {
                 .filter((chart) => chart.type === "stacked-bar")
                 .map((chart) => {
                   return (
-                    <div key={chart.title} className="rounded-3xl border border-[#00666B]/35 bg-[#003339]/65 p-6 shadow-xl shadow-black/20">
-                      <p className="text-xs font-semibold uppercase tracking-[0.22em] text-[#73FFFF]/45">{chart.subtitle}</p>
-                      <h4 className="mt-1 text-lg font-bold text-[#F7F7F8]">{chart.title}</h4>
+                    <div key={chart.title} className="rounded-2xl sm:rounded-3xl border border-[#00666B]/35 bg-[#003339]/65 p-4 sm:p-6 shadow-xl shadow-black/20">
+                      <p className="text-[10px] sm:text-xs font-semibold uppercase tracking-[0.22em] text-[#73FFFF]/45">{chart.subtitle}</p>
+                      <h4 className="mt-1 text-base sm:text-lg font-bold text-[#F7F7F8]">{chart.title}</h4>
                       <div className="mt-6 space-y-4">
                         <div className="space-y-6">
                           {chart.entries?.map((entry: any) => {
@@ -921,14 +924,14 @@ export default function TeamDashboard() {
                   );
                 })}
 
-              <div className="rounded-3xl border border-[#00666B]/35 bg-linear-to-br from-[#003339]/75 via-[#051B1D] to-[#003339]/75 p-5">
-                <h4 className="text-lg font-bold text-[#F7F7F8]">Quick Insights</h4>
+              <div className="rounded-2xl sm:rounded-3xl border border-[#00666B]/35 bg-linear-to-br from-[#003339]/75 via-[#051B1D] to-[#003339]/75 p-4 sm:p-5">
+                <h4 className="text-base sm:text-lg font-bold text-[#F7F7F8]">Quick Insights</h4>
                 <div className="mt-4 space-y-3">
                   {quickInsights.map((insight, index) => (
-                    <div key={index} className="rounded-2xl border border-[#00666B]/35 bg-[#003339]/80 p-4">
-                      <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[#73FFFF]/45">{insight.label}</p>
-                      <p className="mt-1 text-sm font-bold text-[#F7F7F8]">{insight.value}</p>
-                      <p className="mt-1 text-xs font-semibold text-[#73FFFF]">{insight.growth}</p>
+                    <div key={index} className="rounded-xl sm:rounded-2xl border border-[#00666B]/35 bg-[#003339]/80 p-3 sm:p-4">
+                      <p className="text-[10px] sm:text-[11px] font-semibold uppercase tracking-[0.18em] text-[#73FFFF]/45">{insight.label}</p>
+                      <p className="mt-1 text-xs sm:text-sm font-bold text-[#F7F7F8]">{insight.value}</p>
+                      <p className="mt-1 text-[10px] sm:text-xs font-semibold text-[#73FFFF]">{insight.growth}</p>
                     </div>
                   ))}
                 </div>
