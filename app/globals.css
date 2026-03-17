@@ -1,8 +1,26 @@
 @import "tailwindcss";
 
 :root {
-  --background: #0f172a;
-  --foreground: #f1f5f9;
+  --light-gray: #f7f7f8;
+  --medium-teal: #39a8ad;
+  --deep-teal: #00666b;
+  --aqua: #73ffff;
+  --dark-teal-black: #051b1d;
+  --dark-cyan: #003339;
+
+  /* Team Specific Colors */
+  --b2b-color: #39a8ad;
+  --ir-color: #9c27b0;
+  --matching-color: #ff9800;
+  --marcom-color: #e91e63;
+
+  /* Gamification Colors */
+  --xp-gold: #ffd700;
+  --level-up: #4caf50;
+  --danger: #ff5252;
+
+  --background: var(--dark-teal-black);
+  --foreground: var(--light-gray);
   color-scheme: dark;
 }
 
@@ -14,9 +32,12 @@
 }
 
 body {
-  background: var(--background);
+  background: radial-gradient(circle at 20% 0%, color-mix(in oklab, var(--deep-teal) 35%, transparent), transparent 45%),
+    radial-gradient(circle at 85% 30%, color-mix(in oklab, var(--medium-teal) 30%, transparent), transparent 50%),
+    var(--background);
   color: var(--foreground);
   font-family: var(--font-geist-sans);
+  min-height: 100vh;
 }
 
 html {
@@ -25,9 +46,58 @@ html {
 
 /* Glassmorphism base styles */
 .glass {
-  background: rgba(30, 41, 59, 0.4);
+  background: color-mix(in oklab, var(--dark-cyan) 80%, transparent);
   backdrop-filter: blur(12px);
-  border: 1px solid rgba(148, 163, 184, 0.1);
+  border: 1px solid color-mix(in oklab, var(--deep-teal) 55%, transparent);
+}
+
+.glass-premium {
+  background: rgba(255, 255, 255, 0.03);
+  backdrop-filter: blur(20px) saturate(180%);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+}
+
+.glow-effect {
+  position: relative;
+  overflow: hidden;
+}
+
+.glow-effect::before {
+  content: "";
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: radial-gradient(circle, rgba(115, 255, 255, 0.1) 0%, transparent 70%);
+  pointer-events: none;
+  animation: rotate-glow 10s linear infinite;
+}
+
+@keyframes rotate-glow {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+@keyframes float {
+  0% { transform: translateY(0px); }
+  50% { transform: translateY(-10px); }
+  100% { transform: translateY(0px); }
+}
+
+.animate-float {
+  animation: float 3s ease-in-out infinite;
+}
+
+@keyframes pulse-gold {
+  0% { box-shadow: 0 0 0 0 rgba(255, 215, 0, 0.4); }
+  70% { box-shadow: 0 0 0 10px rgba(255, 215, 0, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(255, 215, 0, 0); }
+}
+
+.pulse-gold {
+  animation: pulse-gold 2s infinite;
 }
 
 /* Smooth transitions */

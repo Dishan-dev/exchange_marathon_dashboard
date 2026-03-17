@@ -2,105 +2,140 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { motion, AnimatePresence } from "framer-motion";
+
+interface Squad {
+  id: string;
+  name: string;
+  href: string;
+}
 
 interface TeamCard {
   id: string;
   name: string;
   description: string;
   icon: string;
-  href: string;
+  color: string;
+  squads: Squad[];
 }
 
-const teams: TeamCard[] = [
+const functions: TeamCard[] = [
   {
-    id: "b2b",
-    name: "B2B",
-    description: "Partnership building, outreach, and business performance tracking for corporate entities.",
-    icon: "🤝",
-    href: "/dashboard/b2b",
+    id: "igv",
+    name: "IGV",
+    description: "Incoming Global Volunteer: Managing social impact projects for incoming exchange participants.",
+    icon: "🏠",
+    color: "var(--b2b-color)",
+    squads: [
+      { id: "igv-ir", name: "IR Matching", href: "/dashboard/b2b" },
+      { id: "igv-b2b", name: "B2B", href: "/dashboard/b2b" }
+    ]
   },
   {
-    id: "ir",
-    name: "IR",
-    description: "International relations and external coordination across global exchange networks.",
+    id: "igt",
+    name: "IGT",
+    description: "Incoming Global Talent: Connecting global talent with local corporate opportunities.",
+    icon: "💼",
+    color: "var(--ir-color)",
+    squads: [
+      { id: "igt-ir", name: "IR Matching", href: "/dashboard/ir" },
+      { id: "igt-b2b", name: "B2B", href: "/dashboard/ir" }
+    ]
+  },
+  {
+    id: "ogv",
+    name: "OGV",
+    description: "Outgoing Global Volunteer: Empowering local youth through global volunteering experiences.",
+    icon: "✈️",
+    color: "var(--matching-color)",
+    squads: [
+      { id: "ogv-ir", name: "IR Matching", href: "/dashboard/matching" },
+      { id: "ogv-b2b", name: "B2B", href: "/dashboard/matching" }
+    ]
+  },
+  {
+    id: "ogt",
+    name: "OGT",
+    description: "Outgoing Global Talent: Facilitating professional growth through global internships.",
     icon: "🌍",
-    href: "/dashboard/ir",
-  },
-  {
-    id: "matching",
-    name: "Matching",
-    description: "Real-time matching progress, follow-ups, and conversion rate optimization metrics.",
-    icon: "🔗",
-    href: "/dashboard/matching",
-  },
-  {
-    id: "marcom",
-    name: "Marcom",
-    description: "Campaign visibility, audience reach, and social engagement analytics.",
-    icon: "📣",
-    href: "/dashboard/marcom",
+    color: "var(--marcom-color)",
+    squads: [
+      { id: "ogt-ir", name: "IR Matching", href: "/dashboard/marcom" },
+      { id: "ogt-b2b", name: "B2B", href: "/dashboard/marcom" }
+    ]
   },
 ];
 
-function TeamCardComponent({
-  team,
-  isSelected,
+function FunctionCard({
+  func,
   onSelect,
 }: {
-  team: TeamCard;
-  isSelected: boolean;
+  func: TeamCard;
   onSelect: () => void;
 }) {
   return (
-    <Link href={team.href} onClick={onSelect}>
+    <div
+      onClick={onSelect}
+      className="group relative h-full rounded-2xl border-2 border-white/10 bg-white/5 p-8 transition-all duration-300 cursor-pointer overflow-hidden glass-premium hover:border-white/20 hover:shadow-xl hover:shadow-black/30 hover:scale-[1.02] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-white/20"
+    >
       <div
-        className={`group relative h-full rounded-2xl border-2 p-8 transition-all duration-300 cursor-pointer
-          ${
-            isSelected
-              ? "border-purple-500/60 bg-gradient-to-br from-purple-500/20 via-blue-500/10 to-transparent shadow-xl shadow-purple-500/20"
-              : "border-purple-500/20 bg-gradient-to-br from-slate-900/40 via-slate-800/20 to-transparent hover:border-blue-400/40 hover:shadow-lg hover:shadow-blue-500/10"
-          }
-          backdrop-blur-md hover:scale-105 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500/50
-        `}
-      >
-        {/* Animated background glow effect */}
-        <div
-          className="absolute inset-0 rounded-2xl opacity-0 transition-opacity duration-300 group-hover:opacity-100"
-          style={{
-            background: `radial-gradient(circle at 30% 30%, rgba(168, 85, 247, 0.15), transparent 50%)`,
-          }}
-        />
+        className="absolute inset-0 opacity-0 transition-opacity duration-500 group-hover:opacity-100"
+        style={{
+          background: `radial-gradient(circle at 50% 50%, ${func.color}22, transparent 70%)`,
+        }}
+      />
 
-        {/* Card content */}
-        <div className="relative z-10 flex h-full flex-col justify-between">
-          {/* Icon and header */}
-          <div>
-            <div className="mb-4 inline-flex h-12 w-12 items-center justify-center rounded-lg bg-gradient-to-br from-purple-500/20 to-blue-500/20 text-2xl transition-transform group-hover:scale-110">
-              {team.icon}
+      <div className="relative z-10 flex h-full flex-col justify-between">
+        <div>
+          <div className="flex items-start justify-between mb-6">
+            <div 
+              className="inline-flex h-14 w-14 items-center justify-center rounded-xl text-3xl transition-all duration-500 group-hover:scale-110 group-hover:rotate-6"
+              style={{ 
+                background: `linear-gradient(135deg, ${func.color}44, ${func.color}11)`,
+                boxShadow: `0 0 20px ${func.color}22`
+              }}
+            >
+              {func.icon}
             </div>
-            <h3 className="mb-2 text-2xl font-bold tracking-tight text-white">{team.name}</h3>
-            <p className="text-sm leading-relaxed text-slate-300">{team.description}</p>
           </div>
 
-          {/* Button and arrow */}
-          <div className="flex items-center justify-between gap-4 pt-6">
-            <span className="text-xs font-semibold uppercase tracking-widest text-purple-400/80 transition-colors group-hover:text-blue-400/80">
-              Enter Dashboard
-            </span>
-            <svg
-              className="h-4 w-4 text-purple-400/60 transition-all duration-300 group-hover:translate-x-1 group-hover:text-blue-400/80"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2.5}
-                d="M13 7l5 5m0 0l-5 5m5-5H6"
-              />
+          <h3 className="mb-2 text-3xl font-black tracking-tight text-[#F7F7F8] group-hover:translate-x-1 transition-transform">{func.name}</h3>
+          <p className="text-sm leading-relaxed text-[#F7F7F8]/70">{func.description}</p>
+        </div>
+
+        <div className="flex items-center justify-end pt-8">
+          <div className="p-2 rounded-lg bg-white/5 border border-white/10 group-hover:bg-white/10 transition-colors">
+            <svg className="h-5 w-5 transition-all duration-300 group-hover:translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M13 7l5 5m0 0l-5 5m5-5H6" />
             </svg>
           </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function SquadCard({
+  squad,
+  color,
+}: {
+  squad: Squad;
+  color: string;
+}) {
+  return (
+    <Link href={squad.href}>
+      <div
+        className="group relative rounded-2xl border-2 border-white/10 bg-white/5 p-8 transition-all duration-300 cursor-pointer overflow-hidden glass-premium hover:border-white/20 hover:shadow-xl hover:shadow-black/30 hover:scale-[1.05] focus:outline-none"
+      >
+        <div
+          className="absolute inset-0 opacity-0 transition-opacity duration-500 group-hover:opacity-100"
+          style={{
+            background: `radial-gradient(circle at 50% 50%, ${color}33, transparent 70%)`,
+          }}
+        />
+        <div className="relative z-10 text-center">
+          <h4 className="text-2xl font-black tracking-tight text-[#F7F7F8] group-hover:scale-105 transition-transform">{squad.name}</h4>
+          <span className="mt-4 inline-block text-[10px] font-black uppercase tracking-[0.3em] text-white/40 group-hover:text-white transition-colors">Enter Secure Arena</span>
         </div>
       </div>
     </Link>
@@ -108,88 +143,95 @@ function TeamCardComponent({
 }
 
 export default function Home() {
-  const [selectedTeam, setSelectedTeam] = useState<string | null>(null);
+  const [selectedFunction, setSelectedFunction] = useState<TeamCard | null>(null);
 
   return (
-    <div className="relative min-h-screen overflow-hidden bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950">
-      {/* Animated background elements */}
+    <div className="relative min-h-screen overflow-hidden bg-gradient-to-br from-[#051B1D] via-[#003339] to-[#051B1D]">
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-0 left-1/4 w-96 h-96 bg-purple-600/5 rounded-full blur-3xl" />
-        <div className="absolute top-1/2 right-1/4 w-96 h-96 bg-blue-600/5 rounded-full blur-3xl" />
-        <div className="absolute bottom-0 left-1/2 w-96 h-96 bg-slate-600/5 rounded-full blur-3xl" />
+        <div className="absolute top-0 left-1/4 w-96 h-96 bg-[#00666B]/15 rounded-full blur-3xl" />
+        <div className="absolute top-1/2 right-1/4 w-96 h-96 bg-[#39A8AD]/15 rounded-full blur-3xl" />
+        <div className="absolute bottom-0 left-1/2 w-96 h-96 bg-[#73FFFF]/10 rounded-full blur-3xl" />
       </div>
 
-      {/* Main content */}
-      <main className="relative z-10 flex flex-col items-center justify-between min-h-screen">
-        {/* Hero section */}
-        <div className="w-full flex-1 flex flex-col items-center justify-center px-4 py-12 sm:py-16 md:py-20">
-          {/* Season badge */}
-          <div className="mb-8 inline-flex items-center gap-2 rounded-full border border-blue-500/30 bg-blue-500/10 px-4 py-2 backdrop-blur-sm">
-            <div className="h-2 w-2 rounded-full bg-blue-400 animate-pulse" />
-            <span className="text-xs font-semibold uppercase tracking-widest text-blue-300">
-              Season 2026 Live
-            </span>
-          </div>
-
-          {/* Main title */}
-          <h1 className="mb-4 text-center font-bold tracking-tight text-white">
-            <span className="block text-4xl sm:text-5xl md:text-6xl lg:text-7xl">Exchange</span>
-            <span className="block text-4xl sm:text-5xl md:text-6xl lg:text-7xl bg-gradient-to-r from-purple-400 via-blue-400 to-cyan-400 bg-clip-text text-transparent">
-              Marathon
-            </span>
-          </h1>
-
-          {/* Subtitle */}
-          <p className="mb-3 text-center text-lg sm:text-xl text-slate-300 font-medium max-w-2xl">
-            Track performance. Compete harder. Lead the board.
-          </p>
-
-          {/* Helper text */}
-          <p className="text-center text-sm sm:text-base text-slate-400 max-w-xl">
-            Select your team to enter your competition dashboard and
-            <br className="hidden sm:block" /> view real-time metrics
-          </p>
-        </div>
-
-        {/* Team cards grid */}
-        <div className="w-full flex-1 flex flex-col items-center justify-center px-4 pb-16 sm:pb-20">
-          <div className="w-full max-w-6xl grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 gap-6 sm:gap-8">
-            {teams.map((team) => (
-              <TeamCardComponent
-                key={team.id}
-                team={team}
-                isSelected={selectedTeam === team.id}
-                onSelect={() => setSelectedTeam(team.id)}
-              />
-            ))}
-          </div>
-        </div>
-
-        {/* Bottom status section */}
-        <div className="w-full border-t border-slate-800/50 bg-slate-950/50 backdrop-blur-sm">
-          <div className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-4 px-4 py-6 sm:flex-row sm:gap-8">
-            <div className="flex flex-col gap-3 sm:gap-6 sm:flex-row text-center sm:text-left text-sm text-slate-400">
-              <div className="flex items-center justify-center sm:justify-start gap-2">
-                <span className="text-slate-500">📊</span>
-                <span>Internal competition tracking platform</span>
-              </div>
-              <div className="flex items-center justify-center sm:justify-start gap-2">
-                <span className="text-slate-500">📈</span>
-                <span>Bi-weekly leaderboard updates</span>
-              </div>
-              <div className="flex items-center justify-center sm:justify-start gap-2">
-                <span className="text-slate-500">🎵</span>
-                <span>Spotify-style recap generation</span>
-              </div>
+      <main className="relative z-10 mx-auto flex min-h-screen w-[92%] flex-col items-center justify-between lg:w-[80%]">
+        <div className="w-full flex-1 flex flex-col items-center justify-center py-12">
+          <motion.div 
+            layout
+            className="flex flex-col items-center"
+          >
+            <div className="mb-8 inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 pulse-gold px-6 py-2 backdrop-blur-md">
+              <div className="h-2 w-2 rounded-full bg-[var(--xp-gold)] animate-pulse" />
+              <span className="text-[10px] font-black uppercase tracking-[0.3em] text-[var(--xp-gold)]">
+                {selectedFunction ? `SELECT YOUR ${selectedFunction.name} SQUAD` : "Season 2026 Live Arena"}
+              </span>
             </div>
-            <a
-              href="#"
-              className="text-xs font-medium text-slate-500 hover:text-slate-300 transition-colors"
-            >
-              SYSTEM STATUS
-            </a>
-          </div>
+
+            {/* Main title */}
+            <h1 className="mb-6 text-center font-black tracking-tighter text-[#F7F7F8]">
+              <span className="block text-5xl sm:text-6xl md:text-8xl lg:text-9xl opacity-20 uppercase">
+                {selectedFunction ? selectedFunction.name : "EXCHANGE"}
+              </span>
+              <span className="block text-4xl sm:text-5xl md:text-7xl lg:text-8xl -mt-8 sm:-mt-10 md:-mt-12 bg-gradient-to-b from-white via-white to-white/40 bg-clip-text text-transparent uppercase">
+                {selectedFunction ? "SQUAD" : "MARATHON"}
+              </span>
+            </h1>
+
+            <p className="mb-8 text-center text-lg sm:text-xl text-[#F7F7F8]/60 font-medium max-w-2xl tracking-wide">
+              {selectedFunction 
+                ? `Choose the specific ${selectedFunction.name} team you belong to below.`
+                : "Level up your performance. Dominate the leaderboard."}
+            </p>
+          </motion.div>
         </div>
+
+        <div className="w-full flex-[2] flex flex-col items-center justify-center pb-16">
+          <AnimatePresence mode="wait">
+            {!selectedFunction ? (
+              <motion.div
+                key="functions"
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: 20 }}
+                className="grid w-full grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-2"
+              >
+                {functions.map((func) => (
+                  <FunctionCard
+                    key={func.id}
+                    func={func}
+                    onSelect={() => setSelectedFunction(func)}
+                  />
+                ))}
+              </motion.div>
+            ) : (
+              <motion.div
+                key="squads"
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -20 }}
+                className="w-full max-w-4xl"
+              >
+                <div className="grid grid-cols-1 gap-8 sm:grid-cols-2">
+                  {selectedFunction.squads.map((squad) => (
+                    <SquadCard key={squad.id} squad={squad} color={selectedFunction.color} />
+                  ))}
+                </div>
+                <div className="mt-12 text-center">
+                  <button
+                    onClick={() => setSelectedFunction(null)}
+                    className="group inline-flex items-center gap-2 text-sm font-black uppercase tracking-widest text-white/40 hover:text-white transition-colors"
+                  >
+                    <svg className="h-4 w-4 transition-transform group-hover:-translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M11 17l-5-5m0 0l5-5m-5 5h12" />
+                    </svg>
+                    Back to Functions
+                  </button>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
+
+
       </main>
     </div>
   );

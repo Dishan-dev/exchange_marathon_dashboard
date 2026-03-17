@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/purity */
 "use client";
 
 import { useState } from "react";
@@ -46,7 +47,7 @@ const teamDataMap: Record<string, TeamData> = {
         rank: 1,
         points: 1320,
         growth: 180,
-        icon: "🚀",
+        icon: "BT",
         performers: [
           { name: "Ariana Cole", role: "Deal Closer", score: 540, avatar: "AC", metrics: { mous: 24, coldCalls: 45, followups: 12 } },
           { name: "Brian Kim", role: "Pipeline Builder", score: 470, avatar: "BK", metrics: { mous: 18, coldCalls: 38, followups: 15 } },
@@ -58,7 +59,7 @@ const teamDataMap: Record<string, TeamData> = {
         rank: 2,
         points: 1130,
         growth: 140,
-        icon: "🎯",
+        icon: "BH",
         performers: [
           { name: "Marco Lee", role: "Outreach Lead", score: 500, avatar: "ML", metrics: { mous: 20, coldCalls: 42, followups: 14 } },
           { name: "Sasha Ray", role: "Prospect Analyst", score: 390, avatar: "SR", metrics: { mous: 15, coldCalls: 35, followups: 18 } },
@@ -80,7 +81,7 @@ const teamDataMap: Record<string, TeamData> = {
         rank: 1,
         points: 1280,
         growth: 165,
-        icon: "🌐",
+        icon: "IN",
         performers: [
           { name: "Layla Noor", role: "Exchange Liaison", score: 520, avatar: "LN", metrics: { mous: 21, coldCalls: 48, followups: 11 } },
           { name: "Theo Grant", role: "Country Lead", score: 430, avatar: "TG", metrics: { mous: 17, coldCalls: 40, followups: 16 } },
@@ -92,7 +93,7 @@ const teamDataMap: Record<string, TeamData> = {
         rank: 2,
         points: 1210,
         growth: 155,
-        icon: "🔗",
+        icon: "IC",
         performers: [
           { name: "Ethan Vale", role: "Network Builder", score: 480, avatar: "EV", metrics: { mous: 19, coldCalls: 44, followups: 13 } },
           { name: "Ivy Chen", role: "Account Partner", score: 410, avatar: "IC", metrics: { mous: 16, coldCalls: 36, followups: 17 } },
@@ -114,7 +115,7 @@ const teamDataMap: Record<string, TeamData> = {
         rank: 1,
         points: 1350,
         growth: 195,
-        icon: "⚡",
+        icon: "MP",
         performers: [
           { name: "Jade Brooks", role: "Conversion Lead", score: 560, avatar: "JB", metrics: { mous: 26, coldCalls: 50, followups: 9 } },
           { name: "Noel Hart", role: "Ops Specialist", score: 450, avatar: "NH", metrics: { mous: 20, coldCalls: 42, followups: 14 } },
@@ -126,7 +127,7 @@ const teamDataMap: Record<string, TeamData> = {
         rank: 2,
         points: 1100,
         growth: 130,
-        icon: "💎",
+        icon: "MC",
         performers: [
           { name: "Rico Barnes", role: "Workflow Lead", score: 430, avatar: "RB", metrics: { mous: 18, coldCalls: 38, followups: 15 } },
           { name: "Tina Moss", role: "Follow-up Owner", score: 370, avatar: "TM", metrics: { mous: 16, coldCalls: 35, followups: 17 } },
@@ -148,7 +149,7 @@ const teamDataMap: Record<string, TeamData> = {
         rank: 1,
         points: 1290,
         growth: 170,
-        icon: "⭐",
+        icon: "MS",
         performers: [
           { name: "Pia Logan", role: "Campaign Lead", score: 510, avatar: "PL", metrics: { mous: 22, coldCalls: 46, followups: 12 } },
           { name: "Cody Wynn", role: "Content Strategist", score: 430, avatar: "CW", metrics: { mous: 18, coldCalls: 39, followups: 15 } },
@@ -160,7 +161,7 @@ const teamDataMap: Record<string, TeamData> = {
         rank: 2,
         points: 1160,
         growth: 145,
-        icon: "🌊",
+        icon: "MW",
         performers: [
           { name: "Mason Hale", role: "Media Planner", score: 460, avatar: "MH", metrics: { mous: 19, coldCalls: 43, followups: 14 } },
           { name: "Ella Reed", role: "Audience Lead", score: 390, avatar: "ER", metrics: { mous: 16, coldCalls: 36, followups: 17 } },
@@ -175,6 +176,13 @@ const teamDataMap: Record<string, TeamData> = {
   },
 };
 
+const teamColorMap: Record<string, string> = {
+  b2b: "var(--b2b-color)",
+  ir: "var(--ir-color)",
+  matching: "var(--matching-color)",
+  marcom: "var(--marcom-color)",
+};
+
 const quickInsights = [
   { label: "Most Improved Team", value: "B2B Hunters", growth: "+12.4%" },
   { label: "Top Contributor", value: "Alex Johnson", growth: "+8 actions" },
@@ -182,69 +190,104 @@ const quickInsights = [
   { label: "Last Updated", value: "2 minutes ago", growth: "Real-time" },
 ];
 
+const vibrantBarColors = [
+  "bg-[#FF5722]", // Deep Orange
+  "bg-[#4CAF50]", // Green
+  "bg-[#2196F3]", // Blue
+  "bg-[#FFC107]", // Amber
+];
+
+const stackedChartSegmentColors = [
+  "bg-[#E91E63] shadow-[0_0_20px_rgba(233,30,99,0.45)]", // Pink
+  "bg-[#9C27B0] shadow-[0_0_20px_rgba(156,39,176,0.45)]", // Purple
+  "bg-[#00BCD4] shadow-[0_0_20px_rgba(0,188,212,0.45)]", // Cyan
+];
+
+const stackedLegendDots = ["bg-[#E91E63]", "bg-[#9C27B0]", "bg-[#00BCD4]"];
+
 function MiniTeamCard({
   team,
   isLeader,
   onSelect,
+  teamColor,
 }: {
   team: MiniTeamData;
   isLeader: boolean;
   onSelect: () => void;
+  teamColor: string;
 }) {
   return (
     <button
       type="button"
       onClick={onSelect}
-      className={`group relative w-full rounded-2xl border-2 p-8 text-left transition-all duration-300 ${
+      className={`group relative w-full rounded-2xl border p-8 text-left transition-all duration-500 overflow-hidden
+      ${
       isLeader
-        ? "border-yellow-400/50 bg-linear-to-br from-yellow-500/15 via-orange-500/5 to-transparent shadow-xl shadow-yellow-500/20"
-        : "border-slate-700/50 bg-linear-to-br from-slate-800/30 to-transparent hover:border-purple-400/30"
-    }`}>
-      <div className="absolute -top-4 left-1/2 -translate-x-1/2 flex items-center justify-center">
-        <div className={`inline-flex items-center justify-center h-10 w-10 rounded-full font-bold text-sm ${
-          isLeader
-            ? "bg-linear-to-br from-yellow-400 to-orange-400 text-slate-900"
-            : "bg-linear-to-br from-slate-700 to-slate-600 text-slate-200"
-        }`}>
-          {isLeader ? "🥇" : "🥈"}
-        </div>
+        ? "border-white/10 bg-white/5 shadow-2xl shadow-black/50"
+        : "border-white/5 bg-white/[0.02] hover:border-white/20"
+    } glass-premium hover:scale-[1.02]`}>
+      
+      <div 
+        className="absolute inset-0 opacity-0 group-hover:opacity-10 transition-opacity duration-500"
+        style={{ background: `radial-gradient(circle at 100% 0%, ${teamColor}, transparent 70%)` }}
+      />
+
+      <div className="absolute right-4 top-4 rounded-full border border-white/10 bg-white/5 px-3 py-1 text-[10px] font-black uppercase tracking-widest text-white/40">
+        MISSION XP
       </div>
-
+      
       <div className="relative z-10">
-        <div className="flex items-start justify-between mb-4">
-          <div>
-            <h3 className="text-2xl font-bold text-white">{team.name}</h3>
-            <p className="text-sm text-slate-400 mt-1">#{team.rank} Position</p>
+        <div className="flex items-center gap-4 mb-8">
+          <div 
+            className="h-14 w-14 rounded-xl flex items-center justify-center text-3xl shadow-lg ring-1 ring-white/10"
+            style={{ 
+              background: `linear-gradient(135deg, ${teamColor}44, ${teamColor}11)`,
+            }}
+          >
+            {team.icon}
           </div>
-          <span className="text-3xl">{team.icon}</span>
+          <div>
+            <h3 className="text-2xl font-black text-[#F7F7F8] tracking-tight">{team.name}</h3>
+            <div className="flex items-center gap-2 mt-1">
+              <span className={`h-2 w-2 rounded-full ${isLeader ? "bg-[var(--level-up)]" : "bg-white/20"}`} />
+              <p className="text-[10px] font-bold text-white/40 uppercase tracking-widest">RANK #{team.rank}</p>
+            </div>
+          </div>
         </div>
 
-        <div className="space-y-3">
+        <div className="grid grid-cols-2 gap-6 mb-8">
           <div>
-            <p className="text-xs text-slate-400 mb-1">Total Points</p>
-            <p className="text-2xl font-bold text-white">{team.points.toLocaleString()}</p>
+            <p className="text-[10px] font-bold text-white/30 uppercase tracking-[0.2em] mb-1">Combat Power</p>
+            <p className="text-3xl font-black text-[#F7F7F8] tabular-nums">{team.points.toLocaleString()}</p>
           </div>
           <div>
-            <p className="text-xs text-slate-400 mb-1">This Cycle Growth</p>
-            <p className={`text-lg font-semibold ${isLeader ? "text-emerald-400" : "text-blue-400"}`}>
+            <p className="text-[10px] font-bold text-white/30 uppercase tracking-[0.2em] mb-1">Cycle Surge</p>
+            <p className="text-3xl font-black tabular-nums" style={{ color: teamColor }}>
               +{team.growth}
             </p>
           </div>
         </div>
 
-        <div className="mt-6 pt-6 border-t border-slate-700/50">
-          <div className="w-full h-2 rounded-full bg-slate-700/30 overflow-hidden">
-            <div
-              className={`h-full rounded-full transition-all duration-500 ${
-                isLeader
-                  ? "bg-linear-to-r from-yellow-400 to-orange-400"
-                  : "bg-linear-to-r from-purple-400 to-blue-400"
-              }`}
-              style={{ width: `${(team.points / 1350) * 100}%` }}
+        <div className="space-y-3">
+          <div className="flex justify-between items-end">
+            <p className="text-[10px] font-bold text-white/30 uppercase tracking-[0.2em]">Efficiency Rating</p>
+            <p className="text-xs font-black text-white/60">{(team.points / 13.5).toFixed(1)}%</p>
+          </div>
+          <div className="w-full h-2 rounded-full bg-white/5 overflow-hidden border border-white/5">
+            <motion.div
+              initial={{ width: 0 }}
+              whileInView={{ width: `${(team.points / 1350) * 100}%` }}
+              viewport={{ once: true }}
+              transition={{ duration: 1.5, ease: "easeOut" }}
+              className="h-full rounded-full"
+              style={{ 
+                backgroundColor: teamColor,
+                boxShadow: `0 0 15px ${teamColor}`
+              }}
             />
           </div>
-          <p className="mt-4 text-xs font-semibold uppercase tracking-[0.24em] text-slate-400">
-            Click to view top performers
+          <p className="text-[9px] font-bold uppercase tracking-[0.3em] text-white/20 text-center pt-2 group-hover:text-white/40 transition-colors">
+            Tap to deploy squad details
           </p>
         </div>
       </div>
@@ -255,94 +298,104 @@ function MiniTeamCard({
 function PerformerModal({
   team,
   onClose,
+  teamColor,
 }: {
   team: MiniTeamData;
   onClose: () => void;
+  teamColor: string;
 }) {
   const [first, second, third] = team.performers;
   const podiumOrder = [second, first, third].filter(Boolean);
-  const podiumHeights = ["h-28", "h-36", "h-24"];
-  const podiumColors = [
-    "from-slate-300 to-slate-500 text-slate-950",
-    "from-yellow-300 to-orange-400 text-slate-950",
-    "from-amber-700 to-orange-900 text-white",
-  ];
-  const podiumLabels = ["#2", "#1", "#3"];
+  const podiumHeights = ["h-32", "h-44", "h-28"];
 
   return (
     <div className="relative">
-      <div className="flex items-start justify-between gap-4 border-b border-slate-800/70 pb-5">
-        <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.28em] text-purple-300">Top Ranked Performers</p>
-          <h3 className="mt-2 text-3xl font-bold text-white">{team.name}</h3>
-          <p className="mt-2 text-sm text-slate-400">Podium for the strongest contributors in this mini team.</p>
+      <div className="flex items-start justify-between gap-4 border-b border-white/5 pb-8">
+        <div className="flex items-center gap-6">
+          <div className="h-16 w-16 rounded-2xl flex items-center justify-center text-4xl glass shadow-2xl">
+            {team.icon}
+          </div>
+          <div>
+            <p className="text-[10px] font-black uppercase tracking-[0.4em] text-white/30 mb-1">Squad Tactical View</p>
+            <h3 className="text-4xl font-black text-[#F7F7F8] tracking-tighter">{team.name}</h3>
+          </div>
         </div>
         <button
           onClick={onClose}
-          className="rounded-full border border-slate-700/70 px-3 py-2 text-sm font-medium text-slate-300 transition-colors hover:border-slate-500 hover:text-white"
+          className="rounded-full border border-white/10 glass px-6 py-2.5 text-xs font-black uppercase tracking-widest text-white/60 transition-all hover:bg-white/5 hover:text-white"
         >
-          Close
+          Dismiss
         </button>
       </div>
 
-      <div className="mt-8 grid gap-8 lg:grid-cols-[1.2fr_0.8fr]">
-        <div className="rounded-3xl border border-slate-800/80 bg-slate-900/55 p-6">
-          <div className="flex items-end justify-center gap-3 sm:gap-5">
-            {podiumOrder.map((performer, index) => (
-              <div key={performer.name} className="flex flex-1 flex-col items-center">
-                <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-full border border-white/10 bg-slate-800 text-sm font-bold text-white">
-                  {performer.avatar}
-                </div>
-                <div className="mb-3 text-center">
-                  <p className="text-sm font-semibold text-white">{performer.name}</p>
-                  <p className="text-xs text-slate-400">{performer.role}</p>
-                </div>
-                <div className={`flex w-full max-w-28 flex-col items-center justify-center rounded-t-3xl bg-linear-to-b ${podiumColors[index]} ${podiumHeights[index]} px-3 py-4`}>
-                  <span className="text-xs font-semibold uppercase tracking-[0.2em] opacity-80">{podiumLabels[index]}</span>
-                  <span className="mt-2 text-2xl font-black">{performer.score}</span>
-                  <div className="mt-2 flex gap-1.5">
-                    <div className="flex flex-col items-center">
-                      <span className="text-[8px] font-bold opacity-60">M</span>
-                      <span className="text-[10px] font-black">{performer.metrics.mous}</span>
+      <div className="mt-12 grid gap-8 lg:grid-cols-12 items-stretch">
+        {/* Left Section: Podium Arena */}
+        <div className="lg:col-span-7 flex flex-col">
+          <div className="flex-1 rounded-[2.5rem] border border-white/5 bg-white/[0.02] p-10 glass-premium flex flex-col">
+            <p className="text-[10px] font-black uppercase tracking-[0.4em] text-white/20 mb-12 text-center">Elite Podium Authority</p>
+            <div className="flex-1 flex items-end justify-center gap-4 sm:gap-8 min-h-[400px]">
+              {podiumOrder.map((performer, index) => {
+                const isFirst = performer === first;
+                return (
+                  <div key={performer.name} className="flex flex-1 flex-col items-center group/podium max-w-[160px]">
+                    <div className="mb-6 flex h-16 w-16 items-center justify-center rounded-2xl glass-premium text-base font-black text-white shadow-2xl group-hover/podium:scale-110 transition-transform duration-500">
+                      {performer.avatar}
                     </div>
-                    <div className="flex flex-col items-center">
-                      <span className="text-[8px] font-bold opacity-60">C</span>
-                      <span className="text-[10px] font-black">{performer.metrics.coldCalls}</span>
+                    <div className="mb-6 text-center">
+                      <p className="text-sm font-black text-[#F7F7F8] tracking-tight truncate w-full">{performer.name}</p>
+                      <p className="text-[9px] font-bold text-white/30 uppercase tracking-[0.2em] mt-1">{performer.role}</p>
                     </div>
-                    <div className="flex flex-col items-center">
-                      <span className="text-[8px] font-bold opacity-60">F</span>
-                      <span className="text-[10px] font-black">{performer.metrics.followups}</span>
+                    <div 
+                      className={`flex w-full flex-col items-center justify-center rounded-2xl ${podiumHeights[index]} px-4 py-8 shadow-2xl transition-all duration-700 relative`}
+                      style={{ 
+                        background: isFirst 
+                          ? `linear-gradient(135deg, #FFD700 0%, #FFA500 100%)` 
+                          : index === 0 
+                            ? `linear-gradient(135deg, #E0E0E0 0%, #9E9E9E 100%)`
+                            : `linear-gradient(135deg, #CD7F32 0%, #8B4513 100%)`,
+                        boxShadow: isFirst ? `0 15px 40px rgba(255, 215, 0, 0.25)` : 'none',
+                      }}
+                    >
+                      <div className="absolute inset-x-0 bottom-0 top-0 bg-white/10 opacity-20 pointer-events-none rounded-2xl" />
+                      <span className="text-[10px] font-black uppercase tracking-[0.3em] text-white/90 relative z-10">
+                        #{isFirst ? '1' : index === 0 ? '2' : '3'}
+                      </span>
+                      <span className="mt-4 text-4xl font-black text-white relative z-10">{performer.score}</span>
                     </div>
                   </div>
-                </div>
-              </div>
-            ))}
+                );
+              })}
+            </div>
           </div>
         </div>
 
-        <div className="rounded-3xl border border-slate-800/80 bg-slate-900/55 p-6">
-          <p className="text-xs font-semibold uppercase tracking-[0.24em] text-slate-400">Leaderboard Detail</p>
-          <div className="mt-5 space-y-4">
-            {team.performers.map((performer, index) => (
-              <div key={performer.name} className="flex items-center gap-4 rounded-2xl border border-slate-800/70 bg-slate-950/60 px-4 py-4">
-                <div className="flex h-11 w-11 items-center justify-center rounded-full bg-slate-800 text-sm font-bold text-white">
-                  {performer.avatar}
-                </div>
-                <div className="min-w-0 flex-1">
-                  <p className="truncate text-sm font-semibold text-white">{performer.name}</p>
-                  <p className="text-xs text-slate-400">{performer.role}</p>
-                </div>
-                <div className="text-right">
-                  <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">Rank #{index + 1}</p>
-                  <p className="mt-1 text-base font-bold text-white">{performer.score} pts</p>
-                  <div className="mt-2 flex justify-end gap-3 text-[10px] font-bold">
-                    <span className="text-blue-400">M: {performer.metrics.mous}</span>
-                    <span className="text-emerald-400">C: {performer.metrics.coldCalls}</span>
-                    <span className="text-amber-400">F: {performer.metrics.followups}</span>
+        {/* Right Section: Member Leaderboard */}
+        <div className="lg:col-span-5 flex flex-col">
+          <div className="flex-1 rounded-[2.5rem] border border-white/5 bg-white/[0.02] p-8 glass-premium flex flex-col">
+            <h4 className="text-[10px] font-black uppercase tracking-[0.4em] text-white/20 mb-8 px-2">Squad Leaderboard</h4>
+            <div className="flex-1 space-y-3 overflow-y-auto max-h-[600px] pr-2 custom-scrollbar">
+              {team.performers.map((performer, index) => (
+                <div key={performer.name} className="group/row flex items-center gap-4 rounded-2xl border border-white/5 bg-white/[0.02] p-4 hover:bg-white/[0.06] hover:border-white/10 transition-all duration-300">
+                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-white/5 text-sm font-black text-white/40 group-hover/row:text-white transition-colors">
+                    #{index + 1}
+                  </div>
+                  <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl glass-premium text-lg font-black text-white shadow-lg">
+                    {performer.avatar}
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <p className="text-sm font-black text-[#F7F7F8] truncate">{performer.name}</p>
+                    <p className="text-[9px] font-bold uppercase tracking-wider text-white/25 mt-1 group-hover/row:text-white/40 transition-colors">{performer.role}</p>
+                  </div>
+                  <div className="text-right shrink-0">
+                    <p className="text-xl font-black text-white tabular-nums tracking-tighter">{performer.score}</p>
+                    <p className="text-[8px] font-black text-white/10">XP TOTAL</p>
                   </div>
                 </div>
-              </div>
-            ))}
+              ))}
+            </div>
+            <div className="mt-8 pt-8 border-t border-white/5 text-center">
+              <p className="text-[10px] font-black uppercase tracking-widest text-[#39A8AD]/60">All agents active and synchronized</p>
+            </div>
           </div>
         </div>
       </div>
@@ -381,8 +434,8 @@ export default function TeamDashboard() {
       type: "line",
       categories: ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"],
       series: [
-        { name: "Team 1", data: [30, 45, 38, 52, 60, 48, 70], color: "#3b82f6" },
-        { name: "Team 2", data: [25, 30, 42, 35, 48, 55, 62], color: "#8b5cf6" },
+        { name: "Global Reach", data: [40, 55, 48, 62, 70, 58, 80], color: "#FF1744" }, // Vibrant Red
+        { name: "Direct Conversions", data: [20, 35, 45, 30, 50, 60, 68], color: "#00E5FF" }, // Cyan
       ],
     },
     {
@@ -395,8 +448,6 @@ export default function TeamDashboard() {
       }))
     }
   ];
-
-  const barColors = ["bg-blue-500", "bg-purple-500", "bg-emerald-500", "bg-amber-500"];
 
   const getSmoothPath = (data: number[], width: number, height: number, max: number) => {
     if (data.length < 2) return "";
@@ -418,108 +469,132 @@ export default function TeamDashboard() {
     return path;
   };
 
+  const teamColor = teamColorMap[teamParam] || "var(--b2b-color)";
+
   return (
-    <div className="min-h-screen bg-linear-to-br from-slate-950 via-slate-900 to-slate-950">
+    <div className="min-h-screen bg-linear-to-br from-[#051B1D] via-[#003339] to-[#051B1D]">
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ duration: 0.8 }}
       >
-        <nav className="sticky top-0 z-20 border-b border-slate-800/50 bg-slate-950/80 backdrop-blur-md">
-          <div className="flex items-center justify-between px-6 py-4">
-            <div className="flex items-center gap-4">
+        <nav className="sticky top-0 z-20 border-b border-white/5 bg-[var(--dark-teal-black)]/80 backdrop-blur-md">
+          <div className="mx-auto flex w-[92%] items-center justify-between py-6 lg:w-[80%]">
+            <div className="flex items-center gap-6">
+              <div 
+                className="h-12 w-12 rounded-xl flex items-center justify-center text-2xl glass-premium shadow-lg"
+                style={{ background: `linear-gradient(135deg, ${teamColor}44, transparent)` }}
+              >
+                🏆
+              </div>
               <div>
-                <h1 className="text-xl font-bold text-white">{teamData.name} Dashboard</h1>
-                <p className="text-xs text-slate-400 mt-1">{teamData.displayName}</p>
+                <h1 className="text-2xl font-black tracking-tight text-[#F7F7F8] capitalize">
+                  {teamParam} <span className="opacity-40">Arena</span>
+                </h1>
+                <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-white/40 mt-1">
+                  System Online &bull; Season 2026
+                </p>
               </div>
             </div>
 
-            <div className="flex items-center gap-3">
-              <div className="hidden sm:flex items-center gap-2">
-                {teamData.miniTeams.map((mt, i) => (
-                  <div
-                    key={mt.name}
-                    className={`flex items-center gap-2 rounded-2xl border px-3 py-2 ${
-                      i === 0 ? "border-blue-500/30 bg-blue-500/10" : "border-purple-500/30 bg-purple-500/10"
-                    }`}
-                  >
-                    <span className="text-base">{mt.icon}</span>
-                    <div>
-                      <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-400">{mt.name}</p>
-                      <p className="mt-0.5 text-sm font-bold text-white">
-                        {mt.points.toLocaleString()}{" "}
-                        <span className="text-[10px] font-semibold text-slate-400">pts</span>
-                      </p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-
-
-
+            <div className="flex items-center gap-4">
               <Link
                 href="/"
-                className="px-4 py-2 text-sm font-medium rounded-lg bg-slate-800/50 border border-slate-700/50 text-slate-300 hover:bg-slate-700/50 hover:text-white transition-colors"
+                className="group flex items-center gap-2 px-5 py-2.5 text-xs font-black uppercase tracking-widest rounded-full glass border border-white/10 hover:bg-white/5 transition-all"
               >
-                ← Back
+                <span className="opacity-40 group-hover:-translate-x-1 transition-transform">←</span>
+                Exit Arena
               </Link>
             </div>
           </div>
         </nav>
 
-        <main className="space-y-10 p-5 md:p-8">
-          <header className="pt-2 text-center">
-            <p className="text-xs font-semibold uppercase tracking-[0.3em] text-blue-300/80">Performance Snapshot</p>
-            <h2 className="mt-3 text-3xl font-black tracking-tight text-white md:text-5xl">{teamData.name} Team Performance Dashboard</h2>
-            <p className="mx-auto mt-4 max-w-3xl text-sm font-medium text-slate-400 md:text-base">
-              Tracking live ranking momentum, role contributions, and performer impact across your mini teams.
-            </p>
+        <main className="mx-auto w-[92%] space-y-12 py-12 md:py-16 lg:w-[80%]">
+          <header className="relative py-12 text-center overflow-hidden rounded-3xl glass-premium border-white/5">
+            <div className="absolute inset-0 opacity-10" style={{ background: `radial-gradient(circle at 50% 50%, ${teamColor}, transparent 70%)` }} />
+            <div className="relative z-10">
+              <p className="text-[10px] font-black uppercase tracking-[0.4em] text-white/40 mb-4">Current Competition Phase</p>
+              <h2 className="text-4xl md:text-7xl font-black tracking-tighter text-[#F7F7F8] mb-6">
+                THE <span style={{ color: teamColor }}>{teamData.name}</span> MARATHON
+              </h2>
+              <div className="flex flex-wrap items-center justify-center gap-8">
+                <div className="flex flex-col items-center">
+                  <span className="text-2xl font-black text-white">{teamData.totalPoints.toLocaleString()}</span>
+                  <span className="text-[10px] font-bold uppercase tracking-widest text-white/30">Total Team XP</span>
+                </div>
+                <div className="h-8 w-px bg-white/10 hidden sm:block" />
+                <div className="flex flex-col items-center">
+                  <span className="text-2xl font-black text-[var(--level-up)]">+{teamData.weeklyGrowth}%</span>
+                  <span className="text-[10px] font-bold uppercase tracking-widest text-white/30">Weekly Surge</span>
+                </div>
+                <div className="h-8 w-px bg-white/10 hidden sm:block" />
+                <div className="flex flex-col items-center">
+                  <span className="text-2xl font-black text-[var(--xp-gold)]">{teamData.completedActions}</span>
+                  <span className="text-[10px] font-bold uppercase tracking-widest text-white/30">Milestones Hit</span>
+                </div>
+              </div>
+            </div>
           </header>
 
           <motion.section 
-            initial={{ opacity: 0, y: 20 }}
+            initial={{ opacity: 0, y: 40 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            transition={{ duration: 0.6 }}
-            className="rounded-3xl border border-slate-800/80 bg-linear-to-br from-slate-900/80 via-slate-950 to-slate-900/80 p-4 shadow-2xl shadow-slate-950/60 md:p-8"
+            transition={{ duration: 1 }}
+            className="relative rounded-[3rem] border border-white/5 bg-white/[0.02] p-8 sm:p-12 glass-premium shadow-2xl shadow-black/50 overflow-hidden"
           >
-            <div className="mb-7 flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
-              <div>
-                <h3 className="text-xl font-bold text-white md:text-2xl">Top Performer Podium</h3>
-                <p className="mt-1 text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">From {leaderTeam.name}</p>
-              </div>
+            <div 
+              className="absolute inset-0 opacity-10 pointer-events-none"
+              style={{ background: `radial-gradient(circle at 100% 0%, ${teamColor}, transparent 80%)` }}
+            />
+            
+            <div className="relative z-10 mb-16 flex flex-col items-center">
+              <p className="text-[10px] font-black uppercase tracking-[0.5em] text-white/30 mb-2">Arena Rankings</p>
+              <h3 className="text-3xl font-black text-[#F7F7F8] tracking-widest uppercase">The Podium</h3>
             </div>
 
-            <div className="mx-auto flex h-68 max-w-4xl items-end justify-center gap-2 sm:gap-6">
-              {podiumVisualOrder.map((performer, index) => (
-                <div key={performer.name} className={`group flex flex-col items-center ${index === 1 ? "w-[38%]" : "w-[31%]"}`}>
-                  <div className="mb-6 text-center">
-                    <p className={`truncate px-2 font-black ${index === 1 ? "text-lg text-white" : "text-sm text-slate-400"}`}>{performer.name}</p>
-                    <div className="mt-2 inline-flex items-center gap-2 rounded-full bg-blue-600/80 px-3 py-1 ring-2 ring-blue-300/20">
-                      <span className="text-xs font-black text-white">{performer.score.toLocaleString()}</span>
-                      <span className="text-[9px] font-black uppercase tracking-[0.12em] text-blue-100">pts</span>
+            <div className="relative z-10 mx-auto flex h-96 max-w-4xl items-end justify-center gap-4 sm:gap-12">
+              {podiumVisualOrder.map((performer, index) => {
+                const isChampion = index === 1;
+                return (
+                  <div key={performer.name} className={`group flex flex-col items-center ${isChampion ? "w-[38%]" : "w-[31%]"}`}>
+                    <div className="mb-8 text-center">
+                      <p className={`truncate px-2 font-black tracking-tight ${isChampion ? "text-xl text-white" : "text-sm text-white/40"}`}>{performer.name}</p>
+                      <div className="mt-3 inline-flex items-center gap-2 rounded-full glass border border-white/10 px-4 py-1.5 shadow-xl">
+                        <span className="text-sm font-black text-white">{performer.score.toLocaleString()}</span>
+                        <span className="text-[9px] font-black uppercase tracking-widest text-white/30">XP</span>
+                      </div>
                     </div>
+                    <motion.div
+                      initial={{ height: 0 }}
+                      whileInView={{ height: index === 0 ? 180 : index === 1 ? 260 : 140 }}
+                      viewport={{ once: true }}
+                      transition={{ duration: 1.5, delay: 0.2 + (index * 0.1), ease: "circOut" }}
+                      className="relative w-full rounded-2xl border border-white/20 flex flex-col items-center justify-start pt-12 shadow-2xl group-hover:-translate-y-2 transition-transform duration-500"
+                      style={{ 
+                        background: isChampion 
+                          ? `linear-gradient(to bottom, #FFD700, #DAA520)` 
+                          : index === 0 
+                            ? `linear-gradient(to bottom, #E0E0E0, #A0A0A0)`
+                            : `linear-gradient(to bottom, #CD7F32, #8B4513)`,
+                        boxShadow: isChampion ? `0 15px 40px rgba(255, 215, 0, 0.2)` : 'none'
+                      }}
+                    >
+                      <div className="absolute inset-0 bg-white/10 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none rounded-2xl" />
+                      <div 
+                        className="absolute -top-6 left-1/2 -translate-x-1/2 h-12 w-12 rounded-xl border border-white/30 bg-[#003339] flex items-center justify-center text-xl font-black shadow-2xl"
+                        style={{ color: isChampion ? '#FFD700' : index === 0 ? '#E0E0E0' : '#CD7F32' }}
+                      >
+                        {index === 0 ? "2" : index === 1 ? "1" : "3"}
+                      </div>
+                      <p className="text-6xl font-black text-black/10 select-none">{index === 0 ? "2" : index === 1 ? "1" : "3"}</p>
+                      <p className="mt-4 text-[9px] font-black uppercase tracking-[0.3em] text-white/80">
+                        {index === 1 ? "Champion" : index === 0 ? "Runner Up" : "Third Place"}
+                      </p>
+                    </motion.div>
                   </div>
-                  <motion.div
-                    initial={{ height: 0, opacity: 0 }}
-                    whileInView={{ height: index === 0 ? 152 : index === 1 ? 200 : 120, opacity: 1 }}
-                    viewport={{ once: true }}
-                    transition={{ duration: 1, delay: 0.2 + (index * 0.1), ease: "easeOut" }}
-                    className={`relative w-full rounded-t-3xl border border-slate-700/70 bg-linear-to-b pt-8 text-center shadow-xl transition-transform duration-300 group-hover:-translate-y-1 ${
-                    index === 0 ? "from-slate-500 to-slate-700" : index === 1 ? "from-blue-500 to-blue-700" : "from-orange-500 to-orange-700"
-                  }`}>
-                    <div className={`absolute -top-5 left-1/2 -translate-x-1/2 rounded-xl border border-white/20 p-2 shadow-lg ${
-                      index === 0 ? "bg-slate-200 text-slate-700" : index === 1 ? "bg-amber-300 text-amber-900" : "bg-orange-300 text-orange-900"
-                    }`}>
-                      {index === 0 ? "🥈" : index === 1 ? "🏆" : "🥉"}
-                    </div>
-                    <p className="text-5xl font-black text-white/30">{index === 0 ? "2" : index === 1 ? "1" : "3"}</p>
-                    <p className="mt-2 text-[10px] font-bold uppercase tracking-[0.24em] text-white/70">
-                      {index === 1 ? "Champion" : index === 0 ? "Runner Up" : "Third Place"}
-                    </p>
-                  </motion.div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </motion.section>
 
@@ -529,31 +604,31 @@ export default function TeamDashboard() {
             viewport={{ once: true }}
             transition={{ duration: 0.6, delay: 0.1 }}
           >
-            <div className="overflow-hidden rounded-3xl border border-slate-800/70 bg-slate-900/65 shadow-xl shadow-black/30">
+            <div className="overflow-hidden rounded-3xl border border-[#00666B]/35 bg-[#003339]/65 shadow-xl shadow-black/30">
               <div className="overflow-x-auto">
                 <table className="w-full min-w-170 border-collapse text-left">
                   <thead>
-                    <tr className="bg-slate-900/95">
-                      <th className="border-b border-slate-800 px-4 py-4 text-[11px] font-bold uppercase tracking-[0.16em] text-slate-400">Performer</th>
-                      <th className="border-b border-slate-800 px-4 py-4 text-[11px] font-bold uppercase tracking-[0.16em] text-slate-400">Team</th>
-                      <th className="border-b border-slate-800 px-4 py-4 text-right text-[11px] font-bold uppercase tracking-[0.16em] text-slate-400">Points</th>
-                      <th className="border-b border-slate-800 px-4 py-4 text-right text-[11px] font-bold uppercase tracking-[0.16em] text-slate-400">Growth</th>
-                      <th className="border-b border-slate-800 px-4 py-4 text-right text-[11px] font-bold uppercase tracking-[0.16em] text-slate-400">Rank</th>
+                    <tr className="bg-[#003339]/95">
+                      <th className="border-b border-[#00666B]/35 px-4 py-4 text-[11px] font-bold uppercase tracking-[0.16em] text-[#F7F7F8]/65">Performer</th>
+                      <th className="border-b border-[#00666B]/35 px-4 py-4 text-[11px] font-bold uppercase tracking-[0.16em] text-[#F7F7F8]/65">Team</th>
+                      <th className="border-b border-[#00666B]/35 px-4 py-4 text-right text-[11px] font-bold uppercase tracking-[0.16em] text-[#F7F7F8]/65">Points</th>
+                      <th className="border-b border-[#00666B]/35 px-4 py-4 text-right text-[11px] font-bold uppercase tracking-[0.16em] text-[#F7F7F8]/65">Growth</th>
+                      <th className="border-b border-[#00666B]/35 px-4 py-4 text-right text-[11px] font-bold uppercase tracking-[0.16em] text-[#F7F7F8]/65">Rank</th>
                     </tr>
                   </thead>
                   <tbody>
                     {leaderboardRows.map((row) => (
-                      <tr key={`${row.team}-${row.name}`} className="border-b border-slate-800/60 transition-colors hover:bg-blue-500/10">
+                      <tr key={`${row.team}-${row.name}`} className="border-b border-[#00666B]/35 transition-colors hover:bg-[#39A8AD]/10">
                         <td className="px-4 py-3">
-                          <p className="font-semibold text-white">{row.name}</p>
-                          <p className="text-xs text-slate-500">{row.role}</p>
+                          <p className="font-semibold text-[#F7F7F8]">{row.name}</p>
+                          <p className="text-xs text-[#73FFFF]/45">{row.role}</p>
                         </td>
-                        <td className="px-4 py-3 text-sm font-medium text-slate-300">{row.team}</td>
-                        <td className="px-4 py-3 text-right text-sm font-bold tabular-nums text-white">{row.score.toLocaleString()}</td>
-                        <td className="px-4 py-3 text-right text-sm font-semibold text-emerald-400">+{row.growth}</td>
+                        <td className="px-4 py-3 text-sm font-medium text-[#F7F7F8]/80">{row.team}</td>
+                        <td className="px-4 py-3 text-right text-sm font-bold tabular-nums text-[#F7F7F8]">{row.score.toLocaleString()}</td>
+                        <td className="px-4 py-3 text-right text-sm font-semibold text-[#73FFFF]/85">+{row.growth}</td>
                         <td className="px-4 py-3 text-right">
                           <span className={`inline-flex h-8 w-8 items-center justify-center rounded-lg border text-xs font-bold ${
-                            row.rank === 1 ? "border-amber-400/60 bg-amber-400/20 text-amber-300" : row.rank === 2 ? "border-slate-400/60 bg-slate-400/20 text-slate-200" : row.rank === 3 ? "border-orange-400/60 bg-orange-400/20 text-orange-300" : "border-slate-700 bg-slate-800/80 text-slate-400"
+                            row.rank === 1 ? "border-[#39A8AD]/60 bg-[#39A8AD]/20 text-[#73FFFF]" : row.rank === 2 ? "border-[#39A8AD]/50 bg-[#39A8AD]/20 text-[#F7F7F8]" : row.rank === 3 ? "border-[#00666B]/60 bg-[#00666B]/25 text-[#39A8AD]" : "border-[#00666B]/45 bg-[#00666B]/80 text-[#F7F7F8]/65"
                           }`}>
                             {row.rank}
                           </span>
@@ -572,12 +647,12 @@ export default function TeamDashboard() {
             viewport={{ once: true }}
             transition={{ duration: 0.6, delay: 0.2 }}
           >
-            <div className="rounded-3xl border border-slate-800/70 bg-linear-to-br from-slate-900/75 via-slate-950 to-slate-900/75 p-5">
-              <h4 className="text-lg font-bold text-white">Team Cards</h4>
-              <p className="mt-1 text-sm text-slate-400">Click a team card to open its performer podium and detailed ranking.</p>
+            <div className="rounded-3xl border border-[#00666B]/35 bg-linear-to-br from-[#003339]/75 via-[#051B1D] to-[#003339]/75 p-5">
+              <h4 className="text-lg font-bold text-[#F7F7F8]">Squad Matchups</h4>
+              <p className="mt-1 text-sm text-[#F7F7F8]/65">Click a team card to open its performer podium and detailed ranking.</p>
               <div className="mt-6 grid grid-cols-1 gap-6 md:grid-cols-2">
-                <MiniTeamCard team={leaderTeam} isLeader={true} onSelect={() => setSelectedMiniTeam(leaderTeam)} />
-                <MiniTeamCard team={secondTeam} isLeader={false} onSelect={() => setSelectedMiniTeam(secondTeam)} />
+                <MiniTeamCard team={leaderTeam} isLeader={true} onSelect={() => setSelectedMiniTeam(leaderTeam)} teamColor={teamColor} />
+                <MiniTeamCard team={secondTeam} isLeader={false} onSelect={() => setSelectedMiniTeam(secondTeam)} teamColor={teamColor} />
               </div>
             </div>
           </motion.section>
@@ -592,9 +667,9 @@ export default function TeamDashboard() {
               {chartDefs.filter((chart) => chart.type !== "stacked-bar").map((chart, chartIdx) => {
                 const maxVal = Math.max(...((chart.entries as any[]) || []).map((e: any) => e.value || 0));
                 return (
-                  <div key={chart.title} className="rounded-3xl border border-slate-800/70 bg-slate-900/65 p-6 shadow-xl shadow-black/20">
-                    <p className="text-xs font-semibold uppercase tracking-[0.22em] text-slate-500">{chart.subtitle}</p>
-                    <h4 className="mt-1 text-lg font-bold text-white">{chart.title}</h4>
+                  <div key={chart.title} className="rounded-3xl border border-[#00666B]/35 bg-[#003339]/65 p-6 shadow-xl shadow-black/20">
+                    <p className="text-xs font-semibold uppercase tracking-[0.22em] text-[#73FFFF]/45">{chart.subtitle}</p>
+                    <h4 className="mt-1 text-lg font-bold text-[#F7F7F8]">{chart.title}</h4>
                     <div className="mt-6 space-y-4">
                       {chart.type === "bar" ? (
                         (chart.entries as any[])?.map((entry: any, barIdx: number) => {
@@ -603,23 +678,23 @@ export default function TeamDashboard() {
                           return (
                             <div key={entry.label} className="relative" onMouseEnter={() => setHoveredBar({ chart: chartIdx, bar: barIdx })} onMouseLeave={() => setHoveredBar(null)}>
                               <div className="mb-1.5 flex items-center justify-between">
-                                <p className="max-w-28 truncate text-xs font-medium text-slate-300">{entry.label}</p>
-                                <p className="text-xs font-semibold tabular-nums text-slate-400">{(entry.value || 0).toLocaleString()} {chart.unit}</p>
+                                <p className="max-w-28 truncate text-xs font-medium text-[#F7F7F8]/80">{entry.label}</p>
+                                <p className="text-xs font-semibold tabular-nums text-[#F7F7F8]/65">{(entry.value || 0).toLocaleString()} {chart.unit}</p>
                               </div>
-                              <div className="h-7 w-full overflow-hidden rounded-full bg-slate-800/80">
+                              <div className="h-7 w-full overflow-hidden rounded-full bg-[#00666B]/80">
                                 <motion.div
                                   initial={{ width: 0 }}
                                   whileInView={{ width: `${pct}%` }}
                                   viewport={{ once: true }}
                                   transition={{ duration: 1, delay: barIdx * 0.1, ease: "easeOut" }}
-                                  className={`h-full rounded-full ${barColors[barIdx % barColors.length]}`}
+                                  className={`h-full rounded-full ${vibrantBarColors[barIdx % vibrantBarColors.length]}`}
                                 />
                               </div>
                               {isHovered && (
-                                <div className="absolute -top-16 left-1/2 z-10 -translate-x-1/2 whitespace-nowrap rounded-2xl border border-slate-700/80 bg-slate-800/95 px-4 py-3 shadow-2xl shadow-black/60 backdrop-blur-sm">
-                                  <p className="text-sm font-black text-white">{entry.label}</p>
-                                  <p className="mt-0.5 text-xs text-slate-400">{entry.sub}</p>
-                                  <p className="mt-1 text-sm font-bold text-blue-300">{(entry.value || 0).toLocaleString()} <span className="text-[10px] font-semibold text-slate-500">{chart.unit}</span></p>
+                                <div className="absolute -top-16 left-1/2 z-10 -translate-x-1/2 whitespace-nowrap rounded-2xl border border-[#39A8AD]/40 bg-[#00666B]/95 px-4 py-3 shadow-2xl shadow-black/60 backdrop-blur-sm">
+                                  <p className="text-sm font-black text-[#F7F7F8]">{entry.label}</p>
+                                  <p className="mt-0.5 text-xs text-[#F7F7F8]/65">{entry.sub}</p>
+                                  <p className="mt-1 text-sm font-bold text-[#73FFFF]">{(entry.value || 0).toLocaleString()} <span className="text-[10px] font-semibold text-[#73FFFF]/45">{chart.unit}</span></p>
                                 </div>
                               )}
                             </div>
@@ -634,10 +709,10 @@ export default function TeamDashboard() {
                               <div key={entry.label} className="group/row">
                                 <div className="mb-2 flex items-center justify-between">
                                   <div className="flex items-center gap-2">
-                                    <div className="h-2 w-2 rounded-full bg-slate-700" />
-                                    <p className="text-sm font-bold text-white">{entry.label}</p>
+                                    <div className="h-2 w-2 rounded-full bg-[#00666B]" />
+                                    <p className="text-sm font-bold text-[#F7F7F8]">{entry.label}</p>
                                   </div>
-                                  <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">{total} total</p>
+                                  <p className="text-[10px] font-bold text-[#73FFFF]/45 uppercase tracking-widest">{total} total</p>
                                 </div>
                                 <div className="relative h-8 w-full">
                                   <motion.div 
@@ -645,11 +720,11 @@ export default function TeamDashboard() {
                                     whileInView={{ width: `${(total / (maxRowTotal || 1)) * 100}%`, opacity: 1 }}
                                     viewport={{ once: true }}
                                     transition={{ duration: 1, ease: "easeOut" }}
-                                    className="flex h-full overflow-hidden rounded-xl bg-slate-800/40 border border-slate-700/30"
+                                    className="flex h-full overflow-hidden rounded-xl bg-[#00666B]/40 border border-[#00666B]/30"
                                   >
                                     {entry.values.map((val: number, valIdx: number) => {
                                       const pct = (val / total) * 100;
-                                      const colors = ["bg-blue-500 shadow-[0_0_20px_rgba(59,130,246,0.3)]", "bg-emerald-500 shadow-[0_0_20px_rgba(16,185,129,0.3)]", "bg-amber-500 shadow-[0_0_20px_rgba(245,158,11,0.3)]"];
+                                      const colors = stackedChartSegmentColors;
                                       if (val === 0) return null;
                                       return (
                                         <motion.div
@@ -661,7 +736,7 @@ export default function TeamDashboard() {
                                           className={`relative flex items-center justify-center transition-all duration-700 hover:brightness-125 origin-left ${colors[valIdx]}`}
                                           style={{ width: `${pct}%` }}
                                         >
-                                          {val > 2 && <span className="text-[10px] font-black text-slate-950 drop-shadow-sm">{val}</span>}
+                                          {val > 2 && <span className="text-[10px] font-black text-[#051B1D] drop-shadow-sm">{val}</span>}
                                         </motion.div>
                                       );
                                     })}
@@ -670,11 +745,11 @@ export default function TeamDashboard() {
                               </div>
                             );
                           })}
-                          <div className="mt-8 flex items-center justify-center gap-6 rounded-2xl border border-slate-800/50 bg-slate-900/40 py-3">
+                          <div className="mt-8 flex items-center justify-center gap-6 rounded-2xl border border-[#00666B]/35 bg-[#003339]/40 py-3">
                             {["MOUs", "Calls", "Follows"].map((l, i) => (
                               <div key={l} className="flex items-center gap-2">
-                                <span className={`h-2.5 w-2.5 rounded-full ${["bg-blue-500", "bg-emerald-500", "bg-amber-500"][i]}`} />
-                                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{l}</span>
+                                <span className={`h-2.5 w-2.5 rounded-full ${stackedLegendDots[i]}`} />
+                                <span className="text-[10px] font-bold text-[#F7F7F8]/65 uppercase tracking-widest">{l}</span>
                               </div>
                             ))}
                           </div>
@@ -734,13 +809,13 @@ export default function TeamDashboard() {
                             </svg>
                           </div>
                           <div className="mt-8 flex justify-between px-2">
-                            {chart.categories?.map(c => <span key={c} className="text-[9px] font-bold uppercase tracking-tighter text-slate-500">{c}</span>)}
+                            {chart.categories?.map(c => <span key={c} className="text-[9px] font-bold uppercase tracking-tighter text-[#73FFFF]/45">{c}</span>)}
                           </div>
                           <div className="mt-4 flex gap-4">
                             {chart.series?.map(s => (
                               <div key={s.name} className="flex items-center gap-2">
                                 <span className="h-0.5 w-4" style={{ backgroundColor: s.color }} />
-                                <span className="text-[10px] text-slate-400 font-bold uppercase">{s.name}</span>
+                                <span className="text-[10px] text-[#F7F7F8]/65 font-bold uppercase">{s.name}</span>
                               </div>
                             ))}
                           </div>
@@ -757,9 +832,9 @@ export default function TeamDashboard() {
                 .filter((chart) => chart.type === "stacked-bar")
                 .map((chart) => {
                   return (
-                    <div key={chart.title} className="rounded-3xl border border-slate-800/70 bg-slate-900/65 p-6 shadow-xl shadow-black/20">
-                      <p className="text-xs font-semibold uppercase tracking-[0.22em] text-slate-500">{chart.subtitle}</p>
-                      <h4 className="mt-1 text-lg font-bold text-white">{chart.title}</h4>
+                    <div key={chart.title} className="rounded-3xl border border-[#00666B]/35 bg-[#003339]/65 p-6 shadow-xl shadow-black/20">
+                      <p className="text-xs font-semibold uppercase tracking-[0.22em] text-[#73FFFF]/45">{chart.subtitle}</p>
+                      <h4 className="mt-1 text-lg font-bold text-[#F7F7F8]">{chart.title}</h4>
                       <div className="mt-6 space-y-4">
                         <div className="space-y-6">
                           {chart.entries?.map((entry: any) => {
@@ -769,10 +844,10 @@ export default function TeamDashboard() {
                               <div key={entry.label} className="group/row">
                                 <div className="mb-2 flex items-center justify-between">
                                   <div className="flex items-center gap-2">
-                                    <div className="h-2 w-2 rounded-full bg-slate-700" />
-                                    <p className="text-sm font-bold text-white">{entry.label}</p>
+                                    <div className="h-2 w-2 rounded-full bg-[#00666B]" />
+                                    <p className="text-sm font-bold text-[#F7F7F8]">{entry.label}</p>
                                   </div>
-                                  <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">{total} total</p>
+                                  <p className="text-[10px] font-bold text-[#73FFFF]/45 uppercase tracking-widest">{total} total</p>
                                 </div>
                                 <div className="relative h-8 w-full">
                                   <motion.div
@@ -780,11 +855,11 @@ export default function TeamDashboard() {
                                     whileInView={{ width: `${(total / (maxRowTotal || 1)) * 100}%`, opacity: 1 }}
                                     viewport={{ once: true }}
                                     transition={{ duration: 1, ease: "easeOut" }}
-                                    className="flex h-full overflow-hidden rounded-xl bg-slate-800/40 border border-slate-700/30"
+                                    className="flex h-full overflow-hidden rounded-xl bg-[#00666B]/40 border border-[#00666B]/30"
                                   >
                                     {entry.values.map((val: number, valIdx: number) => {
                                       const pct = (val / total) * 100;
-                                      const colors = ["bg-blue-500 shadow-[0_0_20px_rgba(59,130,246,0.3)]", "bg-emerald-500 shadow-[0_0_20px_rgba(16,185,129,0.3)]", "bg-amber-500 shadow-[0_0_20px_rgba(245,158,11,0.3)]"];
+                                      const colors = stackedChartSegmentColors;
                                       if (val === 0) return null;
                                       return (
                                         <motion.div
@@ -796,7 +871,7 @@ export default function TeamDashboard() {
                                           className={`relative flex items-center justify-center transition-all duration-700 hover:brightness-125 origin-left ${colors[valIdx]}`}
                                           style={{ width: `${pct}%` }}
                                         >
-                                          {val > 2 && <span className="text-[10px] font-black text-slate-950 drop-shadow-sm">{val}</span>}
+                                          {val > 2 && <span className="text-[10px] font-black text-[#051B1D] drop-shadow-sm">{val}</span>}
                                         </motion.div>
                                       );
                                     })}
@@ -805,11 +880,11 @@ export default function TeamDashboard() {
                               </div>
                             );
                           })}
-                          <div className="mt-8 flex items-center justify-center gap-6 rounded-2xl border border-slate-800/50 bg-slate-900/40 py-3">
+                          <div className="mt-8 flex items-center justify-center gap-6 rounded-2xl border border-[#00666B]/35 bg-[#003339]/40 py-3">
                             {["MOUs", "Calls", "Follows"].map((l, i) => (
                               <div key={l} className="flex items-center gap-2">
-                                <span className={`h-2.5 w-2.5 rounded-full ${["bg-blue-500", "bg-emerald-500", "bg-amber-500"][i]}`} />
-                                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{l}</span>
+                                <span className={`h-2.5 w-2.5 rounded-full ${stackedLegendDots[i]}`} />
+                                <span className="text-[10px] font-bold text-[#F7F7F8]/65 uppercase tracking-widest">{l}</span>
                               </div>
                             ))}
                           </div>
@@ -819,14 +894,14 @@ export default function TeamDashboard() {
                   );
                 })}
 
-              <div className="rounded-3xl border border-slate-800/70 bg-linear-to-br from-slate-900/75 via-slate-950 to-slate-900/75 p-5">
-                <h4 className="text-lg font-bold text-white">Quick Insights</h4>
+              <div className="rounded-3xl border border-[#00666B]/35 bg-linear-to-br from-[#003339]/75 via-[#051B1D] to-[#003339]/75 p-5">
+                <h4 className="text-lg font-bold text-[#F7F7F8]">Quick Insights</h4>
                 <div className="mt-4 space-y-3">
                   {quickInsights.map((insight, index) => (
-                    <div key={index} className="rounded-2xl border border-slate-800/80 bg-slate-900/80 p-4">
-                      <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-500">{insight.label}</p>
-                      <p className="mt-1 text-sm font-bold text-white">{insight.value}</p>
-                      <p className="mt-1 text-xs font-semibold text-blue-300">{insight.growth}</p>
+                    <div key={index} className="rounded-2xl border border-[#00666B]/35 bg-[#003339]/80 p-4">
+                      <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[#73FFFF]/45">{insight.label}</p>
+                      <p className="mt-1 text-sm font-bold text-[#F7F7F8]">{insight.value}</p>
+                      <p className="mt-1 text-xs font-semibold text-[#73FFFF]">{insight.growth}</p>
                     </div>
                   ))}
                 </div>
@@ -842,17 +917,17 @@ export default function TeamDashboard() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 px-4 backdrop-blur-sm"
+            className="fixed inset-0 z-50 flex items-center justify-center bg-[#051B1D]/80 px-4 backdrop-blur-sm"
             onClick={() => setSelectedMiniTeam(null)}
           >
             <motion.div
               initial={{ scale: 0.9, opacity: 0, y: 20 }}
               animate={{ scale: 1, opacity: 1, y: 0 }}
               exit={{ scale: 0.9, opacity: 0, y: 20 }}
-              className="w-full max-w-4xl overflow-hidden rounded-4xl border border-slate-700/60 bg-linear-to-br from-slate-900 via-slate-950 to-slate-900 p-6 shadow-2xl shadow-black/40"
+              className="w-full max-w-4xl overflow-hidden rounded-4xl border border-[#00666B]/45 bg-linear-to-br from-[#003339] via-[#051B1D] to-[#003339] p-6 shadow-2xl shadow-black/40"
               onClick={(e) => e.stopPropagation()}
             >
-              <PerformerModal team={selectedMiniTeam} onClose={() => setSelectedMiniTeam(null)} />
+              <PerformerModal team={selectedMiniTeam} onClose={() => setSelectedMiniTeam(null)} teamColor={teamColor} />
             </motion.div>
           </motion.div>
         )}
