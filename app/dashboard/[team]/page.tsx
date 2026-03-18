@@ -738,7 +738,6 @@ export default function TeamDashboard() {
             />
             
             <div className="relative z-10 mb-16 flex flex-col items-center">
-              <p className="text-[10px] font-black uppercase tracking-[0.5em] text-white/30 mb-2">Performance Rankings</p>
               <h3 className="text-3xl font-black text-[#F7F7F8] tracking-widest uppercase">The Podium</h3>
             </div>
 
