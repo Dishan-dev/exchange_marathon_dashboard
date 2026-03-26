@@ -1199,11 +1199,11 @@ function UnlinkedState({ functionName, teamColor }: { functionName: string; team
         Please contact the administrator to initialize the sync.
       </p>
       <Link 
-        href="/dashboard/b2b"
+        href="/"
         className="mt-12 px-8 py-4 rounded-full text-white font-black uppercase tracking-[0.2em] text-xs shadow-2xl hover:scale-105 transition-all"
         style={{ background: `linear-gradient(to right, ${teamColor}, #192230)` }}
       >
-        Back to B2B Dashboard
+        Back to Home
       </Link>
     </div>
   );
@@ -1288,7 +1288,7 @@ export default function TeamDashboard() {
       });
 
     // Setup Periodic Polling as a fallback to Realtime
-    const refreshInterval = 10 * 60 * 1000; // 10 Minutes
+    const refreshInterval = LIVE_REFRESH_MS;
     const refreshTimer = window.setInterval(() => {
       console.log("⏰ 10-minute scheduled refresh triggered...");
       void loadTeamData();
@@ -1301,7 +1301,12 @@ export default function TeamDashboard() {
     };
   }, [teamParam, selectedPeriod]);
 
-  const teamData = remoteTeamData || teamDataMap[teamParam] || teamDataMap.igv_b2b || { name: "Team", displayName: "Team Dashboard", totalPoints: 0, totalGrowth: 0, completedActions: 0, weeklyGrowth: 0, miniTeams: [] };
+  const fallbackTeamData =
+    teamParam === "igv_b2b"
+      ? { name: "IGV", displayName: "Incoming Global Volunteer - B2B", totalPoints: 0, totalGrowth: 0, completedActions: 0, weeklyGrowth: 0, miniTeams: [] }
+      : (teamDataMap[teamParam] || teamDataMap.igv_b2b || { name: "Team", displayName: "Team Dashboard", totalPoints: 0, totalGrowth: 0, completedActions: 0, weeklyGrowth: 0, miniTeams: [] });
+
+  const teamData = remoteTeamData || fallbackTeamData;
 
   const leaderTeam = teamData.miniTeams?.[0] || { name: "No Data", performers: [], points: 0 };
   const secondTeam = teamData.miniTeams?.[1] || { name: "No Data", performers: [], points: 0 };
@@ -1309,7 +1314,7 @@ export default function TeamDashboard() {
   const leaderboardRows = (teamData.miniTeams || [])
     .flatMap((mt) => (mt.performers || []).map((p) => ({ 
       ...p, 
-      team: mt.slug || mt.name // 👈 Use slug if available
+      team: mt.name
     })))
     .sort((a, b) => b.score - a.score)
     .map((p, i) => {
@@ -1318,8 +1323,36 @@ export default function TeamDashboard() {
 
   const podiumVisualOrder = [leaderboardRows[1], leaderboardRows[0], leaderboardRows[2]].filter(Boolean);
 
+  const isB2B = teamParam === 'igv_b2b';
   const isIGV = teamParam === 'igv_b2b' || teamParam === 'igv_ir';
   const isMST = teamParam === 'marcom' || teamParam === 'members' || teamParam === 'tls' || teamParam.startsWith('irm');
+
+  const isTLRole = (role: string): boolean => {
+    const normalized = role.trim().toLowerCase();
+    return normalized === "tl" || normalized === "team leader" || normalized === "team lead" || normalized === "teamlead";
+  };
+
+  const b2bTLRows = isB2B
+    ? leaderboardRows
+        .filter((row) => isTLRole(row.role || ""))
+        .map((row, index) => ({ ...row, rank: index + 1 }))
+    : [];
+
+  const b2bMemberRows = isB2B
+    ? leaderboardRows
+        .filter((row) => !isTLRole(row.role || ""))
+        .map((row, index) => ({ ...row, rank: index + 1 }))
+    : [];
+
+  const b2bActivityTotals = leaderboardRows.reduce(
+    (acc, row) => {
+      acc.mous += row.metrics?.mous || 0;
+      acc.coldCalls += row.metrics?.coldCalls || 0;
+      acc.followups += row.metrics?.followups || 0;
+      return acc;
+    },
+    { mous: 0, coldCalls: 0, followups: 0 }
+  );
 
   // Stats for Wrapped
   const wrappedStats = {
@@ -1341,17 +1374,41 @@ export default function TeamDashboard() {
       ],
     }, */
     {
-      title: isMST ? "Total Member Points" : "Member Activity Breakdown",
-      subtitle: isMST ? "Points Accumulation" : "MOU | CALLS | FOLLOWS",
+      title: isMST ? "Total Member Points" : isB2B ? "B2B Activity Totals" : "Member Activity Breakdown",
+      subtitle: isMST ? "Points Accumulation" : isB2B ? "Cumulative MOUs | Cold Calls | Followups" : "MOU | CALLS | FOLLOWS",
       type: "stacked-bar",
-      entries: (isMST ? leaderboardRows : (leaderTeam.performers || []))
-        .filter(p => !isMST || p.score > 0)
-        .slice(0, isMST ? 1000 : 10)
-        .map(p => ({
-          email: p.email,
-          label: p.name,
-          values: isMST ? [p.score] : [p.metrics?.mous || 0, p.metrics?.coldCalls || 0, p.metrics?.followups || 0]
-        }))
+      entries: isMST
+        ? leaderboardRows
+            .filter((p) => p.score > 0)
+            .slice(0, 1000)
+            .map((p) => ({
+              email: p.email,
+              label: p.name,
+              values: [p.score]
+            }))
+        : isB2B
+          ? [
+              {
+                email: "b2b-mous",
+                label: "MOUs",
+                values: [b2bActivityTotals.mous, 0, 0]
+              },
+              {
+                email: "b2b-cold-calls",
+                label: "Cold Calls",
+                values: [0, b2bActivityTotals.coldCalls, 0]
+              },
+              {
+                email: "b2b-followups",
+                label: "Followups",
+                values: [0, 0, b2bActivityTotals.followups]
+              }
+            ]
+          : (leaderTeam.performers || []).slice(0, 10).map((p) => ({
+              email: p.email,
+              label: p.name,
+              values: [p.metrics?.mous || 0, p.metrics?.coldCalls || 0, p.metrics?.followups || 0]
+            }))
     }
   ];
 
@@ -1375,7 +1432,7 @@ export default function TeamDashboard() {
     return path;
   };
 
-  const isFinished = teamParam === 'members' || teamParam === 'tls';
+  const isFinished = teamParam === 'members' || teamParam === 'tls' || teamParam === 'igv_b2b';
   const showUnlinked = !teamData && !remoteTeamData;
 
   return (
@@ -1574,7 +1631,7 @@ export default function TeamDashboard() {
                       <div className="absolute inset-0 bg-white/10 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none rounded-2xl" />
                       <div 
                         className="absolute -top-6 left-1/2 -translate-x-1/2 h-12 w-12 rounded-xl border border-white/30 flex items-center justify-center text-xl font-black shadow-2xl"
-                        style={{ backgroundColor: `color-mix(in srgb, ${teamColor}, black ${isMST ? '85%' : teamParam === 'b2b' ? '60%' : '70%'})`, color: isChampion ? '#FFD700' : index === 0 ? '#E0E0E0' : '#CD7F32' }}
+                        style={{ backgroundColor: `color-mix(in srgb, ${teamColor}, black ${isMST ? '85%' : teamParam === 'igv_b2b' ? '60%' : '70%'})`, color: isChampion ? '#FFD700' : index === 0 ? '#E0E0E0' : '#CD7F32' }}
                       >
                         {index === 0 ? "2" : index === 1 ? "1" : "3"}
                       </div>
@@ -1603,84 +1660,161 @@ export default function TeamDashboard() {
                 style={{ background: `radial-gradient(circle at 50% 50%, ${teamColor}, transparent 70%)` }}
               />
               <div className="relative z-10 space-y-3 sm:hidden">
-                {leaderboardRows.map((row) => (
-                  <div
-                    key={`mobile-${row.email}`}
-                    className="rounded-2xl border border-white/10 bg-white/5 px-4 py-3"
-                    style={{ backgroundColor: `color-mix(in srgb, ${teamColor}, transparent 92%)` }}
-                  >
-                    <div className="flex items-start justify-between gap-3">
-                      <div className="min-w-0">
-                        <p className="truncate text-sm font-bold text-[#F7F7F8]">{row.name}</p>
-                        <p className="truncate text-[10px] uppercase tracking-wide text-white/45">{row.role}</p>
+                {(isB2B
+                  ? [
+                      { title: "TLs", rows: b2bTLRows },
+                      { title: "Members", rows: b2bMemberRows }
+                    ]
+                  : [{ title: "All", rows: leaderboardRows }]
+                ).map((section) => (
+                  <div key={`mobile-section-${section.title}`} className="space-y-3">
+                    {isB2B && (
+                      <h5 className="px-1 text-[11px] font-black uppercase tracking-[0.2em] text-white/70">{section.title}</h5>
+                    )}
+                    {section.rows.length === 0 ? (
+                      <div className="rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-xs font-semibold text-white/60">
+                        No records yet
                       </div>
-                      <span
-                        className="inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-md border text-[10px] font-bold"
-                        style={{
-                          borderColor: row.rank <= 3 ? `${rankColors[row.rank as keyof typeof rankColors]}66` : `color-mix(in srgb, ${teamColor}, black 70%)`,
-                          backgroundColor: row.rank <= 1 ? `${rankColors[1]}33` : row.rank === 2 ? `${rankColors[2]}33` : row.rank === 3 ? `${rankColors[3]}33` : `color-mix(in srgb, ${teamColor}, black 80%)`,
-                          color: row.rank <= 3 ? rankColors[row.rank as keyof typeof rankColors] : `color-mix(in srgb, ${teamColor}, white 60%)`
-                        }}
-                      >
-                        {row.rank}
-                      </span>
-                    </div>
-                    <div className="mt-3 flex items-center justify-between text-xs">
-                      <span className="truncate pr-2 font-semibold text-[#F7F7F8]/75">{formatTeamName(row.team, isMST)}</span>
-                      <span className="font-black tabular-nums text-[#F7F7F8]">{row.score.toLocaleString()}</span>
-                    </div>
+                    ) : (
+                      section.rows.map((row) => (
+                        <div
+                          key={`mobile-${section.title}-${row.email}`}
+                          className="rounded-2xl border border-white/10 bg-white/5 px-4 py-3"
+                          style={{ backgroundColor: `color-mix(in srgb, ${teamColor}, transparent 92%)` }}
+                        >
+                          <div className="flex items-start justify-between gap-3">
+                            <div className="min-w-0">
+                              <p className="truncate text-sm font-bold text-[#F7F7F8]">{row.name}</p>
+                              <p className="truncate text-[10px] uppercase tracking-wide text-white/45">{row.role}</p>
+                            </div>
+                            <span
+                              className="inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-md border text-[10px] font-bold"
+                              style={{
+                                borderColor: row.rank <= 3 ? `${rankColors[row.rank as keyof typeof rankColors]}66` : `color-mix(in srgb, ${teamColor}, black 70%)`,
+                                backgroundColor: row.rank <= 1 ? `${rankColors[1]}33` : row.rank === 2 ? `${rankColors[2]}33` : row.rank === 3 ? `${rankColors[3]}33` : `color-mix(in srgb, ${teamColor}, black 80%)`,
+                                color: row.rank <= 3 ? rankColors[row.rank as keyof typeof rankColors] : `color-mix(in srgb, ${teamColor}, white 60%)`
+                              }}
+                            >
+                              {row.rank}
+                            </span>
+                          </div>
+                          <div className="mt-3 flex items-center justify-between text-xs">
+                            <span className="truncate pr-2 font-semibold text-[#F7F7F8]/75">{formatTeamName(row.team, isMST)}</span>
+                            <span className="font-black tabular-nums text-[#F7F7F8]">{row.score.toLocaleString()}</span>
+                          </div>
+                          {isB2B && (
+                            <div className="mt-2 grid grid-cols-4 gap-2 text-[10px] font-semibold text-white/70">
+                              <div>MOUs: <span className="text-white">{row.metrics?.mous || 0}</span></div>
+                              <div>Followups: <span className="text-white">{row.metrics?.followups || 0}</span></div>
+                              <div>Calls: <span className="text-white">{row.metrics?.coldCalls || 0}</span></div>
+                              <div>Total: <span className="text-white">{row.score.toLocaleString()}</span></div>
+                            </div>
+                          )}
+                        </div>
+                      ))
+                    )}
                   </div>
                 ))}
               </div>
 
               <div className="relative z-10 hidden overflow-x-auto custom-scrollbar sm:block">
-                <div className="min-w-[750px]">
-                  {/* Header */}
-                  <div 
-                    className="grid grid-cols-12 gap-2 sm:gap-4 px-4 sm:px-6 py-4 text-[9px] sm:text-[11px] font-bold uppercase tracking-[0.16em] text-[#F7F7F8]/65 rounded-2xl mb-4 shadow-lg"
-                    style={{ backgroundColor: isMST ? 'rgba(255,255,255,0.05)' : `color-mix(in srgb, ${teamColor}, black 60%)` }}
-                  >
-                    <div className="col-span-4">Performer</div>
-                    <div className="col-span-3">Team</div>
-                    <div className="col-span-4 text-right">Points</div>
-                    <div className="col-span-1 text-right">Rank</div>
-                  </div>
-                  
-                  {/* Rows */}
-                  <div className="divide-y" style={{ borderTopColor: `color-mix(in srgb, ${teamColor}, transparent 80%)` }}>
-                    {leaderboardRows.map((row) => (
-                      <div 
-                        key={row.email} // 👈 Use unique email as key
-                        className="group/row relative grid grid-cols-12 gap-2 sm:gap-4 px-4 sm:px-6 py-4 items-center transition-colors overflow-hidden hover:bg-[var(--hover-bg)]"
-                        style={{ '--hover-bg': `color-mix(in srgb, ${teamColor}, transparent 95%)` } as any}
-                      >
-                        {row.rank <= 3 && <GlimmerOverlay />}
-                        
-                        <div className="col-span-4 relative z-10">
-                          <p className="font-semibold text-sm sm:text-base text-[#F7F7F8] truncate">{row.name}</p>
-                          <p className="text-[10px] sm:text-xs text-white/45 truncate" style={{ color: `color-mix(in srgb, ${teamColor}, white 60%)` }}>{row.role}</p>
+                <div className="min-w-[750px] space-y-6">
+                  {(isB2B
+                    ? [
+                        { title: "TLs", rows: b2bTLRows },
+                        { title: "Members", rows: b2bMemberRows }
+                      ]
+                    : [{ title: "All", rows: leaderboardRows }]
+                  ).map((section) => (
+                    <div key={`desktop-section-${section.title}`} className="space-y-4">
+                      {isB2B && (
+                        <h5 className="px-1 text-sm font-black uppercase tracking-[0.2em] text-white/75">{section.title}</h5>
+                      )}
+
+                      {isB2B ? (
+                        <div 
+                          className="grid grid-cols-12 gap-2 sm:gap-4 px-4 sm:px-6 py-4 text-[9px] sm:text-[11px] font-bold uppercase tracking-[0.16em] text-[#F7F7F8]/65 rounded-2xl shadow-lg"
+                          style={{ backgroundColor: `color-mix(in srgb, ${teamColor}, black 60%)` }}
+                        >
+                          <div className="col-span-3">Member Name</div>
+                          <div className="col-span-3">Team Name</div>
+                          <div className="col-span-1 text-right">MOUs</div>
+                          <div className="col-span-1 text-right">Followups</div>
+                          <div className="col-span-1 text-right">Cold Calls</div>
+                          <div className="col-span-2 text-right">Total Pts</div>
+                          <div className="col-span-1 text-right">Rank</div>
                         </div>
-                        <div className="col-span-3 relative z-10 text-sm font-medium text-[#F7F7F8]/80 truncate">
-                          {formatTeamName(row.team, isMST)}
+                      ) : (
+                        <div 
+                          className="grid grid-cols-12 gap-2 sm:gap-4 px-4 sm:px-6 py-4 text-[9px] sm:text-[11px] font-bold uppercase tracking-[0.16em] text-[#F7F7F8]/65 rounded-2xl shadow-lg"
+                          style={{ backgroundColor: isMST ? 'rgba(255,255,255,0.05)' : `color-mix(in srgb, ${teamColor}, black 60%)` }}
+                        >
+                          <div className="col-span-4">Performer</div>
+                          <div className="col-span-3">Team</div>
+                          <div className="col-span-4 text-right">Points</div>
+                          <div className="col-span-1 text-right">Rank</div>
                         </div>
-                        <div className="col-span-4 relative z-10 text-right text-xs sm:text-sm font-bold tabular-nums text-[#F7F7F8]">
-                          {row.score.toLocaleString()}
-                        </div>
-                        <div className="col-span-1 relative z-10 flex justify-end">
-                          <span 
-                            className="inline-flex h-8 w-8 items-center justify-center rounded-lg border text-xs font-bold transition-all"
-                            style={{ 
-                              borderColor: row.rank <= 3 ? `${rankColors[row.rank as keyof typeof rankColors]}66` : `color-mix(in srgb, ${teamColor}, black 70%)`,
-                              backgroundColor: row.rank <= 1 ? `${rankColors[1]}33` : row.rank === 2 ? `${rankColors[2]}33` : row.rank === 3 ? `${rankColors[3]}33` : `color-mix(in srgb, ${teamColor}, black 80%)`,
-                              color: row.rank <= 3 ? rankColors[row.rank as keyof typeof rankColors] : `color-mix(in srgb, ${teamColor}, white 60%)`
-                            }}
-                          >
-                            {row.rank}
-                          </span>
-                        </div>
+                      )}
+
+                      <div className="divide-y" style={{ borderTopColor: `color-mix(in srgb, ${teamColor}, transparent 80%)` }}>
+                        {section.rows.length === 0 ? (
+                          <div className="px-4 sm:px-6 py-4 text-sm font-semibold text-white/60">No records yet</div>
+                        ) : (
+                          section.rows.map((row) => (
+                            <div 
+                              key={`${section.title}-${row.email}`}
+                              className="group/row relative grid grid-cols-12 gap-2 sm:gap-4 px-4 sm:px-6 py-4 items-center transition-colors overflow-hidden hover:bg-[var(--hover-bg)]"
+                              style={{ '--hover-bg': `color-mix(in srgb, ${teamColor}, transparent 95%)` } as any}
+                            >
+                              {row.rank <= 3 && <GlimmerOverlay />}
+
+                              {isB2B ? (
+                                <>
+                                  <div className="col-span-3 relative z-10">
+                                    <p className="font-semibold text-sm sm:text-base text-[#F7F7F8] truncate">{row.name}</p>
+                                    <p className="text-[10px] sm:text-xs text-white/45 truncate" style={{ color: `color-mix(in srgb, ${teamColor}, white 60%)` }}>{row.role}</p>
+                                  </div>
+                                  <div className="col-span-3 relative z-10 text-sm font-medium text-[#F7F7F8]/80 truncate">
+                                    {row.team}
+                                  </div>
+                                  <div className="col-span-1 relative z-10 text-right text-xs sm:text-sm font-bold tabular-nums text-[#F7F7F8]">{row.metrics?.mous || 0}</div>
+                                  <div className="col-span-1 relative z-10 text-right text-xs sm:text-sm font-bold tabular-nums text-[#F7F7F8]">{row.metrics?.followups || 0}</div>
+                                  <div className="col-span-1 relative z-10 text-right text-xs sm:text-sm font-bold tabular-nums text-[#F7F7F8]">{row.metrics?.coldCalls || 0}</div>
+                                  <div className="col-span-2 relative z-10 text-right text-xs sm:text-sm font-bold tabular-nums text-[#F7F7F8]">{row.score.toLocaleString()}</div>
+                                </>
+                              ) : (
+                                <>
+                                  <div className="col-span-4 relative z-10">
+                                    <p className="font-semibold text-sm sm:text-base text-[#F7F7F8] truncate">{row.name}</p>
+                                    <p className="text-[10px] sm:text-xs text-white/45 truncate" style={{ color: `color-mix(in srgb, ${teamColor}, white 60%)` }}>{row.role}</p>
+                                  </div>
+                                  <div className="col-span-3 relative z-10 text-sm font-medium text-[#F7F7F8]/80 truncate">
+                                    {formatTeamName(row.team, isMST)}
+                                  </div>
+                                  <div className="col-span-4 relative z-10 text-right text-xs sm:text-sm font-bold tabular-nums text-[#F7F7F8]">
+                                    {row.score.toLocaleString()}
+                                  </div>
+                                </>
+                              )}
+
+                              <div className="col-span-1 relative z-10 flex justify-end">
+                                <span 
+                                  className="inline-flex h-8 w-8 items-center justify-center rounded-lg border text-xs font-bold transition-all"
+                                  style={{ 
+                                    borderColor: row.rank <= 3 ? `${rankColors[row.rank as keyof typeof rankColors]}66` : `color-mix(in srgb, ${teamColor}, black 70%)`,
+                                    backgroundColor: row.rank <= 1 ? `${rankColors[1]}33` : row.rank === 2 ? `${rankColors[2]}33` : row.rank === 3 ? `${rankColors[3]}33` : `color-mix(in srgb, ${teamColor}, black 80%)`,
+                                    color: row.rank <= 3 ? rankColors[row.rank as keyof typeof rankColors] : `color-mix(in srgb, ${teamColor}, white 60%)`
+                                  }}
+                                >
+                                  {row.rank}
+                                </span>
+                              </div>
+                            </div>
+                          ))
+                        )}
                       </div>
-                    ))}
-                  </div>
+                    </div>
+                  ))}
                 </div>
               </div>
             </div>
@@ -1725,9 +1859,8 @@ export default function TeamDashboard() {
             viewport={{ once: true }}
             transition={{ duration: 0.6, delay: 0.2 }}
           >
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-              {/* Left Column: Member Activity Breakdown */}
-              <div className="lg:col-span-7">
+            <div className="grid grid-cols-1 gap-8 items-start">
+              <div className="w-full">
                 {chartDefs.filter(c => c.type === "stacked-bar").map((chart) => (
                   <div 
                     key={chart.title} 
@@ -1807,50 +1940,6 @@ export default function TeamDashboard() {
                     </div>
                   </div>
                 ))}
-              </div>
-
-              {/* Right Column: Growth Trend + Quick Insights */}
-              <div className="lg:col-span-5 space-y-8">
-                {/* {chartDefs.filter(c => c.type === "line").map((chart) => (
-                  <div 
-                    key={chart.title} 
-                    className={`relative rounded-[2.5rem] sm:rounded-[3rem] border border-white/5 ${isMST ? 'bg-black/90' : 'glass-premium shadow-xl shadow-black/20'} p-6 sm:p-8 h-full overflow-hidden`}
-                  >
-                    ...
-                  </div>
-                ))} */}
-
-                {!isMST && (
-                  <div 
-                    className={`relative rounded-[2.5rem] sm:rounded-[3.5rem] border border-white/5 ${isMST ? 'bg-black/90' : 'glass-premium shadow-xl shadow-black/40'} p-6 sm:p-10 overflow-hidden`}
-                  >
-                    <div 
-                      className="absolute inset-0 opacity-15 pointer-events-none"
-                      style={{ background: `radial-gradient(circle at 50% 50%, ${teamColor}, transparent 70%)` }}
-                    />
-                    {!isMST && <div className="absolute inset-0 opacity-[0.05] pointer-events-none" style={{ background: `radial-gradient(circle at 0% 100%, #ffcd00, transparent 40%)` }} />}
-                    <div className="relative z-10">
-                      <h4 className="text-base sm:text-lg font-bold text-[#F7F7F8]">Quick Insights</h4>
-                      <div className="mt-6 space-y-4">
-                        {quickInsights.map((insight, index) => (
-                          <div 
-                            key={index} 
-                            className="rounded-2xl border p-4 sm:p-5 transition-colors hover:bg-[var(--hover-bg)]"
-                            style={{ 
-                              borderColor: `color-mix(in srgb, ${teamColor}, transparent 80%)`, 
-                              backgroundColor: `color-mix(in srgb, ${teamColor}, black 80%)`,
-                              '--hover-bg': `color-mix(in srgb, ${teamColor}, black 70%)`
-                            } as any}
-                          >
-                            <p className="text-[10px] sm:text-[11px] font-semibold uppercase tracking-[0.18em]" style={{ color: `color-mix(in srgb, ${teamColor}, white 40%)` }}>{insight.label}</p>
-                            <p className="mt-1 text-base sm:text-lg font-bold text-[#F7F7F8]">{insight.value}</p>
-                            {/* <p className="mt-1 text-[10px] sm:text-xs font-semibold" style={{ color: teamColor }}>{insight.growth}</p> */}
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  </div>
-                )}
               </div>
             </div>
           </motion.section>
