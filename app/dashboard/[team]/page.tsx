@@ -1219,7 +1219,13 @@ export default function TeamDashboard() {
   const [hoveredBar, setHoveredBar] = useState<{ chart: number; bar: number } | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [showWrapped, setShowWrapped] = useState(false);
-  const [selectedPeriod, setSelectedPeriod] = useState<"daily" | "weekly" | "bi-weekly" | "monthly" | "marathon">("marathon");
+  const selectedPeriod: "marathon" = "marathon";
+  const [nowMs, setNowMs] = useState<number>(Date.now());
+
+  useEffect(() => {
+    const timer = window.setInterval(() => setNowMs(Date.now()), 1000);
+    return () => window.clearInterval(timer);
+  }, []);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -1321,11 +1327,11 @@ export default function TeamDashboard() {
       return { ...p, rank: i + 1 };
     });
 
-  const podiumVisualOrder = [leaderboardRows[1], leaderboardRows[0], leaderboardRows[2]].filter(Boolean);
-
   const isB2B = teamParam === 'igv_b2b';
   const isIGV = teamParam === 'igv_b2b' || teamParam === 'igv_ir';
   const isMST = teamParam === 'marcom' || teamParam === 'members' || teamParam === 'tls' || teamParam.startsWith('irm');
+  const useMSTPalette = true;
+  const accentColor = "#ffcd00";
 
   const isTLRole = (role: string): boolean => {
     const normalized = role.trim().toLowerCase();
@@ -1344,6 +1350,9 @@ export default function TeamDashboard() {
         .map((row, index) => ({ ...row, rank: index + 1 }))
     : [];
 
+  const podiumRows = isB2B ? b2bMemberRows : leaderboardRows;
+  const podiumVisualOrder = [podiumRows[1], podiumRows[0], podiumRows[2]].filter(Boolean);
+
   const b2bActivityTotals = leaderboardRows.reduce(
     (acc, row) => {
       acc.mous += row.metrics?.mous || 0;
@@ -1361,6 +1370,20 @@ export default function TeamDashboard() {
     teamAce: leaderTeam.performers?.[0] || null,
     currentTeamName: teamData.name
   };
+
+  const marathonEndMs = new Date("2026-04-18T23:59:59").getTime();
+  const diffMs = Math.max(0, marathonEndMs - nowMs);
+  const dayMs = 1000 * 60 * 60 * 24;
+  const hourMs = 1000 * 60 * 60;
+  const minuteMs = 1000 * 60;
+  const daysRemaining = Math.max(0, Math.ceil(diffMs / dayMs));
+  const daysPart = Math.floor(diffMs / dayMs);
+  const hoursPart = Math.floor((diffMs % dayMs) / hourMs);
+  const minutesPart = Math.floor((diffMs % hourMs) / minuteMs);
+  const secondsPart = Math.floor((diffMs % minuteMs) / 1000);
+  const countdownLabel = diffMs > 0
+    ? `Ends in ${daysPart}d ${hoursPart.toString().padStart(2, "0")}:${minutesPart.toString().padStart(2, "0")}:${secondsPart.toString().padStart(2, "0")}`
+    : "Ended";
 
   const chartDefs = [
     /* {
@@ -1432,6 +1455,15 @@ export default function TeamDashboard() {
     return path;
   };
 
+  const getFunctionName = (param: string) => {
+    if (param.startsWith('igv')) return 'IGV';
+    if (param.startsWith('igt')) return 'IGT';
+    if (param.startsWith('ogt')) return 'OGT';
+    if (param === 'marcom' || param === 'members' || param === 'tls' || param.startsWith('irm')) return 'MST';
+    return teamData.name || 'TEAM';
+  };
+
+  const dashboardFunctionName = getFunctionName(teamParam);
   const isFinished = teamParam === 'members' || teamParam === 'tls' || teamParam === 'igv_b2b';
   const showUnlinked = !teamData && !remoteTeamData;
 
@@ -1439,10 +1471,8 @@ export default function TeamDashboard() {
     <div 
       className="min-h-screen bg-transparent relative"
       style={{ 
-        backgroundImage: isMST
+        backgroundImage: useMSTPalette
           ? `linear-gradient(to bottom right, rgba(0, 0, 0, 0.9), rgba(15, 15, 15, 0.8), rgba(0, 0, 0, 0.9))`
-          : isIGV 
-          ? `linear-gradient(to bottom right, rgba(25, 34, 48, 0.7), rgba(44, 47, 56, 0.5), rgba(25, 34, 48, 0.7))`
           : `linear-gradient(to bottom right, rgba(25, 34, 48, 0.7), color-mix(in srgb, ${teamColor}, black 90%), rgba(25, 34, 48, 0.7))` 
       }}
     >
@@ -1463,13 +1493,13 @@ export default function TeamDashboard() {
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.8, ease: "easeOut" }}
           >
-        <nav className={`sticky top-0 z-40 border-b border-white/5 ${isMST ? 'bg-black/80' : 'bg-[#192230]/80'} backdrop-blur-md`}>
+        <nav className={`sticky top-0 z-40 border-b border-white/5 ${useMSTPalette ? 'bg-black/80' : 'bg-[#192230]/80'} backdrop-blur-md`}>
           <div className="mx-auto flex w-full max-w-7xl flex-col items-start gap-3 px-3 py-4 sm:flex-row sm:items-center sm:justify-between sm:gap-0 sm:px-8 sm:py-6">
             <div className="flex items-center gap-3 sm:gap-6">
               <img src="/logo.png" alt="Xcend" className="h-30 w-30 sm:h-22 sm:w-22 object-contain drop-shadow-[0_0_15px_rgba(255,205,0,0.2)]" />
               <div>
                 <h1 className="text-xl sm:text-2xl font-black tracking-tight text-[#F7F7F8] capitalize">
-                  {teamParam} <span className="opacity-40">Dashboard</span>
+                  {teamParam === 'igv_b2b' ? 'B2B' : teamParam.replace(/_/g, ' ')} <span className="opacity-40">Dashboard</span>
                 </h1>
                 <p className="text-[9px] sm:text-[10px] font-bold uppercase tracking-[0.2em] text-white/40 mt-0.5 sm:mt-1">
                   Summer 26.27
@@ -1478,8 +1508,6 @@ export default function TeamDashboard() {
             </div>
 
             <div className="flex w-full flex-wrap items-center gap-2 sm:w-auto sm:gap-4">
-              <SyncCountdown nextSyncTime={teamData.syncInfo?.nextSyncTime} teamColor={teamColor} />
-              
               {remoteTeamData && !dataError ? (
                 <span className="inline-flex rounded-full border border-emerald-300/30 bg-emerald-400/10 px-2.5 py-1 text-[9px] font-bold uppercase tracking-[0.15em] text-emerald-200 sm:px-3 sm:text-[10px]">
                   <span className="sm:hidden">Live</span>
@@ -1491,30 +1519,10 @@ export default function TeamDashboard() {
                   Fallback mode
                 </span>
               ) : null}
-
-              {/* Timeframe Filter */}
-              <div className="relative flex items-center gap-2">
-                <span className="hidden lg:inline text-[9px] font-black uppercase tracking-[0.2em] text-white/30">Range</span>
-                <div className="relative group">
-                  <select
-                    value={selectedPeriod}
-                    onChange={(e) => setSelectedPeriod(e.target.value as any)}
-                    className="appearance-none bg-white/5 border rounded-full pl-3 pr-8 py-1.5 text-[9px] font-black uppercase tracking-wide outline-none hover:bg-white/10 transition-all cursor-pointer shadow-xl backdrop-blur-md sm:pl-4 sm:pr-10 sm:py-2 sm:text-xs sm:tracking-widest"
-                    style={{ color: teamColor, borderColor: `${teamColor}44` }}
-                  >
-                    <option value="daily" className="bg-[#192230] text-white">Daily</option>
-                    <option value="weekly" className="bg-[#192230] text-white">Weekly</option>
-                    <option value="bi-weekly" className="bg-[#192230] text-white">Bi-Weekly</option>
-                    <option value="monthly" className="bg-[#192230] text-white">Monthly</option>
-                    <option value="marathon" className="bg-[#192230] text-white">Marathon</option>
-                  </select>
-                  <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-[8px] opacity-60 sm:right-4" style={{ color: teamColor }}>▼</div>
-                </div>
-              </div>
               <button
                 onClick={() => setShowWrapped(true)}
                 className="group flex items-center gap-2 px-3 py-2 text-[9px] font-black uppercase tracking-wide rounded-full text-white transition-all hover:scale-105 active:scale-95 shadow-lg sm:px-5 sm:py-2.5 sm:text-xs sm:tracking-widest"
-                style={{ background: `linear-gradient(to right, ${isIGV ? '#2c2f38' : '#FF1744'}, ${teamColor})` }}
+                style={{ background: `linear-gradient(to right, #FF1744, ${teamColor})` }}
               >
                 <span className="group-hover:rotate-12 transition-transform">🏆</span>
                 <span>Recap</span>
@@ -1532,16 +1540,16 @@ export default function TeamDashboard() {
         </nav>
 
         <main className="mx-auto w-[94%] sm:w-[92%] space-y-8 sm:space-y-12 py-8 sm:py-16 lg:w-[80%]">
-          <header className={`relative pt-12 pb-16 sm:py-20 text-center rounded-[2.5rem] sm:rounded-[4rem] ${isMST ? 'bg-black/60 border-white/10' : 'glass-premium border-white/5'} px-6 sm:px-12 flex flex-col items-center justify-center shadow-2xl`}>
+          <header className={`relative pt-12 pb-16 sm:py-20 text-center rounded-[2.5rem] sm:rounded-[4rem] ${useMSTPalette ? 'bg-black/60 border-white/10' : 'glass-premium border-white/5'} px-6 sm:px-12 flex flex-col items-center justify-center shadow-2xl`}>
             {/* Background Gradient */}
             <div className="absolute inset-0 rounded-[2.5rem] sm:rounded-[4rem] overflow-hidden pointer-events-none">
-              <div className="absolute inset-0 opacity-15" style={{ background: `radial-gradient(circle at 50% 50%, ${teamColor}, transparent 70%)` }} />
-              {!isMST && <div className="absolute inset-0 opacity-[0.05]" style={{ background: `radial-gradient(circle at 20% 20%, #ffcd00, transparent 40%)` }} />}
+              <div className="absolute inset-0 opacity-15" style={{ background: `radial-gradient(circle at 50% 50%, ${accentColor}, transparent 70%)` }} />
+              <div className="absolute inset-0 opacity-[0.05]" style={{ background: `radial-gradient(circle at 20% 20%, #ffcd00, transparent 40%)` }} />
             </div>
             
             <div className="relative z-10 text-center flex-1 w-full max-w-4xl mx-auto">
               <h2 className="text-4xl md:text-5xl lg:text-7xl font-black tracking-tighter text-[#F7F7F8] mb-8 sm:mb-12 leading-tight uppercase">
-                THE <span style={{ color: teamColor }}>{teamData.name}</span> MARATHON
+                THE <span style={{ color: accentColor }}>{dashboardFunctionName}</span> MARATHON
               </h2>
               <div className="flex flex-wrap items-center justify-center gap-10 sm:gap-20">
                 <div className="flex flex-col items-center text-center">
@@ -1553,8 +1561,9 @@ export default function TeamDashboard() {
                   <span className="text-[9px] sm:text-[11px] font-bold uppercase tracking-[0.25em] text-white/40 mt-2">Weekly Surge</span>
                 </div> */}
                 <div className="flex flex-col items-center text-center">
-                  <span className="text-3xl md:text-4xl lg:text-5xl font-black text-[var(--xp-gold)]">{teamData.completedActions}</span>
-                  <span className="text-[9px] sm:text-[11px] font-bold uppercase tracking-[0.25em] text-white/40 mt-2">Milestones Hit</span>
+                  <span className="text-3xl md:text-4xl lg:text-5xl font-black text-[var(--xp-gold)]">{daysRemaining}</span>
+                  <span className="text-[9px] sm:text-[11px] font-bold uppercase tracking-[0.25em] text-white/40 mt-2">Days Left</span>
+                  <span className="text-[8px] sm:text-[10px] font-bold uppercase tracking-[0.2em] text-[#ffcd00]/85 mt-1">{countdownLabel}</span>
                 </div>
               </div>
             </div>
@@ -1588,16 +1597,21 @@ export default function TeamDashboard() {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 1 }}
-            className={`relative rounded-[3rem] border border-white/5 ${isMST ? 'bg-black/40' : 'bg-white/[0.02] glass-premium'} p-8 sm:p-12 shadow-2xl shadow-black/50 overflow-hidden`}
+            className={`relative rounded-[3rem] border border-white/5 ${useMSTPalette ? 'bg-black/40' : 'bg-white/[0.02] glass-premium'} p-8 sm:p-12 shadow-2xl shadow-black/50 overflow-hidden`}
           >
             <div 
               className="absolute inset-0 opacity-15 pointer-events-none"
-              style={{ background: `radial-gradient(circle at 50% 50%, ${teamColor}, transparent 70%)` }}
+              style={{ background: `radial-gradient(circle at 50% 50%, ${accentColor}, transparent 70%)` }}
             />
-            {!isMST && <div className="absolute inset-0 opacity-5 pointer-events-none" style={{ background: `radial-gradient(circle at 80% 80%, #ffcd00, transparent 50%)` }} />}
+            <div className="absolute inset-0 opacity-5 pointer-events-none" style={{ background: `radial-gradient(circle at 80% 80%, #ffcd00, transparent 50%)` }} />
             
             <div className="relative z-10 mb-10 sm:mb-16 flex flex-col items-center">
               <h3 className="text-2xl sm:text-3xl font-black text-[#F7F7F8] tracking-widest uppercase">The Podium</h3>
+              {isB2B && (
+                <p className="mt-2 text-[10px] sm:text-xs font-semibold uppercase tracking-[0.15em] text-white/55 text-center">
+                  Podium ranking considers only member performance.
+                </p>
+              )}
             </div>
 
             <div className="relative z-10 mx-auto flex h-[300px] sm:h-96 max-w-4xl items-end justify-center gap-2 sm:gap-12">
@@ -1631,7 +1645,7 @@ export default function TeamDashboard() {
                       <div className="absolute inset-0 bg-white/10 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none rounded-2xl" />
                       <div 
                         className="absolute -top-6 left-1/2 -translate-x-1/2 h-12 w-12 rounded-xl border border-white/30 flex items-center justify-center text-xl font-black shadow-2xl"
-                        style={{ backgroundColor: `color-mix(in srgb, ${teamColor}, black ${isMST ? '85%' : teamParam === 'igv_b2b' ? '60%' : '70%'})`, color: isChampion ? '#FFD700' : index === 0 ? '#E0E0E0' : '#CD7F32' }}
+                        style={{ backgroundColor: `color-mix(in srgb, ${teamColor}, black ${useMSTPalette ? '85%' : teamParam === 'igv_b2b' ? '60%' : '70%'})`, color: isChampion ? '#FFD700' : index === 0 ? '#E0E0E0' : '#CD7F32' }}
                       >
                         {index === 0 ? "2" : index === 1 ? "1" : "3"}
                       </div>
@@ -1653,11 +1667,11 @@ export default function TeamDashboard() {
             transition={{ duration: 0.6, delay: 0.1 }}
           >
             <div 
-              className={`relative rounded-[2.5rem] sm:rounded-[4.5rem] border border-white/5 ${isMST ? 'bg-black/95' : 'glass-premium'} shadow-xl shadow-black/30 overflow-hidden px-2 sm:px-6 py-6 sm:py-10`}
+              className={`relative rounded-[2.5rem] sm:rounded-[4.5rem] border border-white/5 ${useMSTPalette ? 'bg-black/95' : 'glass-premium'} shadow-xl shadow-black/30 overflow-hidden px-2 sm:px-6 py-6 sm:py-10`}
             >
               <div 
                 className="absolute inset-0 opacity-15 pointer-events-none"
-                style={{ background: `radial-gradient(circle at 50% 50%, ${teamColor}, transparent 70%)` }}
+                style={{ background: `radial-gradient(circle at 50% 50%, ${accentColor}, transparent 70%)` }}
               />
               <div className="relative z-10 space-y-3 sm:hidden">
                 {(isB2B
@@ -1680,7 +1694,7 @@ export default function TeamDashboard() {
                         <div
                           key={`mobile-${section.title}-${row.email}`}
                           className="rounded-2xl border border-white/10 bg-white/5 px-4 py-3"
-                          style={{ backgroundColor: `color-mix(in srgb, ${teamColor}, transparent 92%)` }}
+                          style={{ backgroundColor: `color-mix(in srgb, ${accentColor}, transparent 92%)` }}
                         >
                           <div className="flex items-start justify-between gap-3">
                             <div className="min-w-0">
@@ -1690,9 +1704,9 @@ export default function TeamDashboard() {
                             <span
                               className="inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-md border text-[10px] font-bold"
                               style={{
-                                borderColor: row.rank <= 3 ? `${rankColors[row.rank as keyof typeof rankColors]}66` : `color-mix(in srgb, ${teamColor}, black 70%)`,
-                                backgroundColor: row.rank <= 1 ? `${rankColors[1]}33` : row.rank === 2 ? `${rankColors[2]}33` : row.rank === 3 ? `${rankColors[3]}33` : `color-mix(in srgb, ${teamColor}, black 80%)`,
-                                color: row.rank <= 3 ? rankColors[row.rank as keyof typeof rankColors] : `color-mix(in srgb, ${teamColor}, white 60%)`
+                                borderColor: row.rank <= 3 ? `${rankColors[row.rank as keyof typeof rankColors]}66` : `color-mix(in srgb, ${accentColor}, black 70%)`,
+                                backgroundColor: row.rank <= 1 ? `${rankColors[1]}33` : row.rank === 2 ? `${rankColors[2]}33` : row.rank === 3 ? `${rankColors[3]}33` : `color-mix(in srgb, ${accentColor}, black 80%)`,
+                                color: row.rank <= 3 ? rankColors[row.rank as keyof typeof rankColors] : `color-mix(in srgb, ${accentColor}, white 60%)`
                               }}
                             >
                               {row.rank}
@@ -1734,7 +1748,7 @@ export default function TeamDashboard() {
                       {isB2B ? (
                         <div 
                           className="grid grid-cols-12 gap-2 sm:gap-4 px-4 sm:px-6 py-4 text-[9px] sm:text-[11px] font-bold uppercase tracking-[0.16em] text-[#F7F7F8]/65 rounded-2xl shadow-lg"
-                          style={{ backgroundColor: `color-mix(in srgb, ${teamColor}, black 60%)` }}
+                          style={{ backgroundColor: `rgba(255, 205, 0, 0.08)` }}
                         >
                           <div className="col-span-3">Member Name</div>
                           <div className="col-span-3">Team Name</div>
@@ -1747,7 +1761,7 @@ export default function TeamDashboard() {
                       ) : (
                         <div 
                           className="grid grid-cols-12 gap-2 sm:gap-4 px-4 sm:px-6 py-4 text-[9px] sm:text-[11px] font-bold uppercase tracking-[0.16em] text-[#F7F7F8]/65 rounded-2xl shadow-lg"
-                          style={{ backgroundColor: isMST ? 'rgba(255,255,255,0.05)' : `color-mix(in srgb, ${teamColor}, black 60%)` }}
+                          style={{ backgroundColor: 'rgba(255, 205, 0, 0.08)' }}
                         >
                           <div className="col-span-4">Performer</div>
                           <div className="col-span-3">Team</div>
@@ -1756,7 +1770,7 @@ export default function TeamDashboard() {
                         </div>
                       )}
 
-                      <div className="divide-y" style={{ borderTopColor: `color-mix(in srgb, ${teamColor}, transparent 80%)` }}>
+                      <div className="divide-y" style={{ borderTopColor: `color-mix(in srgb, ${accentColor}, transparent 80%)` }}>
                         {section.rows.length === 0 ? (
                           <div className="px-4 sm:px-6 py-4 text-sm font-semibold text-white/60">No records yet</div>
                         ) : (
@@ -1764,7 +1778,7 @@ export default function TeamDashboard() {
                             <div 
                               key={`${section.title}-${row.email}`}
                               className="group/row relative grid grid-cols-12 gap-2 sm:gap-4 px-4 sm:px-6 py-4 items-center transition-colors overflow-hidden hover:bg-[var(--hover-bg)]"
-                              style={{ '--hover-bg': `color-mix(in srgb, ${teamColor}, transparent 95%)` } as any}
+                              style={{ '--hover-bg': `color-mix(in srgb, ${accentColor}, transparent 95%)` } as any}
                             >
                               {row.rank <= 3 && <GlimmerOverlay />}
 
@@ -1772,7 +1786,7 @@ export default function TeamDashboard() {
                                 <>
                                   <div className="col-span-3 relative z-10">
                                     <p className="font-semibold text-sm sm:text-base text-[#F7F7F8] truncate">{row.name}</p>
-                                    <p className="text-[10px] sm:text-xs text-white/45 truncate" style={{ color: `color-mix(in srgb, ${teamColor}, white 60%)` }}>{row.role}</p>
+                                    <p className="text-[10px] sm:text-xs text-white/45 truncate" style={{ color: `color-mix(in srgb, ${accentColor}, white 60%)` }}>{row.role}</p>
                                   </div>
                                   <div className="col-span-3 relative z-10 text-sm font-medium text-[#F7F7F8]/80 truncate">
                                     {row.team}
@@ -1786,7 +1800,7 @@ export default function TeamDashboard() {
                                 <>
                                   <div className="col-span-4 relative z-10">
                                     <p className="font-semibold text-sm sm:text-base text-[#F7F7F8] truncate">{row.name}</p>
-                                    <p className="text-[10px] sm:text-xs text-white/45 truncate" style={{ color: `color-mix(in srgb, ${teamColor}, white 60%)` }}>{row.role}</p>
+                                    <p className="text-[10px] sm:text-xs text-white/45 truncate" style={{ color: `color-mix(in srgb, ${accentColor}, white 60%)` }}>{row.role}</p>
                                   </div>
                                   <div className="col-span-3 relative z-10 text-sm font-medium text-[#F7F7F8]/80 truncate">
                                     {formatTeamName(row.team, isMST)}
@@ -1801,9 +1815,9 @@ export default function TeamDashboard() {
                                 <span 
                                   className="inline-flex h-8 w-8 items-center justify-center rounded-lg border text-xs font-bold transition-all"
                                   style={{ 
-                                    borderColor: row.rank <= 3 ? `${rankColors[row.rank as keyof typeof rankColors]}66` : `color-mix(in srgb, ${teamColor}, black 70%)`,
-                                    backgroundColor: row.rank <= 1 ? `${rankColors[1]}33` : row.rank === 2 ? `${rankColors[2]}33` : row.rank === 3 ? `${rankColors[3]}33` : `color-mix(in srgb, ${teamColor}, black 80%)`,
-                                    color: row.rank <= 3 ? rankColors[row.rank as keyof typeof rankColors] : `color-mix(in srgb, ${teamColor}, white 60%)`
+                                    borderColor: row.rank <= 3 ? `${rankColors[row.rank as keyof typeof rankColors]}66` : `color-mix(in srgb, ${accentColor}, black 70%)`,
+                                    backgroundColor: row.rank <= 1 ? `${rankColors[1]}33` : row.rank === 2 ? `${rankColors[2]}33` : row.rank === 3 ? `${rankColors[3]}33` : `color-mix(in srgb, ${accentColor}, black 80%)`,
+                                    color: row.rank <= 3 ? rankColors[row.rank as keyof typeof rankColors] : `color-mix(in srgb, ${accentColor}, white 60%)`
                                   }}
                                 >
                                   {row.rank}
@@ -1827,24 +1841,24 @@ export default function TeamDashboard() {
             transition={{ duration: 0.6, delay: 0.2 }}
           >
             <div 
-              className={`relative rounded-[2.5rem] sm:rounded-[3.5rem] border border-white/5 ${isMST ? 'bg-black/90' : 'glass-premium'} p-6 sm:p-10 shadow-2xl overflow-hidden`}
+              className={`relative rounded-[2.5rem] sm:rounded-[3.5rem] border border-white/5 ${useMSTPalette ? 'bg-black/90' : 'glass-premium'} p-6 sm:p-10 shadow-2xl overflow-hidden`}
             >
               <div 
                 className="absolute inset-0 opacity-15 pointer-events-none"
-                style={{ background: `radial-gradient(circle at 50% 50%, ${teamColor}, transparent 70%)` }}
+                style={{ background: `radial-gradient(circle at 50% 50%, ${accentColor}, transparent 70%)` }}
               />
               <div className="relative z-10">
                 <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-10">
                   <h4 className="text-xl sm:text-2xl font-black text-[#F7F7F8] tracking-widest uppercase italic">Squad Performance Matchups</h4>
                   <p className="text-[9px] sm:text-[10px] font-bold text-white/30 uppercase tracking-[0.2em] sm:tracking-[0.3em]">Total Active Squads: {teamData.miniTeams?.length || 0}</p>
                 </div>
-                <div className="grid grid-cols-1 gap-4 sm:gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+                <div className={`grid grid-cols-1 gap-4 sm:gap-6 ${isB2B ? 'md:grid-cols-2' : 'md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4'}`}>
                   {teamData.miniTeams?.map((team, index) => (
                     <MiniTeamCard 
                       key={team.slug || team.name}
                       team={team} 
                       isLeader={index === 0} 
-                      teamColor={teamColor} 
+                      teamColor={accentColor} 
                       isMST={isMST}
                     />
                   ))}
@@ -1864,7 +1878,7 @@ export default function TeamDashboard() {
                 {chartDefs.filter(c => c.type === "stacked-bar").map((chart) => (
                   <div 
                     key={chart.title} 
-                    className={`relative rounded-[2.5rem] sm:rounded-[3rem] border border-white/5 ${isMST ? 'bg-black/90' : 'glass-premium shadow-xl shadow-black/20'} p-6 sm:p-8 h-full overflow-hidden`}
+                    className={`relative rounded-[2.5rem] sm:rounded-[3rem] border border-white/5 ${useMSTPalette ? 'bg-black/90' : 'glass-premium shadow-xl shadow-black/20'} p-6 sm:p-8 h-full overflow-hidden`}
                   >
                     <div 
                       className="absolute inset-0 opacity-10 pointer-events-none"
@@ -1897,7 +1911,7 @@ export default function TeamDashboard() {
                                 >
                                   {entry.values.map((val: number, valIdx: number) => {
                                     const pct = (val / total) * 100;
-                                    const colors = isMST ? [stackedChartSegmentColors[2], ...stackedChartSegmentColors] : stackedChartSegmentColors;
+                                    const colors = useMSTPalette ? [stackedChartSegmentColors[2], ...stackedChartSegmentColors] : stackedChartSegmentColors;
                                     if (val === 0) return null;
                                     return (
                                       <motion.div
@@ -1920,7 +1934,7 @@ export default function TeamDashboard() {
                         })}
                       </div>
                       <div 
-                        className={`mt-10 flex flex-wrap items-center justify-center gap-4 sm:gap-8 rounded-2xl border py-4 ${isMST ? 'bg-black/80' : 'glass-premium'}`}
+                        className={`mt-10 flex flex-wrap items-center justify-center gap-4 sm:gap-8 rounded-2xl border py-4 ${useMSTPalette ? 'bg-black/80' : 'glass-premium'}`}
                         style={{ borderColor: `color-mix(in srgb, ${teamColor}, transparent 80%)` }}
                       >
                         {isMST ? (
@@ -1943,6 +1957,8 @@ export default function TeamDashboard() {
               </div>
             </div>
           </motion.section>
+
+          
         </main>
       </motion.div>
       )}
