@@ -592,13 +592,15 @@ function MiniTeamCard({
   isLeader,
   teamColor,
   isMST = false,
-  isOGT = false
+  isOGT = false,
+  isIGTB2B = false
 }: {
   team: MiniTeamData;
   isLeader: boolean;
   teamColor: string;
   isMST?: boolean;
   isOGT?: boolean;
+  isIGTB2B?: boolean;
 }) {
   return (
     <div
@@ -668,7 +670,7 @@ function MiniTeamCard({
               style={{ backgroundColor: `color-mix(in srgb, ${teamColor}, black 90%)` }}
             >
               <p className="text-[9px] font-black text-white/40 uppercase tracking-widest mb-3 text-center border-b border-white/5 pb-2">
-                {isMST ? `${formatTeamName(team.name, isMST)} Members + TLs` : isOGT ? "OGT Squad Activity" : "Squad Activity"}
+                {isMST ? `${formatTeamName(team.name, isMST)} Members + TLs` : isIGTB2B ? "IGT B2B Squad Activity" : isOGT ? "OGT Squad Activity" : "Squad Activity"}
               </p>
               <div className="space-y-2 max-h-48 overflow-y-auto custom-scrollbar pr-1">
                 {isMST ? (
@@ -690,6 +692,21 @@ function MiniTeamCard({
                     </div>
                     <div className="flex justify-between items-center text-[10px] font-bold">
                       <span className="text-white/30">APD</span>
+                      <span className="text-[#00BCD4]">{team.performers.reduce((s, p) => s + p.metrics.followups, 0)}</span>
+                    </div>
+                  </>
+                ) : isIGTB2B ? (
+                  <>
+                    <div className="flex justify-between items-center text-[10px] font-bold">
+                      <span className="text-white/30">Meetings</span>
+                      <span className="text-[#E91E63]">{team.performers.reduce((s, p) => s + p.metrics.mous, 0)}</span>
+                    </div>
+                    <div className="flex justify-between items-center text-[10px] font-bold">
+                      <span className="text-white/30">Cold Calls</span>
+                      <span className="text-[#9C27B0]">{team.performers.reduce((s, p) => s + p.metrics.coldCalls, 0)}</span>
+                    </div>
+                    <div className="flex justify-between items-center text-[10px] font-bold">
+                      <span className="text-white/30">Follow Ups</span>
                       <span className="text-[#00BCD4]">{team.performers.reduce((s, p) => s + p.metrics.followups, 0)}</span>
                     </div>
                   </>
@@ -1928,16 +1945,16 @@ export default function TeamDashboard() {
                             <div 
                               key={`${section.title}-${row.email}`}
                               onClick={() => {
-                                if (isB2B || isOGT) {
+                                if (isB2B || isOGT || isIGTB2B) {
                                   setActiveB2BRow(activeB2BRow === row.email ? null : row.email);
                                 }
                               }}
                               className="group/row relative grid grid-cols-12 gap-2 sm:gap-4 px-4 sm:px-6 py-4 items-center transition-colors hover:bg-[var(--hover-bg)] cursor-pointer"
                               style={{ '--hover-bg': `color-mix(in srgb, ${accentColor}, transparent 95%)` } as any}
                             >
-                              {(isB2B ? (row.rank <= 3) : (row.rank <= 3)) && <GlimmerOverlay />}
+                              {(isB2B || isOGT || isIGTB2B ? (row.rank <= 3) : (row.rank <= 3)) && <GlimmerOverlay />}
 
-                              {isB2B || isOGT ? (
+                              {isB2B || isOGT || isIGTB2B ? (
                                 <>
                                   <div className="col-span-4 relative z-10">
                                     <p className="font-semibold text-sm sm:text-base text-[#F7F7F8] truncate">{row.name}</p>
@@ -1958,7 +1975,7 @@ export default function TeamDashboard() {
                                     <div className="flex w-full flex-col gap-4">
                                       <div className="flex items-center justify-between">
                                         <div className="flex flex-col gap-0.5">
-                                          <span className="text-[10px] font-black uppercase tracking-[0.25em] text-white/40">{isOGT ? "OGT Performance" : "Squad Stats"}</span>
+                                          <span className="text-[10px] font-black uppercase tracking-[0.25em] text-white/40">{isIGTB2B ? "IGT B2B Performance" : isOGT ? "OGT Performance" : "Squad Stats"}</span>
                                           <span className="text-[9px] font-black uppercase tracking-widest text-[#ffcd00]/80">{row.name.split(' ')[0]}</span>
                                         </div>
                                         <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-white/5 border border-white/10 shadow-inner">
@@ -2065,9 +2082,10 @@ export default function TeamDashboard() {
                       key={team.slug || team.name}
                       team={team} 
                       isLeader={index === 0} 
-                      teamColor={accentColor} 
-                      isMST={isMST}
+                      teamColor={accentColor}
                       isOGT={isOGT}
+                      isMST={isMST}
+                      isIGTB2B={isIGTB2B}
                     />
                   ))}
                 </div>
