@@ -840,9 +840,9 @@ function WrappedExperience({
   onClose: () => void;
   stats: {
     topTeam: { name: string; points: number };
-    globalMvp: { name: string; avatar: string; role: string };
+    globalMvp: { name: string; avatar: string; role: string } | null;
     currentTeamName: string;
-    teamAce: { name: string; avatar: string; score: number };
+    teamAce: { name: string; avatar: string; score: number } | null;
   };
   teamColor: string;
 }) {
@@ -993,14 +993,14 @@ function WrappedExperience({
             <p className="text-[10px] font-black uppercase tracking-[0.5em] text-white/40 mb-8">GLOBAL MVP</p>
             <div className="relative inline-block mb-12">
               <div className="w-40 h-40 sm:w-56 sm:h-56 rounded-4xl bg-linear-to-br from-[#FF1744] to-[#C41C00] flex items-center justify-center text-6xl font-black text-white shadow-2xl skew-x-6">
-                {stats.globalMvp.avatar}
+                {stats.globalMvp?.avatar || "🏆"}
               </div>
               <div className="absolute -bottom-4 -right-4 w-16 h-16 bg-[#FFD700] rounded-2xl flex items-center justify-center text-2xl shadow-xl transform rotate-12">
                 👑
               </div>
             </div>
-            <h2 className="text-5xl sm:text-7xl font-black text-white italic tracking-tighter">{stats.globalMvp.name}</h2>
-            <p className="text-lg font-bold text-[#FF1744] uppercase tracking-[0.2em] mt-2">{stats.globalMvp.role}</p>
+            <h2 className="text-5xl sm:text-7xl font-black text-white italic tracking-tighter">{stats.globalMvp?.name || "The Elite"}</h2>
+            <p className="text-lg font-bold text-[#FF1744] uppercase tracking-[0.2em] mt-2">{stats.globalMvp?.role || "Global MVP"}</p>
           </motion.div>
         </div>
       )
@@ -1025,11 +1025,11 @@ function WrappedExperience({
             <p className="text-[10px] font-black uppercase tracking-[0.5em] text-[#73FFFF]/40 mb-10">{stats.currentTeamName} SQUAD ACE</p>
             <div className="w-32 h-32 sm:w-44 sm:h-44 rounded-full border-2 border-[#73FFFF]/30 p-2 mb-10 mx-auto">
               <div className="w-full h-full rounded-full bg-linear-to-br from-[#73FFFF]/20 to-transparent flex items-center justify-center text-4xl font-black text-white glass-premium">
-                {stats.teamAce.avatar}
+                {stats.teamAce?.avatar || "⭐"}
               </div>
             </div>
-            <h2 className="text-6xl sm:text-8xl font-black text-[#73FFFF] italic tracking-tighter mb-4">{stats.teamAce.name}</h2>
-            <p className="text-2xl font-black text-white italic tracking-widest">{stats.teamAce.score} XP</p>
+            <h2 className="text-6xl sm:text-8xl font-black text-[#73FFFF] italic tracking-tighter mb-4">{stats.teamAce?.name || "The Legend"}</h2>
+            <p className="text-2xl font-black text-white italic tracking-widest">{stats.teamAce?.score || 0} XP</p>
             <div className="mt-16 flex gap-4 justify-center">
                <button 
                 onClick={onClose}
