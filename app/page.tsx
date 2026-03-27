@@ -42,7 +42,7 @@ const functions: TeamCard[] = [
     icon: "💼",
     color: "var(--igt-color)",
     squads: [
-      { id: "igt-ops", name: "Operations", href: "/dashboard/igt_ops" },
+      { id: "igt-b2b", name: "B2B Dashboard", href: "/dashboard/igt_b2b" },
       { id: "igt-ir", name: "IR Matching", href: "/dashboard/igt_ir" }
     ]
   },

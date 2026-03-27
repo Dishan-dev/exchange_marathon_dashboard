@@ -364,7 +364,7 @@ const teamDataMap: Record<string, TeamData> = {
     completedActions: 41,
     weeklyGrowth: 140,
   },
-  igt_ops: {
+  igt_b2b: {
     name: "IGT",
     displayName: "Incoming Global Talent - Operations",
     miniTeams: [
@@ -521,7 +521,7 @@ const teamDataMap: Record<string, TeamData> = {
 const teamColorMap: Record<string, string> = {
   igv_b2b: "var(--igv-color)",
   igv_ir: "var(--igv-color)",
-  igt_ops: "var(--igt-color)",
+  igt_b2b: "var(--igt-color)",
   igt_ir: "var(--igt-color)",
   ogt_ops: "var(--ogt-color)",
   ogt_matching: "var(--ogt-color)",
@@ -1358,6 +1358,7 @@ export default function TeamDashboard() {
     });
 
   const isB2B = teamParam === 'igv_b2b';
+  const isIGTB2B = teamParam === 'igt_b2b';
   const isOGT = teamParam === 'ogt';
   const isIGV = teamParam === 'igv_b2b' || teamParam === 'igv_ir';
   const isMST = teamParam === 'marcom' || teamParam === 'members' || teamParam === 'tls' || teamParam.startsWith('irm');
@@ -1365,7 +1366,7 @@ export default function TeamDashboard() {
   const accentColor = teamColor;
 
 
-  const isSeparatedTeam = isB2B || isOGT;
+  const isSeparatedTeam = isB2B || isOGT || isIGTB2B;
   const b2bTLRows = isSeparatedTeam
     ? leaderboardRows
         .filter((row) => isTLRole(row.role || ""))
@@ -1442,8 +1443,8 @@ export default function TeamDashboard() {
       ],
     }, */
     {
-      title: isMST ? "Total Member Points" : isOGT ? "OGT Activity Totals" : isB2B ? "B2B Activity Totals" : "Member Activity Breakdown",
-      subtitle: isMST ? "Points Accumulation" : isOGT ? "Cumulative SU | APL | APD" : isB2B ? "Cumulative MOUs | Cold Calls | Followups" : "MOU | CALLS | FOLLOWS",
+      title: isMST ? "Total Member Points" : isIGTB2B ? "IGT B2B Activity Totals" : isOGT ? "OGT Activity Totals" : isB2B ? "B2B Activity Totals" : "Member Activity Breakdown",
+      subtitle: isMST ? "Points Accumulation" : isIGTB2B ? "Cumulative Meetings | Cold Calls | Follow Ups" : isOGT ? "Cumulative SU | APL | APD" : isB2B ? "Cumulative MOUs | Cold Calls | Followups" : "MOU | CALLS | FOLLOWS",
       type: "stacked-bar",
       entries: isMST
         ? leaderboardRows
@@ -1454,6 +1455,32 @@ export default function TeamDashboard() {
               label: p.name,
               values: [p.score]
             }))
+        : isIGTB2B
+          ? leaderboardRows
+              .filter((p) => (p.metrics?.mous || 0) + (p.metrics?.coldCalls || 0) + (p.metrics?.followups || 0) > 0)
+              .slice(0, 50)
+              .map((p) => ({
+                email: p.email,
+                label: p.name,
+                values: [
+                  p.metrics?.mous || 0, // Meetings
+                  p.metrics?.coldCalls || 0,
+                  p.metrics?.followups || 0
+                ]
+              }))
+        : isOGT
+          ? leaderboardRows
+              .filter((p) => (p.metrics?.mous || 0) + (p.metrics?.coldCalls || 0) + (p.metrics?.followups || 0) > 0)
+              .slice(0, 50)
+              .map((p) => ({
+                email: p.email,
+                label: p.name,
+                values: [
+                  p.metrics?.mous || 0, // SU
+                  p.metrics?.coldCalls || 0, // APL
+                  p.metrics?.followups || 0  // APD
+                ]
+              }))
         : isB2B
           ? [
               {
@@ -1472,24 +1499,42 @@ export default function TeamDashboard() {
                 values: [0, 0, b2bActivityTotals.followups]
               }
             ]
-          : isOGT
-            ? [
-                {
-                  email: "ogt-su",
-                  label: "SU",
-                  values: [ogtActivityTotals.su, 0, 0]
-                },
-                {
-                  email: "ogt-apl",
-                  label: "APL",
-                  values: [0, ogtActivityTotals.apl, 0]
-                },
-                {
-                  email: "ogt-apd",
-                  label: "APD",
-                  values: [0, 0, ogtActivityTotals.apd]
-                }
-              ]
+            : isIGTB2B
+              ? [
+                  {
+                    email: "igt-meetings",
+                    label: "Meetings",
+                    values: [ogtActivityTotals.su, 0, 0]
+                  },
+                  {
+                    email: "igt-cold",
+                    label: "Cold Calls",
+                    values: [0, ogtActivityTotals.apl, 0]
+                  },
+                  {
+                    email: "igt-follow",
+                    label: "Follow Ups",
+                    values: [0, 0, ogtActivityTotals.apd]
+                  }
+                ]
+            : isOGT
+              ? [
+                  {
+                    email: "ogt-su",
+                    label: "SU",
+                    values: [ogtActivityTotals.su, 0, 0]
+                  },
+                  {
+                    email: "ogt-apl",
+                    label: "APL",
+                    values: [0, ogtActivityTotals.apl, 0]
+                  },
+                  {
+                    email: "ogt-apd",
+                    label: "APD",
+                    values: [0, 0, ogtActivityTotals.apd]
+                  }
+                ]
             : (leaderTeam.performers || []).slice(0, 10).map((p) => ({
               email: p.email,
               label: p.name,
@@ -1527,7 +1572,7 @@ export default function TeamDashboard() {
   };
 
   const dashboardFunctionName = getFunctionName(teamParam);
-  const isFinished = teamParam === 'members' || teamParam === 'tls' || teamParam === 'igv_b2b' || teamParam === 'ogt';
+  const isFinished = teamParam === 'members' || teamParam === 'tls' || teamParam === 'igv_b2b' || teamParam === 'ogt' || teamParam === 'igt_b2b';
   const showUnlinked = !teamData && !remoteTeamData;
 
   return (
@@ -1817,6 +1862,12 @@ export default function TeamDashboard() {
                                   <div>Followups: <span className="text-white block mt-0.5 text-xs">{row.metrics?.followups || 0}</span></div>
                                   <div>Calls: <span className="text-white block mt-0.5 text-xs">{row.metrics?.coldCalls || 0}</span></div>
                                 </>
+                              ) : isIGTB2B ? (
+                                <>
+                                  <div>Meetings: <span className="text-white block mt-0.5 text-xs">{row.metrics?.mous || 0}</span></div>
+                                  <div>Cold Calls: <span className="text-white block mt-0.5 text-xs">{row.metrics?.coldCalls || 0}</span></div>
+                                  <div>Follow Ups: <span className="text-white block mt-0.5 text-xs">{row.metrics?.followups || 0}</span></div>
+                                </>
                               ) : (
                                 <>
                                   <div>SU: <span className="text-white block mt-0.5 text-xs">{row.metrics?.mous || 0}</span></div>
@@ -1919,24 +1970,24 @@ export default function TeamDashboard() {
                                       
                                       <div className="grid grid-cols-2 gap-x-4 gap-y-4 text-xs">
                                         <div className="space-y-1">
-                                          <span className="text-[9px] font-bold uppercase tracking-widest text-white/30 block">{isOGT ? "SU" : "MOUs"}</span>
+                                          <span className="text-[9px] font-bold uppercase tracking-widest text-white/30 block">{isIGTB2B ? "Meetings" : isOGT ? "SU" : "MOUs"}</span>
                                           <div className="flex items-baseline gap-1">
                                             <span className="text-base font-black text-white">{row.metrics?.mous || 0}</span>
-                                            <span className="text-[8px] font-bold text-white/20 uppercase tracking-tighter">{isOGT ? "u" : "units"}</span>
+                                            <span className="text-[8px] font-bold text-white/20 uppercase tracking-tighter">{isIGTB2B ? "mtg" : isOGT ? "u" : "units"}</span>
                                           </div>
                                         </div>
                                         <div className="space-y-1 text-right">
-                                          <span className="text-[9px] font-bold uppercase tracking-widest text-white/30 block">{isOGT ? "APD" : "Followups"}</span>
+                                          <span className="text-[9px] font-bold uppercase tracking-widest text-white/30 block">{isIGTB2B ? "Follow Ups" : isOGT ? "APD" : "Followups"}</span>
                                           <div className="flex items-baseline justify-end gap-1">
                                             <span className="text-base font-black text-white">{row.metrics?.followups || 0}</span>
-                                            <span className="text-[8px] font-bold text-white/20 uppercase tracking-tighter">{isOGT ? "log" : "log"}</span>
+                                            <span className="text-[8px] font-bold text-white/20 uppercase tracking-tighter">{isIGTB2B ? "log" : "log"}</span>
                                           </div>
                                         </div>
                                         <div className="space-y-1">
-                                          <span className="text-[9px] font-bold uppercase tracking-widest text-white/30 block">{isOGT ? "APL" : "Cold Calls"}</span>
+                                          <span className="text-[9px] font-bold uppercase tracking-widest text-white/30 block">{isIGTB2B ? "Cold Calls" : isOGT ? "APL" : "Cold Calls"}</span>
                                           <div className="flex items-baseline gap-1">
                                             <span className="text-base font-black text-white">{row.metrics?.coldCalls || 0}</span>
-                                            <span className="text-[8px] font-bold text-white/20 uppercase tracking-tighter">{isOGT ? "calls" : "calls"}</span>
+                                            <span className="text-[8px] font-bold text-white/20 uppercase tracking-tighter">{isIGTB2B ? "calls" : "calls"}</span>
                                           </div>
                                         </div>
                                         <div className="space-y-1 text-right">
@@ -2008,7 +2059,7 @@ export default function TeamDashboard() {
                   <h4 className="text-xl sm:text-2xl font-black text-[#F7F7F8] tracking-widest uppercase italic">Squad Performance Matchups</h4>
                   <p className="text-[9px] sm:text-[10px] font-bold text-white/30 uppercase tracking-[0.2em] sm:tracking-[0.3em]">Total Active Squads: {teamData.miniTeams?.length || 0}</p>
                 </div>
-                <div className={`grid grid-cols-1 gap-4 sm:gap-6 ${isB2B ? 'md:grid-cols-2' : 'md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4'}`}>
+                <div className={`grid grid-cols-1 gap-4 sm:gap-6 ${isIGTB2B ? 'md:grid-cols-3' : isB2B ? 'md:grid-cols-2' : 'md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4'}`}>
                   {teamData.miniTeams?.map((team, index) => (
                     <MiniTeamCard 
                       key={team.slug || team.name}
