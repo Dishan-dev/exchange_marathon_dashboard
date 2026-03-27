@@ -527,11 +527,10 @@ const teamColorMap: Record<string, string> = {
   ogt_matching: "var(--ogt-color)",
   marcom: "var(--mst-color)",
   irm1_t01: "var(--igv-color)",
-  irm2_t01: "var(--igv-color)",
-  irm1_t02: "var(--igv-color)",
   irm2_t02: "var(--igv-color)",
   members: "var(--mst-color)",
   tls: "var(--mst-color)",
+  ogt: "var(--ogt-color)",
 };
 
 const quickInsights = [
@@ -592,12 +591,14 @@ function MiniTeamCard({
   team,
   isLeader,
   teamColor,
-  isMST = false
+  isMST = false,
+  isOGT = false
 }: {
   team: MiniTeamData;
   isLeader: boolean;
   teamColor: string;
   isMST?: boolean;
+  isOGT?: boolean;
 }) {
   return (
     <div
@@ -667,7 +668,7 @@ function MiniTeamCard({
               style={{ backgroundColor: `color-mix(in srgb, ${teamColor}, black 90%)` }}
             >
               <p className="text-[9px] font-black text-white/40 uppercase tracking-widest mb-3 text-center border-b border-white/5 pb-2">
-                {isMST ? `${formatTeamName(team.name, isMST)} Members + TLs` : "Squad Activity"}
+                {isMST ? `${formatTeamName(team.name, isMST)} Members + TLs` : isOGT ? "OGT Squad Activity" : "Squad Activity"}
               </p>
               <div className="space-y-2 max-h-48 overflow-y-auto custom-scrollbar pr-1">
                 {isMST ? (
@@ -677,6 +678,21 @@ function MiniTeamCard({
                       <span style={{ color: teamColor }}>{p.score}</span>
                     </div>
                   ))
+                ) : isOGT ? (
+                  <>
+                    <div className="flex justify-between items-center text-[10px] font-bold">
+                      <span className="text-white/30">SU</span>
+                      <span className="text-[#E91E63]">{team.performers.reduce((s, p) => s + p.metrics.mous, 0)}</span>
+                    </div>
+                    <div className="flex justify-between items-center text-[10px] font-bold">
+                      <span className="text-white/30">APL</span>
+                      <span className="text-[#9C27B0]">{team.performers.reduce((s, p) => s + p.metrics.coldCalls, 0)}</span>
+                    </div>
+                    <div className="flex justify-between items-center text-[10px] font-bold">
+                      <span className="text-white/30">APD</span>
+                      <span className="text-[#00BCD4]">{team.performers.reduce((s, p) => s + p.metrics.followups, 0)}</span>
+                    </div>
+                  </>
                 ) : (
                   <>
                     <div className="flex justify-between items-center text-[10px] font-bold">
@@ -833,9 +849,10 @@ function PerformerModal({
 }
 
 function WrappedExperience({ 
-  onClose, 
+  onClose,
   stats,
-  teamColor 
+  teamColor,
+  teamParam
 }: { 
   onClose: () => void;
   stats: {
@@ -845,6 +862,7 @@ function WrappedExperience({
     teamAce: { name: string; avatar: string; score: number } | null;
   };
   teamColor: string;
+  teamParam: string;
 }) {
   const [currentCard, setCurrentCard] = useState(0);
   const [isSharing, setIsSharing] = useState(false);
@@ -881,10 +899,10 @@ function WrappedExperience({
         const url = URL.createObjectURL(blob);
         const link = document.createElement('a');
         link.href = url;
-        link.download = 'igv-marathon-badge.png';
+        link.download = `${teamParam}-marathon-badge.png`;
         link.click();
         
-        const shareText = encodeURIComponent("Check out my performance in the Exchange Marathon! 🏃‍♂️🏆");
+        const shareText = encodeURIComponent(`Check out my performance in the ${teamParam.toUpperCase()} Marathon! 🏃‍♂️🏆`);
         window.open(`https://wa.me/?text=${shareText}`, '_blank');
       }
     } catch (err) {
@@ -933,7 +951,7 @@ function WrappedExperience({
             transition={{ delay: 0.5 }}
             className="text-4xl sm:text-6xl font-black text-white italic tracking-tighter leading-none"
           >
-            iGV HACKATHON <br />
+            {stats.currentTeamName} MARATHON <br />
             <span className="text-[#73FFFF]">HALL OF FAME</span>
           </motion.h1>
         </div>
@@ -1331,31 +1349,36 @@ export default function TeamDashboard() {
       ...p, 
       team: mt.name
     })))
+    .filter((p, index, self) => 
+      index === self.findIndex((t) => t.email === p.email)
+    )
     .sort((a, b) => b.score - a.score)
     .map((p, i) => {
       return { ...p, rank: i + 1 };
     });
 
   const isB2B = teamParam === 'igv_b2b';
+  const isOGT = teamParam === 'ogt';
   const isIGV = teamParam === 'igv_b2b' || teamParam === 'igv_ir';
   const isMST = teamParam === 'marcom' || teamParam === 'members' || teamParam === 'tls' || teamParam.startsWith('irm');
   const useMSTPalette = true;
-  const accentColor = "#ffcd00";
+  const accentColor = teamColor;
 
 
-  const b2bTLRows = isB2B
+  const isSeparatedTeam = isB2B || isOGT;
+  const b2bTLRows = isSeparatedTeam
     ? leaderboardRows
         .filter((row) => isTLRole(row.role || ""))
         .map((row, index) => ({ ...row, rank: index + 1 }))
     : [];
 
-  const b2bMemberRows = isB2B
+  const b2bMemberRows = isSeparatedTeam
     ? leaderboardRows
         .filter((row) => !isTLRole(row.role || ""))
         .map((row, index) => ({ ...row, rank: index + 1 }))
     : [];
 
-  const podiumRows = isB2B ? b2bMemberRows : leaderboardRows;
+  const podiumRows = isSeparatedTeam ? b2bMemberRows : leaderboardRows;
   const podiumVisualOrder = [podiumRows[1], podiumRows[0], podiumRows[2]].filter(Boolean);
 
   const filterRows = (rows: any[]) => 
@@ -1373,6 +1396,16 @@ export default function TeamDashboard() {
       return acc;
     },
     { mous: 0, coldCalls: 0, followups: 0 }
+  );
+
+  const ogtActivityTotals = leaderboardRows.reduce(
+    (acc, row) => {
+      acc.su += row.metrics?.mous || 0;
+      acc.apl += row.metrics?.coldCalls || 0;
+      acc.apd += row.metrics?.followups || 0;
+      return acc;
+    },
+    { su: 0, apl: 0, apd: 0 }
   );
 
   // Stats for Wrapped
@@ -1409,8 +1442,8 @@ export default function TeamDashboard() {
       ],
     }, */
     {
-      title: isMST ? "Total Member Points" : isB2B ? "B2B Activity Totals" : "Member Activity Breakdown",
-      subtitle: isMST ? "Points Accumulation" : isB2B ? "Cumulative MOUs | Cold Calls | Followups" : "MOU | CALLS | FOLLOWS",
+      title: isMST ? "Total Member Points" : isOGT ? "OGT Activity Totals" : isB2B ? "B2B Activity Totals" : "Member Activity Breakdown",
+      subtitle: isMST ? "Points Accumulation" : isOGT ? "Cumulative SU | APL | APD" : isB2B ? "Cumulative MOUs | Cold Calls | Followups" : "MOU | CALLS | FOLLOWS",
       type: "stacked-bar",
       entries: isMST
         ? leaderboardRows
@@ -1439,7 +1472,25 @@ export default function TeamDashboard() {
                 values: [0, 0, b2bActivityTotals.followups]
               }
             ]
-          : (leaderTeam.performers || []).slice(0, 10).map((p) => ({
+          : isOGT
+            ? [
+                {
+                  email: "ogt-su",
+                  label: "SU",
+                  values: [ogtActivityTotals.su, 0, 0]
+                },
+                {
+                  email: "ogt-apl",
+                  label: "APL",
+                  values: [0, ogtActivityTotals.apl, 0]
+                },
+                {
+                  email: "ogt-apd",
+                  label: "APD",
+                  values: [0, 0, ogtActivityTotals.apd]
+                }
+              ]
+            : (leaderTeam.performers || []).slice(0, 10).map((p) => ({
               email: p.email,
               label: p.name,
               values: [p.metrics?.mous || 0, p.metrics?.coldCalls || 0, p.metrics?.followups || 0]
@@ -1476,7 +1527,7 @@ export default function TeamDashboard() {
   };
 
   const dashboardFunctionName = getFunctionName(teamParam);
-  const isFinished = teamParam === 'members' || teamParam === 'tls' || teamParam === 'igv_b2b';
+  const isFinished = teamParam === 'members' || teamParam === 'tls' || teamParam === 'igv_b2b' || teamParam === 'ogt';
   const showUnlinked = !teamData && !remoteTeamData;
 
   return (
@@ -1706,7 +1757,7 @@ export default function TeamDashboard() {
               </div>
 
               <div className="relative z-10 space-y-3 sm:hidden">
-                {(isB2B
+                {(isSeparatedTeam
                   ? [
                       { title: "TLs", rows: filteredB2BTLRows },
                       { title: "Members", rows: filteredB2BMemberRows }
@@ -1714,7 +1765,7 @@ export default function TeamDashboard() {
                   : [{ title: "All", rows: filteredLeaderboardRows }]
                 ).map((section) => (
                   <div key={`mobile-section-${section.title}`} className="space-y-3">
-                    {isB2B && (
+                    {isSeparatedTeam && (
                       <h5 className="px-1 text-[11px] font-black uppercase tracking-[0.2em] text-white/70">{section.title}</h5>
                     )}
                     {section.rows.length === 0 ? (
@@ -1726,11 +1777,11 @@ export default function TeamDashboard() {
                           <div
                             key={`mobile-${section.title}-${row.email}`}
                             onClick={() => {
-                              if (isB2B) {
+                              if (isSeparatedTeam) {
                                 setActiveB2BRow(activeB2BRow === row.email ? null : row.email);
                               }
                             }}
-                            className={`rounded-2xl border border-white/10 px-4 py-3 transition-all duration-300 ${isB2B ? 'cursor-pointer' : ''} relative overflow-hidden`}
+                            className={`rounded-2xl border border-white/10 px-4 py-3 transition-all duration-300 ${isSeparatedTeam ? 'cursor-pointer' : ''} relative overflow-hidden`}
                             style={{ backgroundColor: activeB2BRow === row.email ? `color-mix(in srgb, ${accentColor}, transparent 80%)` : `color-mix(in srgb, ${accentColor}, transparent 92%)` }}
                           >
                             {(isB2B ? (row.rank <= 3) : (row.rank <= 3)) && <GlimmerOverlay />}
@@ -1754,15 +1805,25 @@ export default function TeamDashboard() {
                             <span className="truncate pr-2 font-semibold text-[#F7F7F8]/75">{formatTeamName(row.team, isMST)}</span>
                             <span className="font-black tabular-nums text-[#F7F7F8]">{row.score.toLocaleString()}</span>
                           </div>
-                          {isB2B && activeB2BRow === row.email && (
+                          {isSeparatedTeam && activeB2BRow === row.email && (
                             <motion.div 
                               initial={{ height: 0, opacity: 0 }}
                               animate={{ height: 'auto', opacity: 1 }}
                               className="mt-3 grid grid-cols-3 gap-2 border-t border-white/10 pt-3 text-[10px] font-semibold text-white/70"
                             >
-                              <div>MOUs: <span className="text-white block mt-0.5 text-xs">{row.metrics?.mous || 0}</span></div>
-                              <div>Followups: <span className="text-white block mt-0.5 text-xs">{row.metrics?.followups || 0}</span></div>
-                              <div>Calls: <span className="text-white block mt-0.5 text-xs">{row.metrics?.coldCalls || 0}</span></div>
+                              {isB2B ? (
+                                <>
+                                  <div>MOUs: <span className="text-white block mt-0.5 text-xs">{row.metrics?.mous || 0}</span></div>
+                                  <div>Followups: <span className="text-white block mt-0.5 text-xs">{row.metrics?.followups || 0}</span></div>
+                                  <div>Calls: <span className="text-white block mt-0.5 text-xs">{row.metrics?.coldCalls || 0}</span></div>
+                                </>
+                              ) : (
+                                <>
+                                  <div>SU: <span className="text-white block mt-0.5 text-xs">{row.metrics?.mous || 0}</span></div>
+                                  <div>APD: <span className="text-white block mt-0.5 text-xs">{row.metrics?.followups || 0}</span></div>
+                                  <div>APL: <span className="text-white block mt-0.5 text-xs">{row.metrics?.coldCalls || 0}</span></div>
+                                </>
+                              )}
                             </motion.div>
                           )}
                         </div>
@@ -1774,7 +1835,7 @@ export default function TeamDashboard() {
 
               <div className="relative z-10 hidden overflow-visible custom-scrollbar sm:block">
                 <div className="min-w-[750px] space-y-6">
-                  {(isB2B
+                  {(isSeparatedTeam
                     ? [
                         { title: "TLs", rows: filteredB2BTLRows },
                         { title: "Members", rows: filteredB2BMemberRows }
@@ -1782,11 +1843,11 @@ export default function TeamDashboard() {
                     : [{ title: "All", rows: filteredLeaderboardRows }]
                   ).map((section) => (
                     <div key={`desktop-section-${section.title}`} className="space-y-4">
-                      {isB2B && (
+                      {isSeparatedTeam && (
                         <h5 className="px-1 text-sm font-black uppercase tracking-[0.2em] text-white/75">{section.title}</h5>
                       )}
 
-                      {isB2B ? (
+                      {isSeparatedTeam ? (
                         <div 
                           className="grid grid-cols-12 gap-2 sm:gap-4 px-4 sm:px-6 py-4 text-[9px] sm:text-[11px] font-bold uppercase tracking-[0.16em] text-[#F7F7F8]/65 rounded-2xl shadow-lg"
                           style={{ backgroundColor: `rgba(255, 205, 0, 0.08)` }}
@@ -1816,7 +1877,7 @@ export default function TeamDashboard() {
                             <div 
                               key={`${section.title}-${row.email}`}
                               onClick={() => {
-                                if (isB2B) {
+                                if (isB2B || isOGT) {
                                   setActiveB2BRow(activeB2BRow === row.email ? null : row.email);
                                 }
                               }}
@@ -1825,7 +1886,7 @@ export default function TeamDashboard() {
                             >
                               {(isB2B ? (row.rank <= 3) : (row.rank <= 3)) && <GlimmerOverlay />}
 
-                              {isB2B ? (
+                              {isB2B || isOGT ? (
                                 <>
                                   <div className="col-span-4 relative z-10">
                                     <p className="font-semibold text-sm sm:text-base text-[#F7F7F8] truncate">{row.name}</p>
@@ -1846,7 +1907,7 @@ export default function TeamDashboard() {
                                     <div className="flex w-full flex-col gap-4">
                                       <div className="flex items-center justify-between">
                                         <div className="flex flex-col gap-0.5">
-                                          <span className="text-[10px] font-black uppercase tracking-[0.25em] text-white/40">Squad Stats</span>
+                                          <span className="text-[10px] font-black uppercase tracking-[0.25em] text-white/40">{isOGT ? "OGT Performance" : "Squad Stats"}</span>
                                           <span className="text-[9px] font-black uppercase tracking-widest text-[#ffcd00]/80">{row.name.split(' ')[0]}</span>
                                         </div>
                                         <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-white/5 border border-white/10 shadow-inner">
@@ -1858,24 +1919,24 @@ export default function TeamDashboard() {
                                       
                                       <div className="grid grid-cols-2 gap-x-4 gap-y-4 text-xs">
                                         <div className="space-y-1">
-                                          <span className="text-[9px] font-bold uppercase tracking-widest text-white/30 block">MOUs</span>
+                                          <span className="text-[9px] font-bold uppercase tracking-widest text-white/30 block">{isOGT ? "SU" : "MOUs"}</span>
                                           <div className="flex items-baseline gap-1">
                                             <span className="text-base font-black text-white">{row.metrics?.mous || 0}</span>
-                                            <span className="text-[8px] font-bold text-white/20 uppercase tracking-tighter">units</span>
+                                            <span className="text-[8px] font-bold text-white/20 uppercase tracking-tighter">{isOGT ? "u" : "units"}</span>
                                           </div>
                                         </div>
                                         <div className="space-y-1 text-right">
-                                          <span className="text-[9px] font-bold uppercase tracking-widest text-white/30 block">Followups</span>
+                                          <span className="text-[9px] font-bold uppercase tracking-widest text-white/30 block">{isOGT ? "APD" : "Followups"}</span>
                                           <div className="flex items-baseline justify-end gap-1">
                                             <span className="text-base font-black text-white">{row.metrics?.followups || 0}</span>
-                                            <span className="text-[8px] font-bold text-white/20 uppercase tracking-tighter">log</span>
+                                            <span className="text-[8px] font-bold text-white/20 uppercase tracking-tighter">{isOGT ? "log" : "log"}</span>
                                           </div>
                                         </div>
                                         <div className="space-y-1">
-                                          <span className="text-[9px] font-bold uppercase tracking-widest text-white/30 block">Cold Calls</span>
+                                          <span className="text-[9px] font-bold uppercase tracking-widest text-white/30 block">{isOGT ? "APL" : "Cold Calls"}</span>
                                           <div className="flex items-baseline gap-1">
                                             <span className="text-base font-black text-white">{row.metrics?.coldCalls || 0}</span>
-                                            <span className="text-[8px] font-bold text-white/20 uppercase tracking-tighter">calls</span>
+                                            <span className="text-[8px] font-bold text-white/20 uppercase tracking-tighter">{isOGT ? "calls" : "calls"}</span>
                                           </div>
                                         </div>
                                         <div className="space-y-1 text-right">
@@ -1955,6 +2016,7 @@ export default function TeamDashboard() {
                       isLeader={index === 0} 
                       teamColor={accentColor} 
                       isMST={isMST}
+                      isOGT={isOGT}
                     />
                   ))}
                 </div>
@@ -2039,12 +2101,17 @@ export default function TeamDashboard() {
                           </div>
                         ) : (
                           ["MOUs", "Calls", "Follows"].map((l, i) => (
-                            <div key={l} className="flex items-center gap-3">
-                              <span className={`h-3 w-3 rounded-full ${stackedLegendDots[i]}`} />
-                              <span className="text-[10px] font-bold text-[#F7F7F8]/65 uppercase tracking-widest">{l}</span>
-                            </div>
-                          ))
-                        )}
+                             <div key={l} className="flex items-center gap-3">
+                                <span className={`h-3 w-3 rounded-full ${stackedLegendDots[i]}`} />
+                                <span className="text-[10px] font-bold text-[#F7F7F8]/65 uppercase tracking-widest">
+                                  {isOGT 
+                                    ? (i === 0 ? "SU" : i === 1 ? "APL" : "APD")
+                                    : l
+                                  }
+                                </span>
+                              </div>
+                            ))
+                          )}
                       </div>
                     </div>
                   </div>
@@ -2065,6 +2132,7 @@ export default function TeamDashboard() {
             onClose={() => setShowWrapped(false)} 
             stats={wrappedStats}
             teamColor={teamColor}
+            teamParam={teamParam}
           />
         )}
       </AnimatePresence>

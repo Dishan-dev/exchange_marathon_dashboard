@@ -53,8 +53,7 @@ const functions: TeamCard[] = [
     icon: "🌍",
     color: "var(--ogt-color)",
     squads: [
-      { id: "ogt-ops", name: "Operations", href: "/dashboard/ogt_ops" },
-      { id: "ogt-ir", name: "IR Matching", href: "/dashboard/ogt_matching" }
+      { id: "ogt-global", name: "OGT Dashboard", href: "/dashboard/ogt" }
     ]
   },
   {
