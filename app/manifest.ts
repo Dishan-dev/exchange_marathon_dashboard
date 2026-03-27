@@ -3,7 +3,7 @@ import { MetadataRoute } from 'next'
 export default function manifest(): MetadataRoute.Manifest {
   return {
     name: 'Exchange Marathon Dashboard',
-    short_name: 'EX Marathon',
+    short_name: 'The Xcend',
     description: 'Internal competition tracking platform for Exchange Marathon.',
     start_url: '/',
     display: 'standalone',
