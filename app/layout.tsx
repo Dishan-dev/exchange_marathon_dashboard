@@ -49,6 +49,17 @@ export default function RootLayout({
         </main>
         <Footer />
         <div className="fixed bottom-0 left-0 right-0 h-1 bg-[#ffcd00] shadow-[0_-4px_20px_rgba(255,205,0,0.3)] z-[9999] pointer-events-none" />
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              if ('serviceWorker' in navigator) {
+                window.addEventListener('load', function() {
+                  navigator.serviceWorker.register('/sw.js');
+                });
+              }
+            `,
+          }}
+        />
       </body>
     </html>
   );
