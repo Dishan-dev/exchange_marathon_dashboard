@@ -16,7 +16,6 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "Exchange Marathon | Team Dashboard",
   description: "Internal competition tracking platform. Select your team and track performance in real-time.",
-  manifest: "/manifest.ts",
   appleWebApp: {
     capable: true,
     statusBarStyle: "default",
