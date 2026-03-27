@@ -1,9 +1,12 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import MascotAvatar from "@/components/MascotAvatar";
+import LiquidEther from "@/components/LiquidEther";
+import Footer from "@/components/Footer";
+import HexagonGrid from "@/components/HexagonGrid";
 
 interface Squad {
   id: string;
@@ -77,7 +80,7 @@ function FunctionCard({
   return (
     <div
       onClick={onSelect}
-      className="group relative h-full min-h-42.5 rounded-2xl border-2 border-white/10 bg-white/5 p-5 md:min-h-47.5 md:p-6 transition-all duration-300 cursor-pointer overflow-hidden glass-premium hover:border-white/20 hover:shadow-xl hover:shadow-black/30 hover:scale-[1.02] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-white/20"
+      className="group relative h-full min-h-42.5 rounded-2xl border-2 border-white/10 bg-black/60 p-5 md:min-h-47.5 md:p-6 transition-all duration-300 cursor-pointer overflow-hidden glass-premium hover:border-black/50 hover:shadow-2xl hover:shadow-black/60 hover:scale-[1.02] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-white/20"
     >
       <div
         className="absolute inset-0 opacity-0 transition-opacity duration-500 group-hover:opacity-100"
@@ -126,7 +129,7 @@ function SquadCard({
   return (
     <Link href={squad.href}>
       <div
-        className="group relative rounded-2xl border-2 border-white/10 bg-white/5 p-8 transition-all duration-300 cursor-pointer overflow-hidden glass-premium hover:border-white/20 hover:shadow-xl hover:shadow-black/30 hover:scale-[1.05] focus:outline-none"
+        className="group relative rounded-2xl border-2 border-white/10 bg-black/70 p-8 transition-all duration-300 cursor-pointer overflow-hidden glass-premium hover:border-white/10 hover:shadow-2xl hover:shadow-black/60 hover:scale-[1.05] focus:outline-none"
       >
         <div
           className="absolute inset-0 opacity-0 transition-opacity duration-500 group-hover:opacity-100"
@@ -143,16 +146,25 @@ function SquadCard({
   );
 }
 
-import HexagonGrid from "@/components/HexagonGrid";
-
 export default function Home() {
   const [selectedFunction, setSelectedFunction] = useState<TeamCard | null>(null);
 
   return (
-    <div className="relative min-h-screen overflow-hidden bg-transparent">
-      <HexagonGrid />
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-0 left-1/4 w-96 h-96 bg-[#3d474e]/5 rounded-full blur-3xl" />
+    <div className="relative min-h-screen overflow-hidden bg-black">
+      <div className="absolute inset-0 z-0 opacity-50">
+        <LiquidEther 
+          colors={['#ffcd00', '#0a0a0a', '#ffd700']} 
+          mouseForce={35}
+          cursorSize={110}
+          autoDemo={true}
+          autoSpeed={0.3}
+        />
+      </div>
+      <div className="relative z-10">
+        <HexagonGrid />
+      </div>
+      <div className="absolute inset-0 overflow-hidden pointer-events-none z-5">
+        <div className="absolute top-0 left-1/4 w-96 h-96 bg-[#ffcd00]/5 rounded-full blur-3xl" />
         <div className="absolute top-1/2 right-1/4 w-96 h-96 bg-[#ffcd00]/3 rounded-full blur-3xl" />
       </div>
 
@@ -180,7 +192,7 @@ export default function Home() {
               layout
               className="relative z-10 mb-8 flex flex-col items-center text-center sm:mb-10"
             >
-              <div className="mb-6 inline-flex items-center gap-3 rounded-lg border border-white/5 bg-white/5 px-6 py-2 backdrop-blur-md">
+              <div className="mb-6 inline-flex items-center gap-3 rounded-lg border border-white/5 bg-black/40 px-6 py-2 backdrop-blur-md">
                 <div className="bg-[#ffcd00] px-2 py-0.5 rounded text-[9px] font-black text-black">LIVE</div>
                 <span className="text-[10px] font-black uppercase tracking-[0.4em] text-white/60">
                   {selectedFunction ? selectedFunction.name : "Season 2026 Live Arena"}

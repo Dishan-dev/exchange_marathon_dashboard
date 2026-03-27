@@ -788,7 +788,7 @@ function PerformerModal({
                 const rColor = rankNum <= 3 ? rankColors[rankNum as keyof typeof rankColors] : 'transparent';
                 return (
                   <div key={performer.email} className="group/row flex items-center gap-4 rounded-2xl border border-white/5 bg-white/[0.04] p-4 sm:p-5 hover:bg-white/[0.08] hover:border-white/10 transition-all duration-300 overflow-hidden relative shadow-lg shadow-black/10">
-                    {rankNum <= 3 && <GlimmerOverlay />}
+                    {(isB2B ? (performer.role && isTLRole(performer.role) && rankNum === 1) : (rankNum <= 3)) && <GlimmerOverlay />}
                     <div 
                       className="relative z-10 flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl text-xs font-black transition-all shadow-2xl group-hover/row:scale-110"
                       style={{ 
@@ -1780,7 +1780,7 @@ export default function TeamDashboard() {
                               className="group/row relative grid grid-cols-12 gap-2 sm:gap-4 px-4 sm:px-6 py-4 items-center transition-colors overflow-hidden hover:bg-[var(--hover-bg)]"
                               style={{ '--hover-bg': `color-mix(in srgb, ${accentColor}, transparent 95%)` } as any}
                             >
-                              {row.rank <= 3 && <GlimmerOverlay />}
+                              {(isB2B ? (section.title === "TLs" && row.rank === 1) : (row.rank <= 3)) && <GlimmerOverlay />}
 
                               {isB2B ? (
                                 <>

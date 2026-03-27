@@ -32,17 +32,11 @@
 }
 
 body {
-  background-color: #192230;
-  background-image: 
-    linear-gradient(rgba(25, 34, 48, 0.65), rgba(25, 34, 48, 0.65)),
-    url('/bg.jpeg');
-  background-attachment: fixed;
-  background-size: cover;
-  background-position: center;
-  background-repeat: no-repeat;
+  background: linear-gradient(to bottom right, #000000, #0a0a0a, #000000);
   color: var(--foreground);
   font-family: var(--font-geist-sans);
   min-height: 100vh;
+  margin: 0;
 }
 
 html {
