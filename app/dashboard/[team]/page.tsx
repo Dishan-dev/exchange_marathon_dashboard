@@ -575,6 +575,11 @@ const mstTeamNames: Record<string, string> = {
   "irm2_t02": "IRM2 T02"
 };
 
+const isTLRole = (role: string): boolean => {
+  const normalized = role.trim().toLowerCase();
+  return normalized === "tl" || normalized === "team leader" || normalized === "team lead" || normalized === "teamlead";
+};
+
 const formatTeamName = (name: string, isMST: boolean) => {
   if (!isMST) return name;
   // Rename irm1_t01 -> T01, etc.
@@ -701,12 +706,14 @@ function PerformerModal({
   team,
   onClose,
   teamColor,
-  isMST = false
+  isMST = false,
+  isB2B = false
 }: {
   team: MiniTeamData;
   onClose: () => void;
   teamColor: string;
   isMST?: boolean;
+  isB2B?: boolean;
 }) {
   const [first, second, third] = team.performers;
   const podiumOrder = [second, first, third].filter(Boolean);
@@ -1333,10 +1340,6 @@ export default function TeamDashboard() {
   const useMSTPalette = true;
   const accentColor = "#ffcd00";
 
-  const isTLRole = (role: string): boolean => {
-    const normalized = role.trim().toLowerCase();
-    return normalized === "tl" || normalized === "team leader" || normalized === "team lead" || normalized === "teamlead";
-  };
 
   const b2bTLRows = isB2B
     ? leaderboardRows
