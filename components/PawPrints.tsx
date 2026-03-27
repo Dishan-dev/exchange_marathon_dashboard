@@ -37,7 +37,7 @@ function PawPrint({ x, y, rotate, delay }: { x: string; y: string; rotate: numbe
     <motion.div
       initial={{ opacity: 0, scale: 0, y: 5 }}
       animate={{ 
-        opacity: [0, 0.2, 0.12], 
+        opacity: [0, 0.2, 0.42], 
         scale: [0.5, 1.2, 1],
         y: [5, -2, 0]
       }}

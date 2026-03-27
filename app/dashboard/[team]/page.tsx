@@ -661,7 +661,7 @@ function MiniTeamCard({
           </div>
 
           {/* Hover Tooltip for Metrics */}
-          <div className="absolute -top-32 left-1/2 -translate-x-1/2 z-20 w-56 pointer-events-none opacity-0 group-hover/card:opacity-100 group-hover/metrics:opacity-100 transition-all duration-300 transform scale-95 group-hover/card:scale-100 group-hover/metrics:scale-100">
+          <div className="absolute -top-32 left-1/2 -translate-x-1/2 z-2000 w-56 pointer-events-none opacity-0 group-hover/card:opacity-100 group-hover/metrics:opacity-100 transition-all duration-300 transform scale-95 group-hover/card:scale-100 group-hover/metrics:scale-100">
             <div 
               className="rounded-2xl border border-white/10 p-4 shadow-2xl backdrop-blur-md"
               style={{ backgroundColor: `color-mix(in srgb, ${teamColor}, black 90%)` }}
@@ -1226,8 +1226,10 @@ export default function TeamDashboard() {
   const [hoveredBar, setHoveredBar] = useState<{ chart: number; bar: number } | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [showWrapped, setShowWrapped] = useState(false);
+  const [activeB2BRow, setActiveB2BRow] = useState<string | null>(null);
   const selectedPeriod: "marathon" = "marathon";
   const [nowMs, setNowMs] = useState<number>(Date.now());
+  const [searchTerm, setSearchTerm] = useState("");
 
   useEffect(() => {
     const timer = window.setInterval(() => setNowMs(Date.now()), 1000);
@@ -1355,6 +1357,13 @@ export default function TeamDashboard() {
 
   const podiumRows = isB2B ? b2bMemberRows : leaderboardRows;
   const podiumVisualOrder = [podiumRows[1], podiumRows[0], podiumRows[2]].filter(Boolean);
+
+  const filterRows = (rows: any[]) => 
+    rows.filter(r => r.name.toLowerCase().includes(searchTerm.toLowerCase()));
+
+  const filteredB2BTLRows = filterRows(b2bTLRows);
+  const filteredB2BMemberRows = filterRows(b2bMemberRows);
+  const filteredLeaderboardRows = filterRows(leaderboardRows);
 
   const b2bActivityTotals = leaderboardRows.reduce(
     (acc, row) => {
@@ -1497,26 +1506,21 @@ export default function TeamDashboard() {
             transition={{ duration: 0.8, ease: "easeOut" }}
           >
         <nav className={`sticky top-0 z-40 border-b border-white/5 ${useMSTPalette ? 'bg-black/80' : 'bg-[#192230]/80'} backdrop-blur-md`}>
-          <div className="mx-auto flex w-full max-w-7xl flex-col items-start gap-3 px-3 py-4 sm:flex-row sm:items-center sm:justify-between sm:gap-0 sm:px-8 sm:py-6">
-            <div className="flex items-center gap-3 sm:gap-6">
-              <img src="/logo.png" alt="Xcend" className="h-30 w-30 sm:h-22 sm:w-22 object-contain drop-shadow-[0_0_15px_rgba(255,205,0,0.2)]" />
+          <div className="mx-auto flex w-full max-w-7xl flex-row items-center justify-between gap-2 px-3 py-3 sm:gap-0 sm:px-8 sm:py-6">
+            <div className="flex items-center gap-2 sm:gap-6">
+              <img src="/logo.png" alt="Xcend" className="h-10 w-10 sm:h-22 sm:w-22 object-contain drop-shadow-[0_0_10px_rgba(255,205,0,0.2)]" />
               <div>
-                <h1 className="text-xl sm:text-2xl font-black tracking-tight text-[#F7F7F8] capitalize">
+                <h1 className="text-base sm:text-2xl font-black tracking-tight text-[#F7F7F8] capitalize">
                   {teamParam === 'igv_b2b' ? 'B2B' : teamParam.replace(/_/g, ' ')} <span className="opacity-40">Dashboard</span>
                 </h1>
-                <p className="text-[9px] sm:text-[10px] font-bold uppercase tracking-[0.2em] text-white/40 mt-0.5 sm:mt-1">
+                <p className="text-[8px] sm:text-[10px] font-bold uppercase tracking-[0.2em] text-white/40 mt-0.5 sm:mt-1">
                   Summer 26.27
                 </p>
               </div>
             </div>
 
-            <div className="flex w-full flex-wrap items-center gap-2 sm:w-auto sm:gap-4">
-              {remoteTeamData && !dataError ? (
-                <span className="inline-flex rounded-full border border-emerald-300/30 bg-emerald-400/10 px-2.5 py-1 text-[9px] font-bold uppercase tracking-[0.15em] text-emerald-200 sm:px-3 sm:text-[10px]">
-                  <span className="sm:hidden">Live</span>
-                  <span className="hidden sm:inline">Live{lastLiveFetchAt ? ` ${lastLiveFetchAt.toLocaleTimeString()}` : ""}</span>
-                </span>
-              ) : null}
+            <div className="flex items-center gap-1.5 sm:gap-4 shrink-0">
+               {/* Removed Live Badge as per request */}
                {dataError ? (
                 <span className="inline-flex rounded-full border border-amber-400/40 bg-amber-400/10 px-2.5 py-1 text-[9px] font-bold uppercase tracking-[0.15em] text-amber-200 sm:px-3 sm:text-[10px]">
                   Fallback mode
@@ -1524,15 +1528,15 @@ export default function TeamDashboard() {
               ) : null}
               <button
                 onClick={() => setShowWrapped(true)}
-                className="group flex items-center gap-2 px-3 py-2 text-[9px] font-black uppercase tracking-wide rounded-full text-white transition-all hover:scale-105 active:scale-95 shadow-lg sm:px-5 sm:py-2.5 sm:text-xs sm:tracking-widest"
+                className="group flex items-center gap-1.5 px-2.5 py-1.5 text-[8px] font-black uppercase tracking-tight rounded-full text-white transition-all hover:scale-105 active:scale-95 shadow-lg sm:px-5 sm:py-2.5 sm:text-xs sm:tracking-widest"
                 style={{ background: `linear-gradient(to right, #FF1744, ${teamColor})` }}
               >
-                <span className="group-hover:rotate-12 transition-transform">🏆</span>
+                <span className="group-hover:rotate-12 transition-transform text-[10px] sm:text-base">🏆</span>
                 <span>Recap</span>
               </button>
               <Link
                 href="/"
-                className="group ml-auto flex items-center gap-2 px-3 py-2 text-[9px] font-black uppercase tracking-wide rounded-full glass border border-white/10 hover:bg-white/5 transition-all sm:ml-0 sm:px-5 sm:py-2.5 sm:text-xs sm:tracking-widest"
+                className="group flex items-center gap-1.5 px-2.5 py-1.5 text-[8px] font-black uppercase tracking-tight rounded-full glass border border-white/10 hover:bg-white/5 transition-all sm:px-5 sm:py-2.5 sm:text-xs sm:tracking-widest"
               >
                 <span className="opacity-40 group-hover:-translate-x-1 transition-transform">←</span>
                 <span className="hidden xs:inline">Exit Dashboard</span>
@@ -1670,19 +1674,44 @@ export default function TeamDashboard() {
             transition={{ duration: 0.6, delay: 0.1 }}
           >
             <div 
-              className={`relative rounded-[2.5rem] sm:rounded-[4.5rem] border border-white/5 ${useMSTPalette ? 'bg-black/95' : 'glass-premium'} shadow-xl shadow-black/30 overflow-hidden px-2 sm:px-6 py-6 sm:py-10`}
+              className={`relative rounded-[2.5rem] sm:rounded-[4.5rem] border border-white/5 ${useMSTPalette ? 'bg-black/95' : 'glass-premium'} shadow-xl shadow-black/30 overflow-visible px-2 sm:px-6 py-6 sm:py-10`}
             >
               <div 
                 className="absolute inset-0 opacity-15 pointer-events-none"
                 style={{ background: `radial-gradient(circle at 50% 50%, ${accentColor}, transparent 70%)` }}
               />
+              
+              {/* Search Bar - Positioned at top of table section */}
+              <div className="relative z-20 mb-8 mx-auto max-w-xl px-4">
+                <div className="relative group">
+                  <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                    <span className="text-white/30 text-lg group-focus-within:text-[#ffcd00] transition-colors">🔍</span>
+                  </div>
+                  <input
+                    type="text"
+                    placeholder="Search by name..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="w-full bg-white/5 border border-white/10 rounded-2xl py-4 pl-12 pr-12 text-sm font-medium text-white placeholder:text-white/20 focus:outline-none focus:ring-2 focus:ring-[#ffcd00]/40 focus:border-[#ffcd00]/40 transition-all backdrop-blur-xl"
+                  />
+                  {searchTerm && (
+                    <button
+                      onClick={() => setSearchTerm("")}
+                      className="absolute inset-y-0 right-0 pr-4 flex items-center text-white/30 hover:text-white transition-colors"
+                    >
+                      ✕
+                    </button>
+                  )}
+                </div>
+              </div>
+
               <div className="relative z-10 space-y-3 sm:hidden">
                 {(isB2B
                   ? [
-                      { title: "TLs", rows: b2bTLRows },
-                      { title: "Members", rows: b2bMemberRows }
+                      { title: "TLs", rows: filteredB2BTLRows },
+                      { title: "Members", rows: filteredB2BMemberRows }
                     ]
-                  : [{ title: "All", rows: leaderboardRows }]
+                  : [{ title: "All", rows: filteredLeaderboardRows }]
                 ).map((section) => (
                   <div key={`mobile-section-${section.title}`} className="space-y-3">
                     {isB2B && (
@@ -1694,11 +1723,17 @@ export default function TeamDashboard() {
                       </div>
                     ) : (
                       section.rows.map((row) => (
-                        <div
-                          key={`mobile-${section.title}-${row.email}`}
-                          className="rounded-2xl border border-white/10 bg-white/5 px-4 py-3"
-                          style={{ backgroundColor: `color-mix(in srgb, ${accentColor}, transparent 92%)` }}
-                        >
+                          <div
+                            key={`mobile-${section.title}-${row.email}`}
+                            onClick={() => {
+                              if (isB2B) {
+                                setActiveB2BRow(activeB2BRow === row.email ? null : row.email);
+                              }
+                            }}
+                            className={`rounded-2xl border border-white/10 px-4 py-3 transition-all duration-300 ${isB2B ? 'cursor-pointer' : ''} relative overflow-hidden`}
+                            style={{ backgroundColor: activeB2BRow === row.email ? `color-mix(in srgb, ${accentColor}, transparent 80%)` : `color-mix(in srgb, ${accentColor}, transparent 92%)` }}
+                          >
+                            {(isB2B ? (row.rank <= 3) : (row.rank <= 3)) && <GlimmerOverlay />}
                           <div className="flex items-start justify-between gap-3">
                             <div className="min-w-0">
                               <p className="truncate text-sm font-bold text-[#F7F7F8]">{row.name}</p>
@@ -1719,13 +1754,16 @@ export default function TeamDashboard() {
                             <span className="truncate pr-2 font-semibold text-[#F7F7F8]/75">{formatTeamName(row.team, isMST)}</span>
                             <span className="font-black tabular-nums text-[#F7F7F8]">{row.score.toLocaleString()}</span>
                           </div>
-                          {isB2B && (
-                            <div className="mt-2 grid grid-cols-4 gap-2 text-[10px] font-semibold text-white/70">
-                              <div>MOUs: <span className="text-white">{row.metrics?.mous || 0}</span></div>
-                              <div>Followups: <span className="text-white">{row.metrics?.followups || 0}</span></div>
-                              <div>Calls: <span className="text-white">{row.metrics?.coldCalls || 0}</span></div>
-                              <div>Total: <span className="text-white">{row.score.toLocaleString()}</span></div>
-                            </div>
+                          {isB2B && activeB2BRow === row.email && (
+                            <motion.div 
+                              initial={{ height: 0, opacity: 0 }}
+                              animate={{ height: 'auto', opacity: 1 }}
+                              className="mt-3 grid grid-cols-3 gap-2 border-t border-white/10 pt-3 text-[10px] font-semibold text-white/70"
+                            >
+                              <div>MOUs: <span className="text-white block mt-0.5 text-xs">{row.metrics?.mous || 0}</span></div>
+                              <div>Followups: <span className="text-white block mt-0.5 text-xs">{row.metrics?.followups || 0}</span></div>
+                              <div>Calls: <span className="text-white block mt-0.5 text-xs">{row.metrics?.coldCalls || 0}</span></div>
+                            </motion.div>
                           )}
                         </div>
                       ))
@@ -1734,14 +1772,14 @@ export default function TeamDashboard() {
                 ))}
               </div>
 
-              <div className="relative z-10 hidden overflow-x-auto custom-scrollbar sm:block">
+              <div className="relative z-10 hidden overflow-visible custom-scrollbar sm:block">
                 <div className="min-w-[750px] space-y-6">
                   {(isB2B
                     ? [
-                        { title: "TLs", rows: b2bTLRows },
-                        { title: "Members", rows: b2bMemberRows }
+                        { title: "TLs", rows: filteredB2BTLRows },
+                        { title: "Members", rows: filteredB2BMemberRows }
                       ]
-                    : [{ title: "All", rows: leaderboardRows }]
+                    : [{ title: "All", rows: filteredLeaderboardRows }]
                   ).map((section) => (
                     <div key={`desktop-section-${section.title}`} className="space-y-4">
                       {isB2B && (
@@ -1753,13 +1791,10 @@ export default function TeamDashboard() {
                           className="grid grid-cols-12 gap-2 sm:gap-4 px-4 sm:px-6 py-4 text-[9px] sm:text-[11px] font-bold uppercase tracking-[0.16em] text-[#F7F7F8]/65 rounded-2xl shadow-lg"
                           style={{ backgroundColor: `rgba(255, 205, 0, 0.08)` }}
                         >
-                          <div className="col-span-3">Member Name</div>
-                          <div className="col-span-3">Team Name</div>
-                          <div className="col-span-1 text-right">MOUs</div>
-                          <div className="col-span-1 text-right">Followups</div>
-                          <div className="col-span-1 text-right">Cold Calls</div>
-                          <div className="col-span-2 text-right">Total Pts</div>
-                          <div className="col-span-1 text-right">Rank</div>
+                          <div className="col-span-4 lowercase first-letter:uppercase">Member Name</div>
+                          <div className="col-span-4 lowercase first-letter:uppercase text-center">Team Name</div>
+                          <div className="col-span-3 text-right lowercase first-letter:uppercase">Total Points</div>
+                          <div className="col-span-1 text-right lowercase first-letter:uppercase">Rank</div>
                         </div>
                       ) : (
                         <div 
@@ -1780,24 +1815,81 @@ export default function TeamDashboard() {
                           section.rows.map((row) => (
                             <div 
                               key={`${section.title}-${row.email}`}
-                              className="group/row relative grid grid-cols-12 gap-2 sm:gap-4 px-4 sm:px-6 py-4 items-center transition-colors overflow-hidden hover:bg-[var(--hover-bg)]"
+                              onClick={() => {
+                                if (isB2B) {
+                                  setActiveB2BRow(activeB2BRow === row.email ? null : row.email);
+                                }
+                              }}
+                              className="group/row relative grid grid-cols-12 gap-2 sm:gap-4 px-4 sm:px-6 py-4 items-center transition-colors hover:bg-[var(--hover-bg)] cursor-pointer"
                               style={{ '--hover-bg': `color-mix(in srgb, ${accentColor}, transparent 95%)` } as any}
                             >
-                              {(isB2B ? (section.title === "TLs" && row.rank === 1) : (row.rank <= 3)) && <GlimmerOverlay />}
+                              {(isB2B ? (row.rank <= 3) : (row.rank <= 3)) && <GlimmerOverlay />}
 
                               {isB2B ? (
                                 <>
-                                  <div className="col-span-3 relative z-10">
+                                  <div className="col-span-4 relative z-10">
                                     <p className="font-semibold text-sm sm:text-base text-[#F7F7F8] truncate">{row.name}</p>
                                     <p className="text-[10px] sm:text-xs text-white/45 truncate" style={{ color: `color-mix(in srgb, ${accentColor}, white 60%)` }}>{row.role}</p>
                                   </div>
-                                  <div className="col-span-3 relative z-10 text-sm font-medium text-[#F7F7F8]/80 truncate">
+                                  <div className="col-span-4 relative z-10 text-sm font-medium text-[#F7F7F8]/80 truncate text-center">
                                     {row.team}
                                   </div>
-                                  <div className="col-span-1 relative z-10 text-right text-xs sm:text-sm font-bold tabular-nums text-[#F7F7F8]">{row.metrics?.mous || 0}</div>
-                                  <div className="col-span-1 relative z-10 text-right text-xs sm:text-sm font-bold tabular-nums text-[#F7F7F8]">{row.metrics?.followups || 0}</div>
-                                  <div className="col-span-1 relative z-10 text-right text-xs sm:text-sm font-bold tabular-nums text-[#F7F7F8]">{row.metrics?.coldCalls || 0}</div>
-                                  <div className="col-span-2 relative z-10 text-right text-xs sm:text-sm font-bold tabular-nums text-[#F7F7F8]">{row.score.toLocaleString()}</div>
+                                  <div className="col-span-3 relative z-10 text-right text-xs sm:text-base font-black tabular-nums text-[#F7F7F8]">{row.score.toLocaleString()}</div>
+                                  
+                                  {/* Hover/Tap Card for Metrics - Centered on Row with Ultra-Smooth Transition */}
+                                  <div 
+                                    className={`absolute left-1/2 -top-44 z-[200] w-56 -translate-x-1/2 rounded-3xl border border-white/20 bg-black/95 p-5 shadow-[0_32px_64px_rgba(0,0,0,0.9)] backdrop-blur-3xl transition-all duration-300 ease-[cubic-bezier(0.23,1,0.32,1)] 
+                                      ${activeB2BRow === row.email 
+                                        ? 'opacity-100 scale-100 pointer-events-auto visible' 
+                                        : 'opacity-0 scale-95 pointer-events-none invisible group-hover/row:opacity-100 group-hover/row:scale-100 group-hover/row:pointer-events-auto group-hover/row:visible'}`}
+                                  >
+                                    <div className="flex w-full flex-col gap-4">
+                                      <div className="flex items-center justify-between">
+                                        <div className="flex flex-col gap-0.5">
+                                          <span className="text-[10px] font-black uppercase tracking-[0.25em] text-white/40">Squad Stats</span>
+                                          <span className="text-[9px] font-black uppercase tracking-widest text-[#ffcd00]/80">{row.name.split(' ')[0]}</span>
+                                        </div>
+                                        <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-white/5 border border-white/10 shadow-inner">
+                                          <span className="text-sm font-black text-[#ffcd00]">#{row.rank}</span>
+                                        </div>
+                                      </div>
+                                      
+                                      <div className="h-px w-full bg-gradient-to-r from-transparent via-white/15 to-transparent shadow-[0_0_10px_rgba(255,255,255,0.1)]" />
+                                      
+                                      <div className="grid grid-cols-2 gap-x-4 gap-y-4 text-xs">
+                                        <div className="space-y-1">
+                                          <span className="text-[9px] font-bold uppercase tracking-widest text-white/30 block">MOUs</span>
+                                          <div className="flex items-baseline gap-1">
+                                            <span className="text-base font-black text-white">{row.metrics?.mous || 0}</span>
+                                            <span className="text-[8px] font-bold text-white/20 uppercase tracking-tighter">units</span>
+                                          </div>
+                                        </div>
+                                        <div className="space-y-1 text-right">
+                                          <span className="text-[9px] font-bold uppercase tracking-widest text-white/30 block">Followups</span>
+                                          <div className="flex items-baseline justify-end gap-1">
+                                            <span className="text-base font-black text-white">{row.metrics?.followups || 0}</span>
+                                            <span className="text-[8px] font-bold text-white/20 uppercase tracking-tighter">log</span>
+                                          </div>
+                                        </div>
+                                        <div className="space-y-1">
+                                          <span className="text-[9px] font-bold uppercase tracking-widest text-white/30 block">Cold Calls</span>
+                                          <div className="flex items-baseline gap-1">
+                                            <span className="text-base font-black text-white">{row.metrics?.coldCalls || 0}</span>
+                                            <span className="text-[8px] font-bold text-white/20 uppercase tracking-tighter">calls</span>
+                                          </div>
+                                        </div>
+                                        <div className="space-y-1 text-right">
+                                          <span className="text-[9px] font-bold uppercase tracking-widest text-white/30 block">Total XP</span>
+                                          <div className="flex items-baseline justify-end gap-1 text-[var(--xp-gold)]">
+                                            <span className="text-base font-black">{row.score.toLocaleString()}</span>
+                                            <span className="text-[8px] font-bold opacity-40 uppercase tracking-tighter">pts</span>
+                                          </div>
+                                        </div>
+                                      </div>
+                                    </div>
+                                    {/* Arrow pointing down */}
+                                    <div className="absolute -bottom-2 left-1/2 h-4 w-4 -translate-x-1/2 rotate-45 border-r border-b border-white/20 bg-black/95" />
+                                  </div>
                                 </>
                               ) : (
                                 <>
