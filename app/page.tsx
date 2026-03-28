@@ -168,8 +168,8 @@ export default function Home() {
       </div>
 
       <main className="relative z-10 mx-auto flex min-h-screen w-full max-w-6xl flex-col items-center px-5 sm:px-8 lg:px-10">
-        <div className="absolute top-8 left-8 flex items-center gap-3 pointer-events-none opacity-60">
-          <img src="/logo.png" alt="Xcend Logo" className="w-26 h-26 object-contain" />
+        <div className="absolute top-4 left-4 sm:top-8 sm:left-8 flex items-center gap-2 sm:gap-3 pointer-events-none opacity-60">
+          <img src="/logo.png" alt="Xcend Logo" className="w-16 h-16 sm:w-26 sm:h-26 object-contain" />
         </div>
         
         <div className="relative flex w-full flex-col items-center justify-center pb-1 pt-20 sm:pt-24">
