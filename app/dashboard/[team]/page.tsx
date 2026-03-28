@@ -20,6 +20,11 @@ interface Performer {
     mous: number;
     coldCalls: number;
     followups: number;
+    sent_emails?: number;
+    confirmed_mous?: number;
+    igt_meetings?: number;
+    leads?: number;
+    realized?: number;
     igt_team_meeting?: number;
     igt_team_bonus?: number;
   };
@@ -1444,7 +1449,9 @@ export default function TeamDashboard() {
     currentTeamName: teamData.name
   };
 
-  const marathonEndMs = new Date("2026-04-18T23:59:59").getTime();
+  const marathonEndMs = (teamParam === 'igt_b2b') 
+    ? new Date("2026-04-30T23:59:59").getTime() 
+    : new Date("2026-04-18T23:59:59").getTime();
   const diffMs = Math.max(0, marathonEndMs - nowMs);
   const dayMs = 1000 * 60 * 60 * 24;
   const hourMs = 1000 * 60 * 60;
@@ -1737,7 +1744,7 @@ export default function TeamDashboard() {
             
             <div className="relative z-10 mb-10 sm:mb-16 flex flex-col items-center">
               <h3 className="text-2xl sm:text-3xl font-black text-[#F7F7F8] tracking-widest uppercase">The Podium</h3>
-              {isB2B && (
+              {(isB2B || isIGTB2B) && (
                 <p className="mt-2 text-[10px] sm:text-xs font-semibold uppercase tracking-[0.15em] text-white/55 text-center">
                   Podium ranking considers only member performance.
                 </p>
@@ -1805,7 +1812,7 @@ export default function TeamDashboard() {
               />
               
               {/* Search Bar - Positioned at top of table section */}
-              <div className="relative z-20 mb-8 mx-auto max-w-xl px-4">
+              <div className="relative z-10 mb-8 mx-auto max-w-xl px-4">
                 <div className="relative group">
                   <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
                     <span className="text-white/30 text-lg group-focus-within:text-[#ffcd00] transition-colors">🔍</span>
@@ -1891,18 +1898,15 @@ export default function TeamDashboard() {
                                 </>
                               ) : isIGTB2B ? (
                                 <>
-                                  <div>Meetings: <span className="text-white block mt-0.5 text-xs">{row.metrics?.mous || 0}</span></div>
-                                  <div>Cold Calls: <span className="text-white block mt-0.5 text-xs">{row.metrics?.coldCalls || 0}</span></div>
-                                  <div>Follow Ups: <span className="text-white block mt-0.5 text-xs">{row.metrics?.followups || 0}</span></div>
-                                  <div className="col-span-3 border-t border-white/5 pt-2 mt-1 flex justify-between">
-                                    <div className="flex flex-col">
-                                      <span className="text-white/30 text-[8px] uppercase">Team Meeting</span>
-                                      <span className="text-white text-[10px]">{row.metrics?.igt_team_meeting || 0}</span>
-                                    </div>
-                                    <div className="flex flex-col text-right">
-                                      <span className="text-white/30 text-[8px] uppercase">Team Bonus</span>
-                                      <span className="text-white text-[10px]">{row.metrics?.igt_team_bonus || 0}</span>
-                                    </div>
+                                  <div className="grid grid-cols-2 gap-x-6 gap-y-2">
+                                    <div className="flex justify-between"><span>Meetings:</span> <span className="text-white">{row.metrics?.mous || 0}</span></div>
+                                    <div className="flex justify-between"><span>Cold Calls:</span> <span className="text-white">{row.metrics?.coldCalls || 0}</span></div>
+                                    <div className="flex justify-between"><span>Follow Ups:</span> <span className="text-white">{row.metrics?.followups || 0}</span></div>
+                                    <div className="flex justify-between"><span>Sent Emails:</span> <span className="text-white">{row.metrics?.sent_emails || 0}</span></div>
+                                    <div className="flex justify-between"><span>Confirmed MOUs:</span> <span className="text-white">{row.metrics?.confirmed_mous || 0}</span></div>
+                                    <div className="flex justify-between"><span>Partner Mtgs:</span> <span className="text-white">{row.metrics?.igt_meetings || 0}</span></div>
+                                    <div className="flex justify-between"><span>Leads Gen:</span> <span className="text-white">{row.metrics?.leads || 0}</span></div>
+                                    <div className="flex justify-between"><span>Realized:</span> <span className="text-white">{row.metrics?.realized || 0}</span></div>
                                   </div>
                                 </>
                               ) : (
@@ -1969,7 +1973,7 @@ export default function TeamDashboard() {
                                   setActiveB2BRow(activeB2BRow === row.email ? null : row.email);
                                 }
                               }}
-                              className="group/row relative grid grid-cols-12 gap-2 sm:gap-4 px-4 sm:px-6 py-4 items-center transition-colors hover:bg-[var(--hover-bg)] cursor-pointer"
+                              className="group/row relative z-0 grid grid-cols-12 gap-2 sm:gap-4 px-4 sm:px-6 py-4 items-center transition-colors hover:bg-[var(--hover-bg)] cursor-pointer hover:z-50"
                               style={{ '--hover-bg': `color-mix(in srgb, ${accentColor}, transparent 95%)` } as any}
                             >
                               {(isB2B || isOGT || isIGTB2B ? (row.rank <= 3) : (row.rank <= 3)) && <GlimmerOverlay />}
@@ -2005,48 +2009,39 @@ export default function TeamDashboard() {
                                       
                                       <div className="h-px w-full bg-gradient-to-r from-transparent via-white/15 to-transparent shadow-[0_0_10px_rgba(255,255,255,0.1)]" />
                                       
-                                      <div className="grid grid-cols-2 gap-x-4 gap-y-4 text-xs">
-                                        <div className="space-y-1">
-                                          <span className="text-[9px] font-bold uppercase tracking-widest text-white/30 block">{isIGTB2B ? "Meetings" : isOGT ? "SU" : "MOUs"}</span>
-                                          <div className="flex items-baseline gap-1">
-                                            <span className="text-base font-black text-white">{row.metrics?.mous || 0}</span>
-                                            <span className="text-[8px] font-bold text-white/20 uppercase tracking-tighter">{isIGTB2B ? "mtg" : isOGT ? "u" : "units"}</span>
-                                          </div>
+                                      <div className="grid grid-cols-2 gap-x-4 gap-y-3 text-[10px]">
+                                        <div className="flex justify-between items-center bg-white/5 rounded-lg px-2 py-1.5 min-w-0">
+                                          <span className="text-white/30 uppercase tracking-tighter truncate mr-2">Meetings</span>
+                                          <span className="font-black text-white shrink-0">{row.metrics?.mous || 0}</span>
                                         </div>
-                                        <div className="space-y-1 text-right">
-                                          <span className="text-[9px] font-bold uppercase tracking-widest text-white/30 block">{isIGTB2B ? "Follow Ups" : isOGT ? "APD" : "Followups"}</span>
-                                          <div className="flex items-baseline justify-end gap-1">
-                                            <span className="text-base font-black text-white">{row.metrics?.followups || 0}</span>
-                                            <span className="text-[8px] font-bold text-white/20 uppercase tracking-tighter">{isIGTB2B ? "log" : "log"}</span>
-                                          </div>
+                                        <div className="flex justify-between items-center bg-white/5 rounded-lg px-2 py-1.5 min-w-0">
+                                          <span className="text-white/30 uppercase tracking-tighter truncate mr-2">Cold Calls</span>
+                                          <span className="font-black text-white shrink-0">{row.metrics?.coldCalls || 0}</span>
                                         </div>
-                                        <div className="space-y-1">
-                                          <span className="text-[9px] font-bold uppercase tracking-widest text-white/30 block">{isIGTB2B ? "Cold Calls" : isOGT ? "APL" : "Cold Calls"}</span>
-                                          <div className="flex items-baseline gap-1">
-                                            <span className="text-base font-black text-white">{row.metrics?.coldCalls || 0}</span>
-                                            <span className="text-[8px] font-bold text-white/20 uppercase tracking-tighter">{isIGTB2B ? "calls" : "calls"}</span>
-                                          </div>
+                                        <div className="flex justify-between items-center bg-white/5 rounded-lg px-2 py-1.5 min-w-0">
+                                          <span className="text-white/30 uppercase tracking-tighter truncate mr-2">Follow Ups</span>
+                                          <span className="font-black text-white shrink-0">{row.metrics?.followups || 0}</span>
                                         </div>
-                                        <div className="space-y-1 text-right">
-                                          <span className="text-[9px] font-bold uppercase tracking-widest text-white/30 block">Total XP</span>
-                                          <div className="flex items-baseline justify-end gap-1 text-[var(--xp-gold)]">
-                                            <span className="text-base font-black">{row.score.toLocaleString()}</span>
-                                            <span className="text-[8px] font-bold opacity-40 uppercase tracking-tighter">pts</span>
-                                          </div>
+                                        <div className="flex justify-between items-center bg-white/5 rounded-lg px-2 py-1.5 min-w-0">
+                                          <span className="text-white/30 uppercase tracking-tighter truncate mr-2">Sent Emails</span>
+                                          <span className="font-black text-white shrink-0">{row.metrics?.sent_emails || 0}</span>
                                         </div>
-                                        {isIGTB2B && (
-                                          <>
-                                            <div className="col-span-2 h-px w-full bg-white/5" />
-                                            <div className="space-y-1">
-                                              <span className="text-[9px] font-bold uppercase tracking-widest text-white/30 block">Team Mtg</span>
-                                              <span className="text-sm font-black text-white">{row.metrics?.igt_team_meeting || 0}</span>
-                                            </div>
-                                            <div className="space-y-1 text-right">
-                                              <span className="text-[9px] font-bold uppercase tracking-widest text-white/30 block">Team Bonus</span>
-                                              <span className="text-sm font-black text-white">{row.metrics?.igt_team_bonus || 0}</span>
-                                            </div>
-                                          </>
-                                        )}
+                                        <div className="flex justify-between items-center bg-white/5 rounded-lg px-2 py-1.5 min-w-0">
+                                          <span className="text-white/30 uppercase tracking-tighter truncate mr-2">Conf MOUs</span>
+                                          <span className="font-black text-white shrink-0">{row.metrics?.confirmed_mous || 0}</span>
+                                        </div>
+                                        <div className="flex justify-between items-center bg-white/5 rounded-lg px-2 py-1.5 min-w-0">
+                                          <span className="text-white/30 uppercase tracking-tighter truncate mr-2">Partner Mtgs</span>
+                                          <span className="font-black text-white shrink-0">{row.metrics?.igt_meetings || 0}</span>
+                                        </div>
+                                        <div className="flex justify-between items-center bg-white/5 rounded-lg px-2 py-1.5 min-w-0">
+                                          <span className="text-white/30 uppercase tracking-tighter truncate mr-2">Leads Gen</span>
+                                          <span className="font-black text-white shrink-0">{row.metrics?.leads || 0}</span>
+                                        </div>
+                                        <div className="flex justify-between items-center bg-white/5 rounded-lg px-2 py-1.5 min-w-0">
+                                          <span className="text-white/30 uppercase tracking-tighter truncate mr-2">Realized</span>
+                                          <span className="font-black text-white shrink-0">{row.metrics?.realized || 0}</span>
+                                        </div>
                                       </div>
                                     </div>
                                     {/* Arrow pointing down */}
