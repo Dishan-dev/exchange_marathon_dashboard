@@ -1899,14 +1899,12 @@ export default function TeamDashboard() {
                               ) : isIGTB2B ? (
                                 <>
                                   <div className="grid grid-cols-2 gap-x-6 gap-y-2">
-                                    <div className="flex justify-between"><span>Meetings:</span> <span className="text-white">{row.metrics?.mous || 0}</span></div>
                                     <div className="flex justify-between"><span>Cold Calls:</span> <span className="text-white">{row.metrics?.coldCalls || 0}</span></div>
                                     <div className="flex justify-between"><span>Follow Ups:</span> <span className="text-white">{row.metrics?.followups || 0}</span></div>
-                                    <div className="flex justify-between"><span>Sent Emails:</span> <span className="text-white">{row.metrics?.sent_emails || 0}</span></div>
-                                    <div className="flex justify-between"><span>Confirmed MOUs:</span> <span className="text-white">{row.metrics?.confirmed_mous || 0}</span></div>
-                                    <div className="flex justify-between"><span>Partner Mtgs:</span> <span className="text-white">{row.metrics?.igt_meetings || 0}</span></div>
+                                    <div className="flex justify-between"><span>Scheduled:</span> <span className="text-white">{row.metrics?.igt_meetings || 0}</span></div>
                                     <div className="flex justify-between"><span>Leads Gen:</span> <span className="text-white">{row.metrics?.leads || 0}</span></div>
-                                    <div className="flex justify-between"><span>Realized:</span> <span className="text-white">{row.metrics?.realized || 0}</span></div>
+                                    <div className="flex justify-between"><span>Contracts:</span> <span className="text-white">{row.metrics?.igt_contracts || 0}</span></div>
+                                    <div className="flex justify-between"><span>Training:</span> <span className="text-white">{row.metrics?.igt_training || 0}</span></div>
                                   </div>
                                 </>
                               ) : (
@@ -2011,10 +2009,6 @@ export default function TeamDashboard() {
                                       
                                       <div className="grid grid-cols-2 gap-x-4 gap-y-3 text-[10px]">
                                         <div className="flex justify-between items-center bg-white/5 rounded-lg px-2 py-1.5 min-w-0">
-                                          <span className="text-white/30 uppercase tracking-tighter truncate mr-2">Meetings</span>
-                                          <span className="font-black text-white shrink-0">{row.metrics?.mous || 0}</span>
-                                        </div>
-                                        <div className="flex justify-between items-center bg-white/5 rounded-lg px-2 py-1.5 min-w-0">
                                           <span className="text-white/30 uppercase tracking-tighter truncate mr-2">Cold Calls</span>
                                           <span className="font-black text-white shrink-0">{row.metrics?.coldCalls || 0}</span>
                                         </div>
@@ -2023,15 +2017,7 @@ export default function TeamDashboard() {
                                           <span className="font-black text-white shrink-0">{row.metrics?.followups || 0}</span>
                                         </div>
                                         <div className="flex justify-between items-center bg-white/5 rounded-lg px-2 py-1.5 min-w-0">
-                                          <span className="text-white/30 uppercase tracking-tighter truncate mr-2">Sent Emails</span>
-                                          <span className="font-black text-white shrink-0">{row.metrics?.sent_emails || 0}</span>
-                                        </div>
-                                        <div className="flex justify-between items-center bg-white/5 rounded-lg px-2 py-1.5 min-w-0">
-                                          <span className="text-white/30 uppercase tracking-tighter truncate mr-2">Conf MOUs</span>
-                                          <span className="font-black text-white shrink-0">{row.metrics?.confirmed_mous || 0}</span>
-                                        </div>
-                                        <div className="flex justify-between items-center bg-white/5 rounded-lg px-2 py-1.5 min-w-0">
-                                          <span className="text-white/30 uppercase tracking-tighter truncate mr-2">Partner Mtgs</span>
+                                          <span className="text-white/30 uppercase tracking-tighter truncate mr-2">Scheduled</span>
                                           <span className="font-black text-white shrink-0">{row.metrics?.igt_meetings || 0}</span>
                                         </div>
                                         <div className="flex justify-between items-center bg-white/5 rounded-lg px-2 py-1.5 min-w-0">
@@ -2039,8 +2025,12 @@ export default function TeamDashboard() {
                                           <span className="font-black text-white shrink-0">{row.metrics?.leads || 0}</span>
                                         </div>
                                         <div className="flex justify-between items-center bg-white/5 rounded-lg px-2 py-1.5 min-w-0">
-                                          <span className="text-white/30 uppercase tracking-tighter truncate mr-2">Realized</span>
-                                          <span className="font-black text-white shrink-0">{row.metrics?.realized || 0}</span>
+                                          <span className="text-white/30 uppercase tracking-tighter truncate mr-2">Contracts</span>
+                                          <span className="font-black text-white shrink-0">{row.metrics?.igt_contracts || 0}</span>
+                                        </div>
+                                        <div className="flex justify-between items-center bg-white/5 rounded-lg px-2 py-1.5 min-w-0">
+                                          <span className="text-white/30 uppercase tracking-tighter truncate mr-2">Training</span>
+                                          <span className="font-black text-white shrink-0">{row.metrics?.igt_training || 0}</span>
                                         </div>
                                       </div>
                                     </div>
