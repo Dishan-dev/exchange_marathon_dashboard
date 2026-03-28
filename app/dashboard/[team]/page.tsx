@@ -20,6 +20,8 @@ interface Performer {
     mous: number;
     coldCalls: number;
     followups: number;
+    igt_team_meeting?: number;
+    igt_team_bonus?: number;
   };
 }
 
@@ -708,6 +710,14 @@ function MiniTeamCard({
                     <div className="flex justify-between items-center text-[10px] font-bold">
                       <span className="text-white/30">Follow Ups</span>
                       <span className="text-[#00BCD4]">{team.performers.reduce((s, p) => s + p.metrics.followups, 0)}</span>
+                    </div>
+                    <div className="flex justify-between items-center text-[10px] font-bold border-t border-white/5 pt-2 mt-1">
+                      <span className="text-white/30">Team Meeting</span>
+                      <span className="text-[#FF9800]">{team.performers[0]?.metrics.igt_team_meeting || 0}</span>
+                    </div>
+                    <div className="flex justify-between items-center text-[10px] font-bold">
+                      <span className="text-white/30">Team Bonus</span>
+                      <span className="text-[#4CAF50]">{team.performers[0]?.metrics.igt_team_bonus || 0}</span>
                     </div>
                   </>
                 ) : (
@@ -1884,6 +1894,16 @@ export default function TeamDashboard() {
                                   <div>Meetings: <span className="text-white block mt-0.5 text-xs">{row.metrics?.mous || 0}</span></div>
                                   <div>Cold Calls: <span className="text-white block mt-0.5 text-xs">{row.metrics?.coldCalls || 0}</span></div>
                                   <div>Follow Ups: <span className="text-white block mt-0.5 text-xs">{row.metrics?.followups || 0}</span></div>
+                                  <div className="col-span-3 border-t border-white/5 pt-2 mt-1 flex justify-between">
+                                    <div className="flex flex-col">
+                                      <span className="text-white/30 text-[8px] uppercase">Team Meeting</span>
+                                      <span className="text-white text-[10px]">{row.metrics?.igt_team_meeting || 0}</span>
+                                    </div>
+                                    <div className="flex flex-col text-right">
+                                      <span className="text-white/30 text-[8px] uppercase">Team Bonus</span>
+                                      <span className="text-white text-[10px]">{row.metrics?.igt_team_bonus || 0}</span>
+                                    </div>
+                                  </div>
                                 </>
                               ) : (
                                 <>
@@ -1967,7 +1987,7 @@ export default function TeamDashboard() {
                                   
                                   {/* Hover/Tap Card for Metrics - Centered on Row with Ultra-Smooth Transition */}
                                   <div 
-                                    className={`absolute left-1/2 -top-44 z-[200] w-56 -translate-x-1/2 rounded-3xl border border-white/20 bg-black/95 p-5 shadow-[0_32px_64px_rgba(0,0,0,0.9)] backdrop-blur-3xl transition-all duration-300 ease-[cubic-bezier(0.23,1,0.32,1)] 
+                                    className={`absolute left-1/2 -top-56 z-[200] w-64 -translate-x-1/2 rounded-3xl border border-white/20 bg-black/95 p-5 shadow-[0_32px_64px_rgba(0,0,0,0.9)] backdrop-blur-3xl transition-all duration-300 ease-[cubic-bezier(0.23,1,0.32,1)] 
                                       ${activeB2BRow === row.email 
                                         ? 'opacity-100 scale-100 pointer-events-auto visible' 
                                         : 'opacity-0 scale-95 pointer-events-none invisible group-hover/row:opacity-100 group-hover/row:scale-100 group-hover/row:pointer-events-auto group-hover/row:visible'}`}
@@ -2014,6 +2034,19 @@ export default function TeamDashboard() {
                                             <span className="text-[8px] font-bold opacity-40 uppercase tracking-tighter">pts</span>
                                           </div>
                                         </div>
+                                        {isIGTB2B && (
+                                          <>
+                                            <div className="col-span-2 h-px w-full bg-white/5" />
+                                            <div className="space-y-1">
+                                              <span className="text-[9px] font-bold uppercase tracking-widest text-white/30 block">Team Mtg</span>
+                                              <span className="text-sm font-black text-white">{row.metrics?.igt_team_meeting || 0}</span>
+                                            </div>
+                                            <div className="space-y-1 text-right">
+                                              <span className="text-[9px] font-bold uppercase tracking-widest text-white/30 block">Team Bonus</span>
+                                              <span className="text-sm font-black text-white">{row.metrics?.igt_team_bonus || 0}</span>
+                                            </div>
+                                          </>
+                                        )}
                                       </div>
                                     </div>
                                     {/* Arrow pointing down */}
