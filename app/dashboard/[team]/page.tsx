@@ -23,7 +23,10 @@ interface Performer {
     sent_emails?: number;
     confirmed_mous?: number;
     igt_meetings?: number;
+    igt_proposals?: number;
     leads?: number;
+    igt_contracts?: number;
+    igt_training?: number;
     realized?: number;
     igt_team_meeting?: number;
     igt_team_bonus?: number;
@@ -1901,6 +1904,7 @@ export default function TeamDashboard() {
                                   <div className="grid grid-cols-2 gap-x-6 gap-y-2">
                                     <div className="flex justify-between"><span>Cold Calls:</span> <span className="text-white">{row.metrics?.coldCalls || 0}</span></div>
                                     <div className="flex justify-between"><span>Follow Ups:</span> <span className="text-white">{row.metrics?.followups || 0}</span></div>
+                                    <div className="flex justify-between"><span>Proposals:</span> <span className="text-white">{row.metrics?.igt_proposals || 0}</span></div>
                                     <div className="flex justify-between"><span>Scheduled:</span> <span className="text-white">{row.metrics?.igt_meetings || 0}</span></div>
                                     <div className="flex justify-between"><span>Leads Gen:</span> <span className="text-white">{row.metrics?.leads || 0}</span></div>
                                     <div className="flex justify-between"><span>Contracts:</span> <span className="text-white">{row.metrics?.igt_contracts || 0}</span></div>
@@ -2015,6 +2019,10 @@ export default function TeamDashboard() {
                                         <div className="flex justify-between items-center bg-white/5 rounded-lg px-2 py-1.5 min-w-0">
                                           <span className="text-white/30 uppercase tracking-tighter truncate mr-2">Follow Ups</span>
                                           <span className="font-black text-white shrink-0">{row.metrics?.followups || 0}</span>
+                                        </div>
+                                        <div className="flex justify-between items-center bg-white/5 rounded-lg px-2 py-1.5 min-w-0">
+                                          <span className="text-white/30 uppercase tracking-tighter truncate mr-2">Proposals</span>
+                                          <span className="font-black text-white shrink-0">{row.metrics?.igt_proposals || 0}</span>
                                         </div>
                                         <div className="flex justify-between items-center bg-white/5 rounded-lg px-2 py-1.5 min-w-0">
                                           <span className="text-white/30 uppercase tracking-tighter truncate mr-2">Scheduled</span>
