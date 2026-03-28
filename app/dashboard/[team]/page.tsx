@@ -9,6 +9,14 @@ import { motion, AnimatePresence } from "framer-motion";
 import MascotAvatar from "@/components/MascotAvatar";
 import PawPrints from "@/components/PawPrints";
 import { supabase } from "@/lib/supabase";
+import Cropper, { Area, Point } from "react-easy-crop";
+
+interface WrappedStats {
+  topTeam: { name: string; points: number };
+  globalMvp: Performer | null;
+  teamAce: Performer | null;
+  currentTeamName: string;
+}
 
 interface Performer {
   email: string; // 👈 Added unique identifier
@@ -883,293 +891,443 @@ function PerformerModal({
   );
 }
 
+// Utility function to crop image
+const getCroppedImg = async (imageSrc: string, pixelCrop: Area): Promise<string> => {
+  const image = new Image();
+  image.src = imageSrc;
+  await new Promise((resolve) => (image.onload = resolve));
+
+  const canvas = document.createElement("canvas");
+  const ctx = canvas.getContext("2d");
+  if (!ctx) return "";
+
+  canvas.width = pixelCrop.width;
+  canvas.height = pixelCrop.height;
+
+  ctx.drawImage(
+    image,
+    pixelCrop.x,
+    pixelCrop.y,
+    pixelCrop.width,
+    pixelCrop.height,
+    0,
+    0,
+    pixelCrop.width,
+    pixelCrop.height
+  );
+
+  return canvas.toDataURL("image/png");
+};
+
 function WrappedExperience({ 
   onClose,
   stats,
   teamColor,
-  teamParam
+  teamParam,
 }: { 
-  onClose: () => void;
-  stats: {
-    topTeam: { name: string; points: number };
-    globalMvp: { name: string; avatar: string; role: string } | null;
-    currentTeamName: string;
-    teamAce: { name: string; avatar: string; score: number } | null;
-  };
+  onClose: () => void; 
+  stats: WrappedStats; 
   teamColor: string;
   teamParam: string;
 }) {
-  const [currentCard, setCurrentCard] = useState(0);
+  const [activeIndex, setActiveIndex] = useState(0);
   const [isSharing, setIsSharing] = useState(false);
+  const [customPhotos, setCustomPhotos] = useState<Record<number, string>>({});
+  const [isCropping, setIsCropping] = useState(false);
+  const [crop, setCrop] = useState<Point>({ x: 0, y: 0 });
+  const [zoom, setZoom] = useState(1);
+  const [completedCrop, setCompletedCrop] = useState<Area | null>(null);
+  const [tempImage, setTempImage] = useState<string | null>(null);
   const cardRef = useRef<HTMLDivElement>(null);
-  const totalCards = 4;
-
-  const handleShare = async (e: React.MouseEvent) => {
-    e.stopPropagation();
-    if (!cardRef.current || isSharing) return;
-    
-    setIsSharing(true);
-    try {
-      // Small delay to ensure any transient animations settle
-      await new Promise(r => setTimeout(r, 100));
-      
-      const dataUrl = await htmlToImage.toPng(cardRef.current, {
-        quality: 0.95,
-        backgroundColor: '#051B1D',
-        pixelRatio: 2,
-        skipFonts: false,
-      });
-
-      const blob = await (await fetch(dataUrl)).blob();
-      const file = new File([blob], 'igv-marathon-wrap.png', { type: 'image/png' });
-
-      if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
-        await navigator.share({
-          files: [file],
-          title: 'iGV Hackathon Hall of Fame',
-          text: 'Check out my performance in the Exchange Marathon! 🏃‍♂️🏆',
-        });
-      } else {
-        // Fallback: Download and open WhatsApp
-        const url = URL.createObjectURL(blob);
-        const link = document.createElement('a');
-        link.href = url;
-        link.download = `${teamParam}-marathon-badge.png`;
-        link.click();
-        
-        const shareText = encodeURIComponent(`Check out my performance in the ${teamParam.toUpperCase()} Marathon! 🏃‍♂️🏆`);
-        window.open(`https://wa.me/?text=${shareText}`, '_blank');
-      }
-    } catch (err) {
-      console.error('Share failed:', err);
-      alert("Sharing failed. Please try downloading the flyer.");
-    } finally {
-      setIsSharing(false);
-    }
-  };
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [seriesBlobFiles, setSeriesBlobFiles] = useState<File[]>([]);
+  const [isPreparingSeries, setIsPreparingSeries] = useState(false);
 
   useEffect(() => {
-    const timer = setInterval(() => {
-      if (currentCard < totalCards - 1) {
-        setCurrentCard(prev => prev + 1);
-      } else {
-        onClose();
-      }
-    }, 6000);
-    return () => clearInterval(timer);
-  }, [currentCard, onClose]);
+    const originalStyle = window.getComputedStyle(document.body).overflow;
+    document.body.style.overflow = 'hidden';
+    return () => {
+      document.body.style.overflow = originalStyle;
+    };
+  }, []);
+
+  const hasUploadedCurrent = !!customPhotos[activeIndex];
+  const allPerformersUploaded = !!customPhotos[2] && !!customPhotos[3];
 
   const cards = [
     {
-      id: "intro",
-      bg: "from-[#192230] via-[#3d474e] to-[#192230]",
+      id: "weekly-snapshot",
+      title: "Weekly Snapshot",
       content: (
-        <div className="flex flex-col items-center justify-center h-full text-center px-6">
-          <motion.div
-             initial={{ scale: 0.8, opacity: 0, rotate: -10 }}
-             animate={{ scale: 1, opacity: 1, rotate: 0 }}
-             className="w-48 h-48 sm:w-64 sm:h-64 mb-12 relative flex items-center justify-center"
-          >
-            <MascotAvatar type="laptop" size={256} glowColor={teamColor} />
-          </motion.div>
-          <motion.p 
-            initial={{ y: 20, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            transition={{ delay: 0.3 }}
-            className="text-[10px] font-black uppercase tracking-[0.6em] text-[#73FFFF]/60 mb-4"
-          >
-            WEEK 12 RECAP
-          </motion.p>
-          <motion.h1 
-            initial={{ y: 20, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            transition={{ delay: 0.5 }}
-            className="text-4xl sm:text-6xl font-black text-white italic tracking-tighter leading-none"
-          >
-            {stats.currentTeamName} MARATHON <br />
-            <span className="text-[#73FFFF]">HALL OF FAME</span>
-          </motion.h1>
+        <div className="flex flex-col h-full text-center px-6 sm:px-10 relative w-full py-16 justify-center gap-12">
+          <img src="/logo.png" alt="XCEND" className="absolute top-10 h-8 object-contain brightness-0 invert opacity-80 left-1/2 -translate-x-1/2" />
+          <div className="flex flex-col items-center">
+            <div className="transform scale-[1.15] relative">
+               <div className="absolute -inset-10 bg-[#FFD700]/10 blur-3xl rounded-full" />
+               <MascotAvatar type="flag" size={320} glowColor={teamColor} />
+            </div>
+          </div>
+          <div className="space-y-3 z-10">
+            <p className="text-xs sm:text-sm font-black uppercase tracking-[0.6em] text-[#FFD700]/90 italic">WEEK 01 SNAPSHOT</p>
+            <h2 className="text-3xl sm:text-5xl font-black text-white italic tracking-tighter uppercase leading-tight max-w-[95%] mx-auto">
+              {stats.currentTeamName} RECAP
+            </h2>
+          </div>
         </div>
       )
     },
     {
       id: "best-team",
-      bg: "from-[#1A237E] via-[#311B92] to-[#1A237E]",
+      title: "Best Team",
       content: (
-        <div className="flex flex-col items-center justify-center h-full text-center px-6">
-          <motion.div 
-            initial={{ scale: 2, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            className="text-[12rem] font-black text-white/5 absolute -top-10 left-1/2 -translate-x-1/2 select-none"
-          >
-            TITAN
-          </motion.div>
-          <motion.div
-             initial={{ y: 50, opacity: 0 }}
-             animate={{ y: 0, opacity: 1 }}
-             className="relative z-10"
-          >
-            <p className="text-[10px] font-black uppercase tracking-[0.5em] text-white/40 mb-6">BEST PERFORMING TEAM</p>
-            <h2 className="text-6xl sm:text-8xl font-black text-white italic tracking-tighter mb-4">{stats.topTeam.name}</h2>
-            <div className="flex items-center justify-center gap-8 mt-12">
-              <div className="text-center">
-                <p className="text-4xl font-black text-[#FFD700]">{stats.topTeam.points}</p>
-                <p className="text-[8px] font-bold uppercase tracking-widest text-white/30">POINTS</p>
-              </div>
-              {/* <div className="h-10 w-px bg-white/10" />
-              <div className="text-center">
-                <p className="text-4xl font-black text-[#00E676]">+{stats.topTeam.growth}%</p>
-                <p className="text-[8px] font-bold uppercase tracking-widest text-white/30">GROWTH</p>
-              </div> */}
+        <div className="flex flex-col h-full text-center px-6 sm:px-10 relative overflow-hidden bg-black/20 py-16 justify-center">
+          <img src="/logo.png" alt="XCEND" className="absolute top-10 h-8 object-contain brightness-0 invert opacity-80 left-1/2 -translate-x-1/2" />
+          <div className="text-[10rem] sm:text-[14rem] font-black text-white/[0.03] absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 select-none tracking-widest uppercase italic pointer-events-none">
+            {stats.topTeam.name.split(' ')[0]}
+          </div>
+          <div className="relative z-10 space-y-8">
+            <p className="text-xs sm:text-sm font-black uppercase tracking-[0.5em] text-white/90 italic">BEST PERFORMING TEAM</p>
+            <h2 className="text-4xl sm:text-6xl font-black text-white italic tracking-tighter leading-tight uppercase max-w-[95%] mx-auto">
+              {stats.topTeam.name}
+            </h2>
+            <div className="inline-flex items-center justify-center rounded-full glass border border-white/20 px-8 py-3 shadow-2xl">
+              <p className="text-2xl sm:text-4xl font-black text-[#FFD700] italic mr-3">{stats.topTeam.points}</p>
+              <p className="text-sm sm:text-base font-black uppercase tracking-[0.3em] text-white/60 italic">PTS</p>
             </div>
-          </motion.div>
+          </div>
+          <div className="absolute -bottom-10 -right-10 pointer-events-none opacity-90 scale-100 origin-bottom-right">
+            <MascotAvatar type="laptop" size={280} glowColor={teamColor} />
+          </div>
         </div>
       )
     },
     {
-      id: "global-mvp",
-      bg: "from-[#4A148C] via-[#311B92] to-[#4A148C]",
+      id: "best-performer-member",
+      title: "Best Performer",
       content: (
-        <div className="flex flex-col items-center justify-center h-full text-center px-6">
-          <motion.div 
-            initial={{ rotate: -90, opacity: 0 }}
-            animate={{ rotate: 0, opacity: 1 }}
-            className="absolute -right-20 top-1/2 -translate-y-1/2 text-[10rem] font-black text-white/5 select-none"
-          >
-            ELITE
-          </motion.div>
-          <motion.div
-             initial={{ x: -100, opacity: 0 }}
-             animate={{ x: 0, opacity: 1 }}
-             className="relative z-10"
-          >
-            <p className="text-[10px] font-black uppercase tracking-[0.5em] text-white/40 mb-8">GLOBAL MVP</p>
-            <div className="relative inline-block mb-12">
-              <div className="w-40 h-40 sm:w-56 sm:h-56 rounded-4xl bg-linear-to-br from-[#FF1744] to-[#C41C00] flex items-center justify-center text-6xl font-black text-white shadow-2xl skew-x-6">
-                {stats.globalMvp?.avatar || "🏆"}
-              </div>
-              <div className="absolute -bottom-4 -right-4 w-16 h-16 bg-[#FFD700] rounded-2xl flex items-center justify-center text-2xl shadow-xl transform rotate-12">
-                👑
+        <div className="flex flex-col items-center h-full text-center px-6 sm:px-10 relative w-full pt-44 pb-24 justify-center">
+          <img src="/logo.png" alt="XCEND" className="absolute top-12 h-8 object-contain brightness-0 invert opacity-60 left-1/2 -translate-x-1/2" />
+          
+          <div className="z-10 space-y-12 w-full flex flex-col items-center">
+            <div>
+              <p className="text-[10px] sm:text-xs font-black uppercase tracking-[0.6em] text-[#FFD700]/90 mb-10">BEST PERFORMER</p>
+              <div className="relative">
+                <div className="w-40 h-40 sm:w-56 sm:h-56 rounded-full border-[6px] border-[#FFD700]/15 overflow-hidden shadow-[0_30px_60px_rgba(0,0,0,0.5)] mx-auto bg-white/10 flex items-center justify-center relative backdrop-blur-md">
+                  {customPhotos[2] ? (
+                    <img src={customPhotos[2]} className="w-full h-full object-cover" alt="Custom" />
+                  ) : (
+                    <div className="text-7xl opacity-80">{stats.globalMvp?.avatar || "👤"}</div>
+                  )}
+                </div>
+                <div className="absolute -inset-6 bg-[#FFD700]/5 blur-3xl -z-10 rounded-full" />
               </div>
             </div>
-            <h2 className="text-5xl sm:text-7xl font-black text-white italic tracking-tighter">{stats.globalMvp?.name || "The Elite"}</h2>
-            <p className="text-lg font-bold text-[#FF1744] uppercase tracking-[0.2em] mt-2">{stats.globalMvp?.role || "Global MVP"}</p>
-          </motion.div>
+
+            <div className="space-y-6 w-full flex flex-col items-center">
+              <div className="space-y-2">
+                <p className="text-[9px] sm:text-[11px] font-black text-[#FFD700] uppercase tracking-[0.5em] opacity-80 border-b border-[#FFD700]/20 pb-1 inline-block">
+                  {stats.currentTeamName}
+                </p>
+                <h2 className="text-3xl sm:text-5xl font-black text-white italic tracking-tighter uppercase leading-tight max-w-[95%]">
+                  {stats.globalMvp?.name || "Member Name"}
+                </h2>
+              </div>
+              <div className="pt-6 w-full border-t border-white/5">
+                <p className="text-[10px] sm:text-xs font-black text-white/30 uppercase tracking-[0.5em]">MEMBER</p>
+              </div>
+            </div>
+          </div>
         </div>
       )
     },
     {
-      id: "squad-ace",
-      bg: `from-[#000000] via-[#212121] to-[#000000]`,
+      id: "best-performer-tl",
+      title: "Best TL",
       content: (
-        <div className="flex flex-col items-center justify-center h-full text-center px-6">
-          <motion.div 
-            initial={{ scale: 0.5, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            className="absolute inset-0 flex items-center justify-center"
-          >
-             <div className="w-[150%] h-[150%] bg-radial from-white/10 to-transparent opacity-20" />
-          </motion.div>
-          <motion.div
-             initial={{ y: 100, opacity: 0 }}
-             animate={{ y: 0, opacity: 1 }}
-             className="relative z-10"
-          >
-            <p className="text-[10px] font-black uppercase tracking-[0.5em] text-[#73FFFF]/40 mb-10">{stats.currentTeamName} SQUAD ACE</p>
-            <div className="w-32 h-32 sm:w-44 sm:h-44 rounded-full border-2 border-[#73FFFF]/30 p-2 mb-10 mx-auto">
-              <div className="w-full h-full rounded-full bg-linear-to-br from-[#73FFFF]/20 to-transparent flex items-center justify-center text-4xl font-black text-white glass-premium">
-                {stats.teamAce?.avatar || "⭐"}
+        <div className="flex flex-col items-center h-full text-center px-6 sm:px-10 relative w-full pt-44 pb-24 justify-center">
+          <img src="/logo.png" alt="XCEND" className="absolute top-12 h-8 object-contain brightness-0 invert opacity-60 left-1/2 -translate-x-1/2" />
+          
+          <div className="z-10 space-y-12 w-full flex flex-col items-center">
+            <div>
+              <p className="text-[10px] sm:text-xs font-black uppercase tracking-[0.6em] text-[#FFD700]/90 mb-10">BEST PERFORMER</p>
+              <div className="relative">
+                <div className="w-40 h-40 sm:w-56 sm:h-56 rounded-full border-[6px] border-[#FFD700]/15 overflow-hidden shadow-[0_30px_60px_rgba(0,0,0,0.5)] mx-auto bg-white/10 flex items-center justify-center relative backdrop-blur-sm">
+                  {customPhotos[3] ? (
+                    <img src={customPhotos[3]} className="w-full h-full object-cover" alt="Custom" />
+                  ) : (
+                    <div className="text-7xl opacity-80">{stats.teamAce?.avatar || "⭐"}</div>
+                  )}
+                </div>
+                <div className="absolute -inset-6 bg-[#FFD700]/5 blur-3xl -z-10 rounded-full" />
               </div>
             </div>
-            <h2 className="text-6xl sm:text-8xl font-black text-[#73FFFF] italic tracking-tighter mb-4">{stats.teamAce?.name || "The Legend"}</h2>
-            <p className="text-2xl font-black text-white italic tracking-widest">{stats.teamAce?.score || 0} XP</p>
-            <div className="mt-16 flex gap-4 justify-center">
-               <button 
-                onClick={onClose}
-                className="px-10 py-4 bg-white text-black font-black uppercase text-xs tracking-widest rounded-full hover:scale-105 active:scale-95 transition-all shadow-xl"
-               >
-                 Back to Podium
-               </button>
+
+            <div className="space-y-6 w-full flex flex-col items-center">
+              <div className="space-y-2">
+                <p className="text-[9px] sm:text-[11px] font-black text-[#FFD700] uppercase tracking-[0.5em] opacity-80 border-b border-[#FFD700]/20 pb-1 inline-block">
+                  {stats.currentTeamName}
+                </p>
+                <h2 className="text-3xl sm:text-5xl font-black text-white italic tracking-tighter uppercase leading-tight max-w-[95%]">
+                  {stats.teamAce?.name || "Team Leader"}
+                </h2>
+              </div>
+              <div className="pt-6 w-full border-t border-white/5">
+                <p className="text-[10px] sm:text-xs font-black text-white/30 uppercase tracking-[0.5em]">TEAM LEADER</p>
+              </div>
             </div>
-          </motion.div>
+          </div>
         </div>
       )
     }
   ];
 
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = () => {
+        setTempImage(reader.result as string);
+        setIsCropping(true);
+        // Reset input value so same file can be selected again
+        e.target.value = '';
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleApplyCrop = async () => {
+    if (tempImage && completedCrop) {
+      const cropped = await getCroppedImg(tempImage, completedCrop);
+      setCustomPhotos(prev => ({ ...prev, [activeIndex]: cropped }));
+      setIsCropping(false);
+      setTempImage(null);
+    }
+  };
+
+  const performShare = async () => {
+    if (!cardRef.current || isSharing) return;
+    setIsSharing(true);
+    try {
+      await new Promise(r => setTimeout(r, 500));
+      const dataUrl = await htmlToImage.toPng(cardRef.current, { quality: 1.0, pixelRatio: 2 });
+      const blob = await (await fetch(dataUrl)).blob();
+      const file = new File([blob], `flyer-${cards[activeIndex].id}.png`, { type: 'image/png' });
+
+      if (navigator.share) {
+        await navigator.share({ files: [file], title: 'Marathon Flyer', text: 'My performance recap!' });
+      } else {
+        const link = document.createElement('a');
+        link.href = dataUrl;
+        link.download = `flyer-${cards[activeIndex].id}.png`;
+        link.click();
+      }
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setIsSharing(false);
+    }
+  };
+
+  const performShareAll = async () => {
+    if (isSharing || isPreparingSeries) return;
+    setIsPreparingSeries(true);
+    const files: File[] = [];
+    try {
+      for (let i = 0; i < cards.length; i++) {
+        setActiveIndex(i);
+        await new Promise(r => setTimeout(r, 600));
+        if (!cardRef.current) continue;
+        const dataUrl = await htmlToImage.toPng(cardRef.current, { quality: 1.0, pixelRatio: 2 });
+        const blob = await (await fetch(dataUrl)).blob();
+        files.push(new File([blob], `flyer-${i+1}.png`, { type: 'image/png' }));
+      }
+      setSeriesBlobFiles(files);
+      // We don't call navigator.share here because the gesture is lost.
+      // The UI will now show a "CONFIRM SHARE" button which is a fresh gesture.
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setIsPreparingSeries(false);
+    }
+  };
+
+  const triggerSeriesShare = async () => {
+    if (seriesBlobFiles.length === 0) return;
+    try {
+      if (navigator.share && navigator.canShare && navigator.canShare({ files: seriesBlobFiles })) {
+        await navigator.share({ files: seriesBlobFiles, title: 'Marathon Recap Series', text: 'Check out the marathon performance recap!' });
+      } else {
+        seriesBlobFiles.forEach(file => {
+          const link = document.createElement('a');
+          link.href = URL.createObjectURL(file);
+          link.download = file.name;
+          link.click();
+        });
+      }
+      setSeriesBlobFiles([]); // Clear after success
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const isPerformerCard = cards[activeIndex].id.includes("performer");
+
   return (
-    <div className="fixed inset-0 z-[120] bg-black overflow-hidden flex flex-col">
-      {/* Progress Bars */}
-      <div className="absolute top-0 left-0 right-0 z-[130] flex gap-1.5 p-4 sm:p-6 px-10">
-        {cards.map((_, i) => (
-          <div key={i} className="flex-1 h-1 bg-white/10 rounded-full overflow-hidden">
-             <motion.div 
-               initial={{ width: 0 }}
-               animate={{ width: i < currentCard ? "100%" : i === currentCard ? "100%" : "0%" }}
-               transition={{ duration: i === currentCard ? 6 : 0, ease: "linear" }}
-               className="h-full bg-white"
-             />
-          </div>
-        ))}
-      </div>
-
-      <AnimatePresence mode="wait">
-        <motion.div
-           key={cards[currentCard].id}
-           initial={{ x: 300, opacity: 0, scale: 0.9 }}
-           animate={{ x: 0, opacity: 1, scale: 1 }}
-           exit={{ x: -300, opacity: 0, scale: 0.9 }}
-           transition={{ type: "spring", damping: 20, stiffness: 100 }}
-           className={`relative w-full h-full bg-linear-to-br ${cards[currentCard].bg} flex flex-col items-center justify-center overflow-hidden`}
-           onClick={() => {
-             if (currentCard < totalCards - 1) setCurrentCard(prev => prev + 1);
-             else onClose();
-           }}
-        >
-          <div ref={cardRef} className="w-full h-full flex flex-col items-center justify-center">
-            {cards[currentCard].content}
-          </div>
-
-          {/* Share Button Overlay */}
-          <div className="absolute bottom-12 left-0 right-0 z-50 flex justify-center px-6 pointer-events-none">
-             <button
-                onClick={handleShare}
-                disabled={isSharing}
-                className="pointer-events-auto flex items-center gap-3 px-8 py-4 bg-white/10 hover:bg-white/20 backdrop-blur-xl border border-white/20 rounded-2xl text-white font-black uppercase text-xs tracking-[0.2em] transition-all hover:scale-105 active:scale-95 disabled:opacity-50"
-             >
-               {isSharing ? (
-                 <>
-                   <div className="h-4 w-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                   Processing...
-                 </>
-               ) : (
-                 <>
-                   <span>🚀</span>
-                   Share Flyer
-                 </>
-               )}
-             </button>
-          </div>
-          
-          {/* Navigation Hints */}
-          <div className="absolute inset-y-0 left-0 w-1/4 z-20 cursor-w-resize" onClick={(e) => {
-            e.stopPropagation();
-            if (currentCard > 0) setCurrentCard(prev => prev - 1);
-          }} />
-          <div className="absolute inset-y-0 right-0 w-1/4 z-20 cursor-e-resize" />
-        </motion.div>
-      </AnimatePresence>
-
-      {/* Close Button */}
-      <button 
-        onClick={onClose}
-        className="absolute top-12 right-6 z-[140] w-12 h-12 flex items-center justify-center rounded-full bg-black/20 hover:bg-black/40 text-white transition-all backdrop-blur-md"
+    <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 sm:p-8 bg-black/40 backdrop-blur-3xl">
+      <motion.div 
+        initial={{ opacity: 0, scale: 0.95, y: 30 }}
+        animate={{ opacity: 1, scale: 1, y: 0 }}
+        className="relative w-full max-w-6xl bg-black/80 backdrop-blur-3xl rounded-[2rem] sm:rounded-[3rem] border border-white/10 overflow-y-auto md:overflow-hidden shadow-[0_0_100px_rgba(0,0,0,0.8)] flex flex-col md:flex-row h-full max-h-[96vh] md:h-[90vh] md:max-h-[850px]"
       >
-        ✕
-      </button>
+        {/* Close Button */}
+        <button 
+          onClick={onClose}
+          className="absolute top-6 right-6 z-50 p-2 rounded-full bg-white/5 hover:bg-white/10 border border-white/10 text-white/40 hover:text-white transition-all hover:rotate-90 md:hidden"
+        >
+          <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
+
+        <button 
+          onClick={onClose}
+          className="absolute -top-12 -right-12 z-50 p-3 rounded-full bg-black/60 backdrop-blur-xl border border-white/10 text-white/40 hover:text-white transition-all hover:rotate-90 hidden md:flex hover:scale-110"
+        >
+          <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
+        {/* Top/Left Column: Preview List */}
+        <div className="w-full md:w-[300px] border-b md:border-b-0 md:border-r border-white/5 bg-black/40 flex flex-col h-[140px] md:h-full">
+          <div className="hidden md:block p-8 border-b border-white/5">
+            <h3 className="text-[10px] font-black text-white/40 uppercase tracking-[0.4em] italic">Recap Series</h3>
+          </div>
+          <div className="flex-1 overflow-x-auto md:overflow-y-auto p-4 md:p-6 flex md:flex-col gap-4 md:space-y-6 custom-scrollbar items-center">
+            {cards.map((card, i) => (
+              <button
+                key={card.id}
+                onClick={() => { setActiveIndex(i); setIsCropping(false); }}
+                className={`relative flex-shrink-0 w-[60px] md:w-full aspect-[9/16] rounded-lg md:rounded-[2rem] overflow-hidden transition-all group ${activeIndex === i ? 'ring-2 ring-[#FFD700] ring-offset-2 md:ring-offset-4 ring-offset-[#121926] scale-95 md:scale-95' : 'opacity-40 hover:opacity-100'}`}
+              >
+                <div className="w-full h-full relative" style={{ backgroundImage: 'url(/flyer-bg.png)', backgroundSize: 'cover' }}>
+                  <div className="scale-[0.25] origin-top-left w-[400%] h-[400%] pointer-events-none opacity-80">
+                     {card.content}
+                  </div>
+                  <div className="absolute inset-0 bg-black/10 group-hover:bg-transparent transition-colors" />
+                  <div className="absolute top-2 left-2 md:top-6 md:left-6 bg-black/60 backdrop-blur-md px-1.5 md:px-3 py-0.5 md:py-1.5 rounded-full border border-white/10 flex items-center gap-1 md:gap-2">
+                    <span className="text-[7px] md:text-[10px] font-black text-[#FFD700] italic">#{i + 1}</span>
+                    <span className="hidden md:block text-[8px] font-black text-white/90 uppercase tracking-widest">{card.title}</span>
+                  </div>
+                </div>
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Middle: Editor & Preview */}
+        <div className="flex-1 flex flex-col bg-black/40">
+          <div className="flex-1 relative flex items-center justify-center p-4 md:p-8 overflow-hidden">
+            {isCropping ? (
+              <div className="relative w-full max-w-[320px] md:max-w-md aspect-square rounded-3xl overflow-hidden border border-white/10 shadow-2xl">
+                <Cropper
+                  image={tempImage!}
+                  crop={crop}
+                  zoom={zoom}
+                  aspect={1}
+                  cropShape="round"
+                  onCropChange={setCrop}
+                  onCropComplete={(_, px) => setCompletedCrop(px)}
+                  onZoomChange={setZoom}
+                />
+              </div>
+            ) : (
+        <div 
+          ref={cardRef}
+          className="w-auto h-full max-h-[68vh] md:max-h-[75vh] max-w-[90vw] aspect-[9/16] rounded-3xl md:rounded-[2.5rem] overflow-hidden shadow-[0_40px_80px_rgba(0,0,0,0.6)] relative border border-white/10 transition-all scale-100 md:scale-100 origin-center bg-black"
+          style={{ backgroundImage: 'url(/flyer-bg.png)', backgroundSize: 'cover' }}
+        >
+                {cards[activeIndex].content}
+              </div>
+            )}
+
+            {/* Editing Controls Overlay */}
+            {isPerformerCard && !isCropping && (
+              <div className="absolute top-6 right-6 md:top-10 md:right-10 flex flex-col gap-2 md:gap-3">
+                <button 
+                  onClick={() => fileInputRef.current?.click()}
+                  className="px-4 py-2 md:px-6 md:py-3 bg-white/10 hover:bg-white/20 backdrop-blur-xl border border-white/20 rounded-xl md:rounded-2xl text-white font-black uppercase text-[8px] md:text-[10px] tracking-widest transition-all hover:scale-105 shadow-xl"
+                >
+                  {hasUploadedCurrent ? 'Change Photo' : 'Upload Photo'}
+                </button>
+                {hasUploadedCurrent && (
+                  <button 
+                    onClick={() => setIsCropping(true)}
+                    className="px-4 py-2 md:px-6 md:py-3 bg-[#FFD700] text-black rounded-xl md:rounded-2xl font-black uppercase text-[8px] md:text-[10px] tracking-widest transition-all hover:scale-105 shadow-xl"
+                  >
+                    Adjust Crop
+                  </button>
+                )}
+              </div>
+            )}
+
+            {/* Zoom Slider for Cropper */}
+            {isCropping && (
+              <div className="absolute bottom-10 left-1/2 -translate-x-1/2 w-64 bg-black/60 backdrop-blur-xl p-4 rounded-2xl border border-white/10 flex flex-col gap-2">
+                <div className="flex justify-between text-[10px] font-black text-white/40 uppercase tracking-widest">
+                  <span>Zoom</span>
+                  <span>{Math.round(zoom * 100)}%</span>
+                </div>
+                <input type="range" value={zoom} min={1} max={3} step={0.1} onChange={(e) => setZoom(Number(e.target.value))} className="w-full" />
+                <button onClick={handleApplyCrop} className="mt-2 w-full py-3 bg-[#FFD700] text-black font-black uppercase text-[10px] tracking-[0.2em] rounded-xl">Apply Changes</button>
+              </div>
+            )}
+          </div>
+
+          {/* Bottom Bar: Action */}
+          <div className="p-4 md:p-8 border-t border-white/5 bg-black/60 backdrop-blur-md flex flex-col md:flex-row items-center justify-between gap-4">
+            <div className="flex flex-col items-center md:items-start text-center md:text-left">
+              <h4 className="text-white font-black uppercase tracking-widest text-[10px] md:text-xs italic">
+                {cards[activeIndex].title}
+              </h4>
+              <p className="text-white/30 text-[8px] md:text-[10px] uppercase font-bold tracking-widest mt-1">
+                {isPerformerCard && !hasUploadedCurrent ? 'Upload a photo to activate' : 'Ready to share'}
+              </p>
+            </div>
+            
+            <div className="flex items-center gap-3 md:gap-4 w-full md:w-auto">
+               <button onClick={onClose} className="flex-1 md:flex-none px-4 py-3 md:px-6 md:py-4 text-white/40 hover:text-white font-black uppercase text-[10px] tracking-widest transition-colors">Close</button>
+               
+               <div className="flex gap-2 flex-[2] md:flex-none">
+                 <button 
+                   onClick={performShare}
+                   disabled={isSharing || (isPerformerCard && !hasUploadedCurrent)}
+                   className={`flex-1 md:flex-none px-4 py-3 md:px-8 md:py-5 bg-white/5 hover:bg-white/10 text-white border border-white/10 font-black uppercase text-[9px] md:text-[10px] tracking-widest rounded-xl md:rounded-2xl shadow-xl transition-all active:scale-95 disabled:opacity-20`}
+                 >
+                   {isSharing ? '...' : 'Share Selected'}
+                 </button>
+                 
+                 <button 
+                   onClick={performShareAll}
+                   disabled={isSharing || !allPerformersUploaded}
+                   className={`flex-1 md:flex-none px-6 py-3 md:px-10 md:py-5 bg-linear-to-r from-[#FFD700] to-[#FFA000] text-black font-black uppercase text-[9px] md:text-[11px] tracking-[0.2em] md:tracking-[0.25em] rounded-xl md:rounded-2xl shadow-2xl transition-all active:scale-95 disabled:opacity-30 disabled:grayscale`}
+                 >
+                   {isSharing ? '...' : (
+                      <span className="md:hidden">ALL</span>
+                   )}
+                   <span className="hidden md:inline">SHARE ALL SERIES</span>
+                 </button>
+               </div>
+            </div>
+          </div>
+        </div>
+
+        <input type="file" ref={fileInputRef} className="hidden" accept="image/*" onChange={handleFileChange} />
+      </motion.div>
     </div>
   );
 }
+
+
 function ConstructionOverlay({ teamColor }: { teamColor: string }) {
   return (
     <div className="fixed inset-0 z-[100] flex flex-col items-center justify-center bg-transparent overflow-hidden">
@@ -1445,10 +1603,14 @@ export default function TeamDashboard() {
   );
 
   // Stats for Wrapped
+  const bestMember = leaderboardRows.find(p => !isTLRole(p.role || "")) || null;
+  const bestTL = leaderboardRows.find(p => isTLRole(p.role || "")) || null;
+  const topTeam = teamData.miniTeams?.[0] || { name: "The Squad", points: 0 };
+
   const wrappedStats = {
-    topTeam: { name: "Marcom Stars", points: 28450 },
-    globalMvp: leaderboardRows[0] || null,
-    teamAce: leaderTeam.performers?.[0] || null,
+    topTeam: { name: topTeam.name, points: topTeam.points },
+    globalMvp: bestMember,
+    teamAce: bestTL,
     currentTeamName: teamData.name
   };
 
@@ -1661,7 +1823,7 @@ export default function TeamDashboard() {
               ) : null}
               <button
                 onClick={() => setShowWrapped(true)}
-                className="group flex items-center gap-1.5 px-2.5 py-1.5 text-[8px] font-black uppercase tracking-tight rounded-full text-white transition-all hover:scale-105 active:scale-95 shadow-lg sm:px-5 sm:py-2.5 sm:text-xs sm:tracking-widest"
+                className="md:hidden group flex items-center gap-1.5 px-2.5 py-1.5 text-[8px] font-black uppercase tracking-tight rounded-full text-white transition-all hover:scale-105 active:scale-95 shadow-lg sm:px-5 sm:py-2.5 sm:text-xs sm:tracking-widest"
                 style={{ background: `linear-gradient(to right, #FF1744, ${teamColor})` }}
               >
                 <span className="group-hover:rotate-12 transition-transform text-[10px] sm:text-base">🏆</span>
