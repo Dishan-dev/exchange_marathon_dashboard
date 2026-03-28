@@ -1012,7 +1012,7 @@ function WrappedExperience({
             <div>
               <p className="text-[10px] sm:text-xs font-black uppercase tracking-[0.6em] text-[#FFD700]/90 mb-10">BEST PERFORMER</p>
               <div className="relative">
-                <div className="w-40 h-40 sm:w-56 sm:h-56 rounded-full border-[6px] border-[#FFD700]/15 overflow-hidden shadow-[0_30px_60px_rgba(0,0,0,0.5)] mx-auto bg-white/10 flex items-center justify-center relative backdrop-blur-md">
+                <div className="w-40 h-40 sm:w-56 sm:h-56 rounded-full border-[6px] border-[#FFD700]/15 overflow-hidden shadow-[0_30px_60px_rgba(0,0,0,0.5)] mx-auto bg-white/20 flex items-center justify-center relative">
                   {customPhotos[2] ? (
                     <img src={customPhotos[2]} className="w-full h-full object-cover" alt="Custom" />
                   ) : (
@@ -1051,7 +1051,7 @@ function WrappedExperience({
             <div>
               <p className="text-[10px] sm:text-xs font-black uppercase tracking-[0.6em] text-[#FFD700]/90 mb-10">BEST PERFORMER</p>
               <div className="relative">
-                <div className="w-40 h-40 sm:w-56 sm:h-56 rounded-full border-[6px] border-[#FFD700]/15 overflow-hidden shadow-[0_30px_60px_rgba(0,0,0,0.5)] mx-auto bg-white/10 flex items-center justify-center relative backdrop-blur-sm">
+                <div className="w-40 h-40 sm:w-56 sm:h-56 rounded-full border-[6px] border-[#FFD700]/15 overflow-hidden shadow-[0_30px_60px_rgba(0,0,0,0.5)] mx-auto bg-white/20 flex items-center justify-center relative">
                   {customPhotos[3] ? (
                     <img src={customPhotos[3]} className="w-full h-full object-cover" alt="Custom" />
                   ) : (
@@ -1135,15 +1135,19 @@ function WrappedExperience({
     try {
       for (let i = 0; i < cards.length; i++) {
         setActiveIndex(i);
-        await new Promise(r => setTimeout(r, 600));
+        // Give more time for the image to render and decode
+        await new Promise(r => setTimeout(r, 1000));
         if (!cardRef.current) continue;
-        const dataUrl = await htmlToImage.toPng(cardRef.current, { quality: 1.0, pixelRatio: 2 });
-        const blob = await (await fetch(dataUrl)).blob();
-        files.push(new File([blob], `flyer-${i+1}.png`, { type: 'image/png' }));
+        const blob = await htmlToImage.toBlob(cardRef.current, { 
+          quality: 1.0, 
+          pixelRatio: 3, // Higher resolution for professional sharing
+          skipAutoScale: true
+        });
+        if (blob) {
+          files.push(new File([blob], `flyer-${i+1}.png`, { type: 'image/png' }));
+        }
       }
       setSeriesBlobFiles(files);
-      // We don't call navigator.share here because the gesture is lost.
-      // The UI will now show a "CONFIRM SHARE" button which is a fresh gesture.
     } catch (err) {
       console.error(err);
     } finally {
@@ -1241,12 +1245,18 @@ function WrappedExperience({
                 />
               </div>
             ) : (
-        <div 
-          ref={cardRef}
-          className="w-auto h-full max-h-[68vh] md:max-h-[75vh] max-w-[90vw] aspect-[9/16] rounded-3xl md:rounded-[2.5rem] overflow-hidden shadow-[0_40px_80px_rgba(0,0,0,0.6)] relative border border-white/10 transition-all scale-100 md:scale-100 origin-center bg-black"
-          style={{ backgroundImage: 'url(/flyer-bg.png)', backgroundSize: 'cover' }}
-        >
-                {cards[activeIndex].content}
+              <div 
+                ref={cardRef}
+                className="w-auto h-full max-h-[68vh] md:max-h-[75vh] max-w-[90vw] aspect-[9/16] rounded-3xl md:rounded-[2.5rem] overflow-hidden shadow-[0_40px_80px_rgba(0,0,0,0.6)] relative border border-white/10 transition-all scale-100 md:scale-100 origin-center bg-black"
+              >
+                <img 
+                  src="/flyer-bg.png" 
+                  className="absolute inset-0 w-full h-full object-cover pointer-events-none" 
+                  alt="" 
+                />
+                <div className="relative h-full z-10">
+                  {cards[activeIndex].content}
+                </div>
               </div>
             )}
 
