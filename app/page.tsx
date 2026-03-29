@@ -57,6 +57,16 @@ const functions: TeamCard[] = [
     ]
   },
   {
+    id: "ogv",
+    name: "OGV",
+    description: "Outgoing Global Volunteer: Empowering members to create global social impact through outgoing exchange.",
+    icon: "🌱",
+    color: "var(--igv-color)",
+    squads: [
+      { id: "ogv-ops", name: "OGV Dashboard", href: "/dashboard/ogv" }
+    ]
+  },
+  {
     id: "mst",
     name: "MST",
     description: "Marketing & Strategy: Scaling the marathon through strategic outreach and growth.",
@@ -77,44 +87,69 @@ function FunctionCard({
   onSelect: () => void;
 }) {
   return (
-    <div
+    <motion.div
       onClick={onSelect}
-      className="group relative h-full min-h-42.5 rounded-2xl border-2 border-white/10 bg-black/60 p-5 md:min-h-47.5 md:p-6 transition-all duration-300 cursor-pointer overflow-hidden glass-premium hover:border-black/50 hover:shadow-2xl hover:shadow-black/60 hover:scale-[1.02] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-white/20"
+      whileHover={{ y: -4 }}
+      transition={{ duration: 0.25, ease: "easeOut" }}
+      className="group relative h-full cursor-pointer overflow-hidden rounded-3xl border border-white/8 bg-black/70 backdrop-blur-xl"
     >
+      {/* Top accent bar */}
       <div
-        className="absolute inset-0 opacity-0 transition-opacity duration-500 group-hover:opacity-100"
-        style={{
-          background: `radial-gradient(circle at 50% 50%, ${func.color}22, transparent 70%)`,
-        }}
+        className="absolute top-0 left-0 right-0 h-[2px] opacity-60 transition-opacity duration-500 group-hover:opacity-100"
+        style={{ background: `linear-gradient(to right, transparent, #ffcd00, transparent)` }}
       />
 
-      <div className="relative z-10 flex h-full flex-col justify-between">
+      {/* Subtle background glow on hover */}
+      <div
+        className="absolute inset-0 opacity-0 transition-opacity duration-700 group-hover:opacity-100 pointer-events-none"
+        style={{ background: `radial-gradient(ellipse at 30% 20%, #ffcd0018, transparent 65%)` }}
+      />
+
+      <div className="relative z-10 flex h-full flex-col justify-between p-6 md:p-7">
         <div>
-          <div className="mb-4 flex items-start justify-between">
-            <div 
-              className="inline-flex h-8 w-8 items-center justify-center rounded-lg text-sm transition-all duration-500 group-hover:scale-110 group-hover:rotate-6"
-              style={{ 
-                background: `linear-gradient(135deg, ${func.color}44, ${func.color}11)`,
-                boxShadow: `0 0 20px ${func.color}22`
+          {/* Monogram badge */}
+          <div className="mb-6 flex items-center justify-between">
+            <div
+              className="flex h-11 w-11 items-center justify-center rounded-2xl text-[11px] font-black tracking-widest uppercase transition-all duration-500 group-hover:scale-110"
+              style={{
+                background: `linear-gradient(135deg, #ffcd0030, #ffcd0008)`,
+                border: `1px solid #ffcd0030`,
+                color: '#ffcd00',
               }}
             >
-              {func.icon}
+              {func.name}
             </div>
+            <div
+              className="h-2 w-2 rounded-full opacity-40 group-hover:opacity-100 transition-opacity"
+              style={{ backgroundColor: '#ffcd00', boxShadow: `0 0 8px #ffcd00` }}
+            />
           </div>
 
-          <h3 className="mb-2 text-3xl font-black tracking-tight text-[#F7F7F8] group-hover:translate-x-1 transition-transform">{func.name}</h3>
-          <p className="text-[10px] leading-relaxed text-[#F7F7F8]/70 md:text-[11px]">{func.description}</p>
+          <h3
+            className="mb-3 text-3xl font-black tracking-tighter text-[#F7F7F8] transition-transform duration-300 group-hover:translate-x-1"
+            style={{ letterSpacing: "-0.03em" }}
+          >
+            {func.name}
+          </h3>
+          <p className="text-[11px] leading-relaxed text-white/40">{func.description}</p>
         </div>
 
-        <div className="flex items-center justify-end pt-4 md:pt-5">
-          <div className="rounded-lg border border-white/10 bg-white/5 p-1.5 transition-colors group-hover:bg-white/10">
-            <svg className="h-3.5 w-3.5 transition-all duration-300 group-hover:translate-x-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        {/* Bottom row */}
+        <div className="mt-6 flex items-center justify-between border-t border-white/5 pt-4">
+          <span className="text-[9px] font-black uppercase tracking-[0.25em] transition-colors duration-300 group-hover:opacity-100 opacity-40 text-[#ffcd00]">
+            {func.squads.length} {func.squads.length === 1 ? "squad" : "squads"}
+          </span>
+          <div
+            className="flex h-8 w-8 items-center justify-center rounded-xl border transition-all duration-300 group-hover:translate-x-1"
+            style={{ borderColor: `#ffcd0033`, background: `#ffcd000a` }}
+          >
+            <svg className="h-3.5 w-3.5" fill="none" stroke="#ffcd00" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M13 7l5 5m0 0l-5 5m5-5H6" />
             </svg>
           </div>
         </div>
       </div>
-    </div>
+    </motion.div>
   );
 }
 
@@ -127,20 +162,34 @@ function SquadCard({
 }) {
   return (
     <Link href={squad.href}>
-      <div
-        className="group relative rounded-2xl border-2 border-white/10 bg-black/70 p-8 transition-all duration-300 cursor-pointer overflow-hidden glass-premium hover:border-white/10 hover:shadow-2xl hover:shadow-black/60 hover:scale-[1.05] focus:outline-none"
+      <motion.div
+        whileHover={{ y: -4 }}
+        transition={{ duration: 0.2, ease: "easeOut" }}
+        className="group relative overflow-hidden rounded-3xl border border-white/8 bg-black/70 backdrop-blur-xl cursor-pointer"
       >
         <div
-          className="absolute inset-0 opacity-0 transition-opacity duration-500 group-hover:opacity-100"
-          style={{
-            background: `radial-gradient(circle at 50% 50%, ${color}33, transparent 70%)`,
-          }}
+          className="absolute top-0 left-0 right-0 h-[2px] opacity-50 group-hover:opacity-100 transition-opacity"
+          style={{ background: `linear-gradient(to right, transparent, #ffcd00, transparent)` }}
         />
-        <div className="relative z-10 text-center">
-          <h4 className="text-2xl font-black tracking-tight text-[#F7F7F8] group-hover:scale-105 transition-transform">{squad.name}</h4>
-          <span className="mt-4 inline-block text-[10px] font-black uppercase tracking-[0.3em] text-white/40 group-hover:text-white transition-colors">Enter Secure Arena</span>
+        <div
+          className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"
+          style={{ background: `radial-gradient(ellipse at 50% 20%, #ffcd0018, transparent 60%)` }}
+        />
+        <div className="relative z-10 flex items-center justify-between gap-4 p-6 sm:p-8">
+          <div>
+            <h4 className="text-xl sm:text-2xl font-black tracking-tight text-[#F7F7F8]">{squad.name}</h4>
+            <span className="mt-1 block text-[9px] font-black uppercase tracking-[0.3em] opacity-40 group-hover:opacity-80 transition-opacity text-[#ffcd00]">Enter Arena</span>
+          </div>
+          <div
+            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border transition-all duration-300 group-hover:translate-x-1"
+            style={{ borderColor: `#ffcd0033`, background: `#ffcd000a` }}
+          >
+            <svg className="h-4 w-4" fill="none" stroke="#ffcd00" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M13 7l5 5m0 0l-5 5m5-5H6" />
+            </svg>
+          </div>
         </div>
-      </div>
+      </motion.div>
     </Link>
   );
 }
@@ -226,7 +275,7 @@ export default function Home() {
                 initial={{ opacity: 0, x: -20 }}
                 animate={{ opacity: 1, x: 0 }}
                 exit={{ opacity: 0, x: 20 }}
-                className="grid w-full grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-5"
+                className="grid w-full grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 sm:gap-5"
               >
                 {functions.map((func) => (
                   <FunctionCard

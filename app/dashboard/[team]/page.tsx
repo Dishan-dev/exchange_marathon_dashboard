@@ -257,7 +257,7 @@ function CompetitiveLoader({ onFinish, dataReady, teamColor }: { onFinish: () =>
             transition={{ type: "spring", damping: 12, stiffness: 100 }}
             className="relative"
           >
-             <h1 className="text-7xl sm:text-[12rem] font-black italic tracking-tight transition-all duration-700" style={{ color: teamColor, filter: `drop-shadow(0 0 50px ${teamColor}66)` }}>
+             <h1 className="text-7xl sm:text-[12rem] font-black italic tracking-tight transition-all duration-700" style={{ color: '#ffcd00', filter: `drop-shadow(0 0 50px #ffcd0066)` }}>
               EXCHANGE
             </h1>
           </motion.div>
@@ -541,7 +541,7 @@ const teamDataMap: Record<string, TeamData> = {
 
 const teamColorMap: Record<string, string> = {
   igv_b2b: "var(--igv-color)",
-  igv_ir: "var(--igv-color)",
+  igv_ir: "var(--mst-color)",
   igt_b2b: "var(--igt-color)",
   igt_ir: "var(--igt-color)",
   ogt_ops: "var(--ogt-color)",
@@ -614,7 +614,8 @@ function MiniTeamCard({
   teamColor,
   isMST = false,
   isOGT = false,
-  isIGTB2B = false
+  isIGTB2B = false,
+  isIgvIr = false
 }: {
   team: MiniTeamData;
   isLeader: boolean;
@@ -622,6 +623,7 @@ function MiniTeamCard({
   isMST?: boolean;
   isOGT?: boolean;
   isIGTB2B?: boolean;
+  isIgvIr?: boolean;
 }) {
   return (
     <div
@@ -691,7 +693,7 @@ function MiniTeamCard({
               style={{ backgroundColor: `color-mix(in srgb, ${teamColor}, black 90%)` }}
             >
               <p className="text-[9px] font-black text-white/40 uppercase tracking-widest mb-3 text-center border-b border-white/5 pb-2">
-                {isMST ? `${formatTeamName(team.name, isMST)} Members + TLs` : isIGTB2B ? "IGT B2B Squad Activity" : isOGT ? "OGT Squad Activity" : "Squad Activity"}
+                {isMST ? `${formatTeamName(team.name, isMST)} Members + TLs` : isIGTB2B ? "IGT B2B Squad Activity" : isIgvIr ? "IGV IR & M Squad Activity" : isOGT ? "OGT Squad Activity" : "Squad Activity"}
               </p>
               <div className="space-y-2 max-h-48 overflow-y-auto custom-scrollbar pr-1">
                 {isMST ? (
@@ -716,6 +718,50 @@ function MiniTeamCard({
                       <span className="text-[#00BCD4]">{team.performers.reduce((s, p) => s + p.metrics.followups, 0)}</span>
                     </div>
                   </>
+                ) : isIgvIr ? (
+                  team.name.toLowerCase().includes('marcom') ? (
+                    <>
+                      <div className="flex justify-between items-center text-[10px] font-bold">
+                        <span className="text-white/30">Marcom Flyers</span>
+                        <span className="text-[#FF1744]">{team.performers.filter((p: any) => p.source === 'marcom').reduce((s, p) => s + (p.metrics?.mous || 0), 0)}</span>
+                      </div>
+                      <div className="flex justify-between items-center text-[10px] font-bold">
+                        <span className="text-white/30">Marcom Videos</span>
+                        <span className="text-[#9d4edd]">{team.performers.filter((p: any) => p.source === 'marcom').reduce((s, p) => s + (p.metrics?.coldCalls || 0), 0)}</span>
+                      </div>
+                      <div className="flex justify-between items-center text-[10px] font-bold">
+                        <span className="text-white/30">Marcom Presos</span>
+                        <span className="text-[#00f5d4]">{team.performers.filter((p: any) => p.source === 'marcom').reduce((s, p) => s + (p.metrics?.followups || 0), 0)}</span>
+                      </div>
+                    </>
+                  ) : (
+                    <>
+                      <div className="flex justify-between items-center text-[10px] font-bold">
+                        <span className="text-white/30">IR Calls</span>
+                        <span className="text-[#FF1744]">{team.performers.filter((p: any) => p.source === 'ir').reduce((s, p) => s + (p.metrics?.mous || 0), 0)}</span>
+                      </div>
+                      <div className="flex justify-between items-center text-[10px] font-bold">
+                        <span className="text-white/30">IR Apps</span>
+                        <span className="text-[#9d4edd]">{team.performers.filter((p: any) => p.source === 'ir').reduce((s, p) => s + (p.metrics?.coldCalls || 0), 0)}</span>
+                      </div>
+                      <div className="flex justify-between items-center text-[10px] font-bold">
+                        <span className="text-white/30">IR Approvals</span>
+                        <span className="text-[#00f5d4]">{team.performers.filter((p: any) => p.source === 'ir').reduce((s, p) => s + (p.metrics?.followups || 0), 0)}</span>
+                      </div>
+                      <div className="flex justify-between items-center text-[10px] font-bold border-t border-white/5 pt-2 mt-1">
+                        <span className="text-white/30">M. Interviews</span>
+                        <span className="text-[#FF1744]">{team.performers.filter((p: any) => p.source === 'matching').reduce((s, p) => s + (p.metrics?.mous || 0), 0)}</span>
+                      </div>
+                      <div className="flex justify-between items-center text-[10px] font-bold">
+                        <span className="text-white/30">M. Acceptance</span>
+                        <span className="text-[#9d4edd]">{team.performers.filter((p: any) => p.source === 'matching').reduce((s, p) => s + (p.metrics?.coldCalls || 0), 0)}</span>
+                      </div>
+                      <div className="flex justify-between items-center text-[10px] font-bold">
+                        <span className="text-white/30">M. Approvals</span>
+                        <span className="text-[#00f5d4]">{team.performers.filter((p: any) => p.source === 'matching').reduce((s, p) => s + (p.metrics?.followups || 0), 0)}</span>
+                      </div>
+                    </>
+                  )
                 ) : isIGTB2B ? (
                   <>
                     <div className="flex justify-between items-center text-[10px] font-bold">
@@ -1545,7 +1591,19 @@ export default function TeamDashboard() {
 
         const payload = (await response.json()) as DashboardApiResponse;
         if (payload.ok && payload.data) {
-          setRemoteTeamData(payload.data);
+          const processedData = payload.data;
+          if (teamParam === 'igv_ir' || teamParam === 'igv_ir_m') {
+            processedData.miniTeams?.forEach((mt) => {
+              if (mt.name.toLowerCase().replace(/\s/g, '') === 'team1') {
+                mt.name = "Spark Squad";
+                mt.icon = "SS";
+              } else if (mt.name.toLowerCase().replace(/\s/g, '') === 'team2') {
+                mt.name = "Alliance Crew";
+                mt.icon = "AC";
+              }
+            });
+          }
+          setRemoteTeamData(processedData);
           setLastLiveFetchAt(new Date());
           return;
         }
@@ -1575,7 +1633,19 @@ export default function TeamDashboard() {
         (payload) => {
           console.log("Realtime update received:", payload);
           if (payload.new && (payload.new as any).payload) {
-            setRemoteTeamData((payload.new as any).payload as TeamData);
+            const processedData = (payload.new as any).payload as TeamData;
+            if (teamParam === 'igv_ir' || teamParam === 'igv_ir_m') {
+              processedData.miniTeams?.forEach((mt) => {
+                if (mt.name.toLowerCase().replace(/\s/g, '') === 'team1') {
+                  mt.name = "Spark Squad";
+                  mt.icon = "SS";
+                } else if (mt.name.toLowerCase().replace(/\s/g, '') === 'team2') {
+                  mt.name = "Alliance Crew";
+                  mt.icon = "AC";
+                }
+              });
+            }
+            setRemoteTeamData(processedData);
             setLastLiveFetchAt(new Date());
             setDataError(null);
           }
@@ -1627,13 +1697,14 @@ export default function TeamDashboard() {
   const isB2B = teamParam === 'igv_b2b';
   const isIGTB2B = teamParam === 'igt_b2b';
   const isOGT = teamParam === 'ogt';
-  const isIGV = teamParam === 'igv_b2b' || teamParam === 'igv_ir';
+  const isIgvIr = teamParam === 'igv_ir' || teamParam === 'igv_ir_m';
+  const isIGV = teamParam === 'igv_b2b' || teamParam === 'igv_ir' || teamParam === 'igv_ir_m';
   const isMST = teamParam === 'marcom' || teamParam === 'members' || teamParam === 'tls' || teamParam.startsWith('irm');
   const useMSTPalette = true;
   const accentColor = teamColor;
 
 
-  const isSeparatedTeam = isB2B || isOGT || isIGTB2B;
+  const isSeparatedTeam = isB2B || isOGT || isIGTB2B || isIgvIr;
   const b2bTLRows = isSeparatedTeam
     ? leaderboardRows
         .filter((row) => isTLRole(row.role || ""))
@@ -1656,6 +1727,11 @@ export default function TeamDashboard() {
   const filteredB2BMemberRows = filterRows(b2bMemberRows);
   const filteredLeaderboardRows = filterRows(leaderboardRows);
 
+  const igvIrTLRows = filterRows(isIgvIr ? b2bTLRows : []);
+  const igvIrIRMemberRows = filterRows(isIgvIr ? b2bMemberRows.filter((r: any) => r.source === 'ir') : []).map((r, index) => ({ ...r, rank: index + 1 }));
+  const igvIrMatchingMemberRows = filterRows(isIgvIr ? b2bMemberRows.filter((r: any) => r.source === 'matching') : []).map((r, index) => ({ ...r, rank: index + 1 }));
+  const igvIrMarcomMemberRows = filterRows(isIgvIr ? b2bMemberRows.filter((r: any) => r.source === 'marcom') : []).map((r, index) => ({ ...r, rank: index + 1 }));
+
   const b2bActivityTotals = leaderboardRows.reduce(
     (acc, row) => {
       acc.mous += row.metrics?.mous || 0;
@@ -1665,6 +1741,44 @@ export default function TeamDashboard() {
     },
     { mous: 0, coldCalls: 0, followups: 0 }
   );
+
+  const igvIrIRBlocks: any[] = [];
+  const igvIrMatchingBlocks: any[] = [];
+  if (isIgvIr && teamData.miniTeams) {
+    for (const mt of teamData.miniTeams) {
+      const irPerformers = mt.performers.filter((p: any) => p.source === 'ir');
+      const matchingPerformers = mt.performers.filter((p: any) => p.source === 'matching');
+      
+      const irTotals = irPerformers.reduce((acc, p) => {
+        acc[0] += p.metrics?.mous || 0;
+        acc[1] += p.metrics?.coldCalls || 0;
+        acc[2] += p.metrics?.followups || 0;
+        return acc;
+      }, [0, 0, 0]);
+
+      const matchingTotals = matchingPerformers.reduce((acc, p) => {
+        acc[0] += p.metrics?.mous || 0;
+        acc[1] += p.metrics?.coldCalls || 0;
+        acc[2] += p.metrics?.followups || 0;
+        return acc;
+      }, [0, 0, 0]);
+
+      if (irTotals.some(v => v > 0)) {
+        igvIrIRBlocks.push({
+           email: `ir-${mt.name}`,
+           label: mt.name,
+           values: irTotals
+        });
+      }
+      if (matchingTotals.some(v => v > 0)) {
+        igvIrMatchingBlocks.push({
+           email: `matching-${mt.name}`,
+           label: mt.name,
+           values: matchingTotals
+        });
+      }
+    }
+  }
 
   const ogtActivityTotals = leaderboardRows.reduce(
     (acc, row) => {
@@ -1705,20 +1819,10 @@ export default function TeamDashboard() {
     ? `Ends in ${daysPart}d ${hoursPart.toString().padStart(2, "0")}:${minutesPart.toString().padStart(2, "0")}:${secondsPart.toString().padStart(2, "0")}`
     : "Ended";
 
-  const chartDefs = [
-    /* {
-      title: "Growth Trend",
-      subtitle: "Weekly Accumulation",
-      type: "line",
-      categories: ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"],
-      series: [
-        { name: leaderTeam.name || "Team 1", data: [40, 55, 48, 62, 70, 58, 80], color: (teamParam === 'igv_b2b' || teamParam === 'igv_ir') ? '#5c6b77' : "#FF1744" }, 
-        { name: secondTeam.name || "Team 2", data: [20, 35, 45, 30, 50, 60, 68], color: teamColor }, // Dynamic Team Color
-      ],
-    }, */
+  const chartDefs = isIgvIr ? [] : [
     {
-      title: isMST ? "Total Member Points" : isIGTB2B ? "IGT B2B Activity Totals" : isOGT ? "OGT Activity Totals" : isB2B ? "B2B Activity Totals" : "Member Activity Breakdown",
-      subtitle: isMST ? "Points Accumulation" : isIGTB2B ? "Cumulative Meetings | Cold Calls | Follow Ups" : isOGT ? "Cumulative SU | APL | APD" : isB2B ? "Cumulative MOUs | Cold Calls | Followups" : "MOU | CALLS | FOLLOWS",
+      title: isMST ? "Total Member Points" : isIGTB2B ? "IGT B2B Activity Totals" : isOGT ? "OGT Activity Totals" : "B2B Activity Totals",
+      subtitle: isMST ? "Points Accumulation" : isIGTB2B ? "Cumulative Meetings | Cold Calls | Follow Ups" : isOGT ? "Cumulative SU | APL | APD" : "Cumulative MOUs | Cold Calls | Followups",
       type: "stacked-bar",
       entries: isMST
         ? leaderboardRows
@@ -1846,7 +1950,7 @@ export default function TeamDashboard() {
   };
 
   const dashboardFunctionName = getFunctionName(teamParam);
-  const isFinished = teamParam === 'members' || teamParam === 'tls' || teamParam === 'igv_b2b' || teamParam === 'ogt' || teamParam === 'igt_b2b';
+  const isFinished = teamParam === 'members' || teamParam === 'tls' || teamParam === 'igv_b2b' || teamParam === 'ogt' || teamParam === 'igt_b2b' || isIgvIr;
   const showUnlinked = !teamData && !remoteTeamData;
 
   return (
@@ -1880,8 +1984,18 @@ export default function TeamDashboard() {
             <div className="flex items-center gap-2 sm:gap-6">
               <img src="/logo.png" alt="Xcend" className="h-10 w-10 sm:h-22 sm:w-22 object-contain drop-shadow-[0_0_10px_rgba(255,205,0,0.2)]" />
               <div>
-                <h1 className="text-base sm:text-2xl font-black tracking-tight text-[#F7F7F8] capitalize">
-                  {teamParam === 'igv_b2b' ? 'B2B' : teamParam.replace(/_/g, ' ')} <span className="opacity-40">Dashboard</span>
+                <h1 className="text-base sm:text-2xl font-black tracking-tight text-[#F7F7F8]">
+                  {({
+                    igv_b2b: 'iGV B2B',
+                    igv_ir: 'iGV IR&M',
+                    igv_ir_m: 'iGV IR&M',
+                    igt_b2b: 'iGT B2B',
+                    igt_ir: 'iGT IR&M',
+                    ogt: 'oGT',
+                    marcom: 'MST Marcom',
+                    members: 'MST Members',
+                    tls: 'MST TLs',
+                  } as Record<string, string>)[teamParam] || teamParam.replace(/_/g, ' ')} <span className="opacity-40">Dashboard</span>
                 </h1>
                 <p className="text-[8px] sm:text-[10px] font-bold uppercase tracking-[0.2em] text-white/40 mt-0.5 sm:mt-1">
                   Summer 26.27
@@ -1916,7 +2030,7 @@ export default function TeamDashboard() {
           </div>
         </nav>
 
-        <main className="mx-auto w-[94%] sm:w-[92%] space-y-8 sm:space-y-12 py-8 sm:py-16 lg:w-[80%]">
+        <main className="mx-auto w-[94%] sm:w-[92%] space-y-12 sm:space-y-16 lg:space-y-24 py-8 sm:py-16 lg:w-[80%]">
           <header className={`relative pt-12 pb-16 sm:py-20 text-center rounded-[2.5rem] sm:rounded-[4rem] ${useMSTPalette ? 'bg-black/60 border-white/10' : 'glass-premium border-white/5'} px-6 sm:px-12 flex flex-col items-center justify-center shadow-2xl`}>
             {/* Background Gradient */}
             <div className="absolute inset-0 rounded-[2.5rem] sm:rounded-[4rem] overflow-hidden pointer-events-none">
@@ -1926,7 +2040,7 @@ export default function TeamDashboard() {
             
             <div className="relative z-10 text-center flex-1 w-full max-w-4xl mx-auto">
               <h2 className="text-4xl md:text-5xl lg:text-7xl font-black tracking-tighter text-[#F7F7F8] mb-8 sm:mb-12 leading-tight uppercase">
-                THE <span style={{ color: accentColor }}>{dashboardFunctionName}</span> MARATHON
+                THE <span style={{ color: '#ffcd00' }}>{dashboardFunctionName}</span> MARATHON
               </h2>
               <div className="flex flex-wrap items-center justify-center gap-10 sm:gap-20">
                 <div className="flex flex-col items-center text-center">
@@ -1984,7 +2098,7 @@ export default function TeamDashboard() {
             
             <div className="relative z-10 mb-10 sm:mb-16 flex flex-col items-center">
               <h3 className="text-2xl sm:text-3xl font-black text-[#F7F7F8] tracking-widest uppercase">The Podium</h3>
-              {(isB2B || isIGTB2B) && (
+              {(isB2B || isIGTB2B || isIgvIr) && (
                 <p className="mt-2 text-[10px] sm:text-xs font-semibold uppercase tracking-[0.15em] text-white/55 text-center">
                   Podium ranking considers only member performance.
                 </p>
@@ -2076,7 +2190,14 @@ export default function TeamDashboard() {
               </div>
 
               <div className="relative z-10 space-y-3 sm:hidden">
-                {(isSeparatedTeam
+                {(isIgvIr
+                  ? [
+                      { title: "TLs", rows: igvIrTLRows },
+                      { title: "IR Members", rows: igvIrIRMemberRows },
+                      { title: "Matching Members", rows: igvIrMatchingMemberRows },
+                      { title: "Marcom Members", rows: igvIrMarcomMemberRows }
+                    ].filter(s => s.rows.length > 0 || Object.keys(igvIrTLRows).length === 0)
+                  : isSeparatedTeam
                   ? [
                       { title: "TLs", rows: filteredB2BTLRows },
                       { title: "Members", rows: filteredB2BMemberRows }
@@ -2176,7 +2297,14 @@ export default function TeamDashboard() {
 
               <div className="relative z-10 hidden overflow-visible custom-scrollbar sm:block">
                 <div className="min-w-[750px] space-y-6">
-                  {(isSeparatedTeam
+                  {(isIgvIr
+                    ? [
+                        { title: "TLs", rows: igvIrTLRows },
+                        { title: "IR Members", rows: igvIrIRMemberRows },
+                        { title: "Matching Members", rows: igvIrMatchingMemberRows },
+                        { title: "Marcom Members", rows: igvIrMarcomMemberRows }
+                      ].filter(s => s.rows.length > 0 || Object.keys(igvIrTLRows).length === 0)
+                    : isSeparatedTeam
                     ? [
                         { title: "TLs", rows: filteredB2BTLRows },
                         { title: "Members", rows: filteredB2BMemberRows }
@@ -2218,16 +2346,16 @@ export default function TeamDashboard() {
                             <div 
                               key={`${section.title}-${row.email}`}
                               onClick={() => {
-                                if (isB2B || isOGT || isIGTB2B) {
+                                if (isSeparatedTeam) {
                                   setActiveB2BRow(activeB2BRow === row.email ? null : row.email);
                                 }
                               }}
                               className="group/row relative z-0 grid grid-cols-12 gap-2 sm:gap-4 px-4 sm:px-6 py-4 items-center transition-colors hover:bg-[var(--hover-bg)] cursor-pointer hover:z-50"
                               style={{ '--hover-bg': `color-mix(in srgb, ${accentColor}, transparent 95%)` } as any}
                             >
-                              {(isB2B || isOGT || isIGTB2B ? (row.rank <= 3) : (row.rank <= 3)) && <GlimmerOverlay />}
+                              {(row.rank <= 3) && <GlimmerOverlay />}
 
-                              {isB2B || isOGT || isIGTB2B ? (
+                              {isSeparatedTeam ? (
                                 <>
                                   <div className="col-span-4 relative z-10">
                                     <p className="font-semibold text-sm sm:text-base text-[#F7F7F8] truncate">{row.name}</p>
@@ -2286,6 +2414,27 @@ export default function TeamDashboard() {
                                             </div>
                                             <div className="flex justify-between items-center bg-white/5 rounded-lg px-2 py-1.5 min-w-0">
                                               <span className="text-white/30 uppercase tracking-tighter truncate mr-2">Follow Ups</span>
+                                              <span className="font-black text-white shrink-0">{row.metrics?.followups || 0}</span>
+                                            </div>
+                                          </>
+                                        ) : isIgvIr ? (
+                                          <>
+                                            <div className="flex justify-between items-center bg-white/5 rounded-lg px-2 py-1.5 min-w-0">
+                                              <span className="text-white/30 uppercase tracking-tighter truncate mr-2">
+                                                {row.source === 'ir' ? 'IR Calls' : row.source === 'matching' ? 'Interviews' : 'Flyers'}
+                                              </span>
+                                              <span className="font-black text-white shrink-0">{row.metrics?.mous || 0}</span>
+                                            </div>
+                                            <div className="flex justify-between items-center bg-white/5 rounded-lg px-2 py-1.5 min-w-0">
+                                              <span className="text-white/30 uppercase tracking-tighter truncate mr-2">
+                                                {row.source === 'ir' ? 'Application' : row.source === 'matching' ? 'Acceptance' : 'Videos'}
+                                              </span>
+                                              <span className="font-black text-white shrink-0">{row.metrics?.coldCalls || 0}</span>
+                                            </div>
+                                            <div className="flex justify-between items-center bg-white/5 rounded-lg px-2 py-1.5 min-w-0">
+                                              <span className="text-white/30 uppercase tracking-tighter truncate mr-2">
+                                                {row.source === 'ir' ? 'Approvals' : row.source === 'matching' ? 'Approvals' : 'Presos'}
+                                              </span>
                                               <span className="font-black text-white shrink-0">{row.metrics?.followups || 0}</span>
                                             </div>
                                           </>
@@ -2381,10 +2530,10 @@ export default function TeamDashboard() {
               <div className="relative z-10">
                 <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-10">
                   <h4 className="text-xl sm:text-2xl font-black text-[#F7F7F8] tracking-widest uppercase italic">Squad Performance Matchups</h4>
-                  <p className="text-[9px] sm:text-[10px] font-bold text-white/30 uppercase tracking-[0.2em] sm:tracking-[0.3em]">Total Active Squads: {teamData.miniTeams?.length || 0}</p>
+                  <p className="text-[9px] sm:text-[10px] font-bold text-white/30 uppercase tracking-[0.2em] sm:tracking-[0.3em]">Total Active Squads: {(isIgvIr ? teamData.miniTeams?.filter(t => t.name.toLowerCase() !== 'general') : teamData.miniTeams)?.length || 0}</p>
                 </div>
-                <div className={`grid grid-cols-1 gap-4 sm:gap-6 ${isIGTB2B ? 'md:grid-cols-3' : isB2B ? 'md:grid-cols-2' : 'md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4'}`}>
-                  {teamData.miniTeams?.map((team, index) => (
+                <div className={`grid grid-cols-1 gap-4 sm:gap-6 ${isIgvIr ? 'md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3' : isIGTB2B ? 'md:grid-cols-3' : isB2B ? 'md:grid-cols-2' : 'md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4'}`}>
+                  {(isIgvIr ? teamData.miniTeams?.filter(t => t.name.toLowerCase() !== 'general') : teamData.miniTeams)?.map((team, index) => (
                     <MiniTeamCard 
                       key={team.slug || team.name}
                       team={team} 
@@ -2393,6 +2542,7 @@ export default function TeamDashboard() {
                       isOGT={isOGT}
                       isMST={isMST}
                       isIGTB2B={isIGTB2B}
+                      isIgvIr={isIgvIr}
                     />
                   ))}
                 </div>
@@ -2444,7 +2594,8 @@ export default function TeamDashboard() {
                                 >
                                   {entry.values.map((val: number, valIdx: number) => {
                                     const pct = (val / total) * 100;
-                                    const colors = useMSTPalette ? [stackedChartSegmentColors[2], ...stackedChartSegmentColors] : stackedChartSegmentColors;
+                                    const igvIrHexColors = ["#FF1744", "#9d4edd", "#00f5d4"];
+                                    const colors = useMSTPalette && !isIgvIr ? [stackedChartSegmentColors[2], ...stackedChartSegmentColors] : stackedChartSegmentColors;
                                     if (val === 0) return null;
                                     return (
                                       <motion.div
@@ -2453,10 +2604,10 @@ export default function TeamDashboard() {
                                         whileInView={{ opacity: 1, scaleX: 1 }}
                                         viewport={{ once: true }}
                                         transition={{ duration: 0.5, delay: 0.8 + valIdx * 0.15 }}
-                                        className={`relative flex items-center justify-center transition-all duration-700 hover:brightness-125 origin-left ${colors[valIdx]}`}
-                                        style={{ width: `${pct}%` }}
+                                        className={`relative flex items-center justify-center transition-all duration-700 hover:brightness-125 origin-left ${!isIgvIr ? colors[valIdx] : ''}`}
+                                        style={{ width: `${pct}%`, ...(isIgvIr ? { backgroundColor: igvIrHexColors[valIdx] } : {}) }}
                                       >
-                                        {val > 2 && <span className="text-[10px] font-black text-[#192230] drop-shadow-sm">{val}</span>}
+                                        {val > 0 && <span className="text-[10px] sm:text-xs font-black text-white drop-shadow-md">{val}</span>}
                                       </motion.div>
                                     );
                                   })}
@@ -2476,13 +2627,20 @@ export default function TeamDashboard() {
                             <span className="text-[10px] font-bold text-[#F7F7F8]/65 uppercase tracking-widest">Total Points</span>
                           </div>
                         ) : (
-                          ["MOUs", "Calls", "Follows"].map((l, i) => (
+                          ["M1", "M2", "M3"].map((l, i) => (
                              <div key={l} className="flex items-center gap-3">
-                                <span className={`h-3 w-3 rounded-full ${stackedLegendDots[i]}`} />
-                                <span className="text-[10px] font-bold text-[#F7F7F8]/65 uppercase tracking-widest">
+                                <span 
+                                  className={`h-3 w-3 rounded-full ${!isIgvIr ? stackedLegendDots[i] : ''}`} 
+                                  style={isIgvIr ? { backgroundColor: ["#FF1744", "#9d4edd", "#00f5d4"][i] } : undefined}
+                                />
+                                <span className="text-[10px] font-bold text-[#F7F7F8]/65 uppercase tracking-widest whitespace-nowrap">
                                   {isOGT 
                                     ? (i === 0 ? "SU" : i === 1 ? "APL" : "APD")
-                                    : l
+                                    : chart.title === "IR Activity Totals"
+                                      ? (i === 0 ? "IR Calls" : i === 1 ? "IR Application" : "IR Approvals")
+                                    : chart.title === "Matching Activity Totals"
+                                      ? (i === 0 ? "Interviews" : i === 1 ? "Acceptance" : "Approvals")
+                                    : (i === 0 ? "MOUs" : i === 1 ? "Calls" : "Follows")
                                   }
                                 </span>
                               </div>
