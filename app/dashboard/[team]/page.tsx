@@ -969,7 +969,7 @@ function WrappedExperience({
           </div>
           <div className="space-y-3 z-10">
             <p className="text-[10px] sm:text-xs font-black uppercase tracking-[0.6em] text-[#FFD700]/90 italic">WEEK 01 SNAPSHOT</p>
-            <h2 className="text-3xl sm:text-5xl font-black text-white italic tracking-tighter uppercase leading-tight max-w-[95%] mx-auto">
+            <h2 className="text-2xl sm:text-4xl font-black text-white italic tracking-tighter uppercase leading-tight max-w-[95%] mx-auto">
               {stats.currentTeamName} RECAP
             </h2>
           </div>
@@ -987,7 +987,7 @@ function WrappedExperience({
           </div>
           <div className="relative z-10 space-y-10">
             <p className="text-[10px] sm:text-xs font-black uppercase tracking-[0.5em] text-white/90 italic">BEST PERFORMING TEAM</p>
-            <h2 className="text-4xl sm:text-6xl font-black text-white italic tracking-tighter leading-tight uppercase max-w-[95%] mx-auto">
+            <h2 className="text-3xl sm:text-5xl font-black text-white italic tracking-tighter leading-tight uppercase max-w-[95%] mx-auto">
               {stats.topTeam.name}
             </h2>
             <div className="inline-flex items-center justify-center rounded-3xl glass border border-white/20 px-10 py-4 shadow-2xl">
@@ -1005,34 +1005,36 @@ function WrappedExperience({
       id: "best-performer-member",
       title: "Best Performer",
       content: (
-        <div className="flex flex-col items-center h-full text-center px-8 sm:px-12 relative w-full py-20 justify-center">
-          <img src="/logo.png" alt="XCEND" className="absolute top-12 h-8 object-contain brightness-0 invert opacity-80 left-1/2 -translate-x-1/2" />
-          
-          <div className="z-10 space-y-14 w-full flex flex-col items-center mt-12">
-            <div>
-              <p className="text-[10px] sm:text-xs font-black uppercase tracking-[0.6em] text-[#FFD700]/90 mb-12">BEST PERFORMER</p>
-              <div className="relative">
-                <div className="w-44 h-44 sm:w-64 sm:h-64 rounded-full border-[6px] border-[#FFD700]/15 overflow-hidden shadow-[0_40px_80px_rgba(0,0,0,0.6)] mx-auto bg-white/20 flex items-center justify-center relative">
-                  {customPhotos[2] ? (
-                    <img src={customPhotos[2]} className="w-full h-full object-cover" alt="Custom" />
-                  ) : (
-                    <div className="text-8xl opacity-80">{stats.globalMvp?.avatar || "👤"}</div>
-                  )}
-                </div>
-                <div className="absolute -inset-10 bg-[#FFD700]/10 blur-3xl -z-10 rounded-full" />
+        <div className="flex flex-col items-center h-full text-center px-8 sm:px-12 py-16 justify-center relative w-full">
+          <div className="flex flex-col items-center w-full space-y-10">
+            {/* Logo & Headline Group */}
+            <div className="space-y-6 flex flex-col items-center">
+              <img src="/logo.png" alt="XCEND" className="h-8 object-contain brightness-0 invert opacity-80" />
+              <p className="text-[10px] sm:text-xs font-black uppercase tracking-[0.6em] text-[#FFD700]/90 whitespace-nowrap">BEST PERFORMER</p>
+            </div>
+            
+            {/* Profile Frame */}
+            <div className="relative">
+              <div className="w-44 h-44 sm:w-60 sm:h-60 rounded-full border-[6px] border-[#FFD700]/15 overflow-hidden shadow-[0_40px_80px_rgba(0,0,0,0.6)] mx-auto bg-white/20 flex items-center justify-center relative">
+                {customPhotos[2] ? (
+                  <img src={customPhotos[2]} className="w-full h-full object-cover" alt="Custom" />
+                ) : (
+                  <div className="text-8xl opacity-80">{stats.globalMvp?.avatar || "👤"}</div>
+                )}
               </div>
+              <div className="absolute -inset-10 bg-[#FFD700]/10 blur-3xl -z-10 rounded-full" />
             </div>
 
-            <div className="space-y-8 w-full flex flex-col items-center">
-              <div className="space-y-3">
+            <div className="space-y-6 w-full flex flex-col items-center">
+              <div className="space-y-2">
                 <p className="text-[10px] sm:text-sm font-black text-[#FFD700] uppercase tracking-[0.5em] opacity-80 border-b border-[#FFD700]/20 pb-2 inline-block">
                   {stats.currentTeamName}
                 </p>
-                <h2 className="text-4xl sm:text-6xl font-black text-white italic tracking-tighter uppercase leading-tight max-w-[95%]">
+                <h2 className="text-3xl sm:text-4xl font-black text-white italic tracking-tighter uppercase leading-tight max-w-[95%]">
                   {stats.globalMvp?.name || "Member Name"}
                 </h2>
               </div>
-              <div className="pt-8 w-full border-t border-white/10">
+              <div className="pt-6 w-full border-t border-white/10">
                 <p className="text-[10px] sm:text-xs font-black text-white/30 uppercase tracking-[0.6em]">MEMBER</p>
               </div>
             </div>
@@ -1044,34 +1046,36 @@ function WrappedExperience({
       id: "best-performer-tl",
       title: "Best TL",
       content: (
-        <div className="flex flex-col items-center h-full text-center px-8 sm:px-12 relative w-full py-20 justify-center">
-          <img src="/logo.png" alt="XCEND" className="absolute top-12 h-8 object-contain brightness-0 invert opacity-80 left-1/2 -translate-x-1/2" />
-          
-          <div className="z-10 space-y-14 w-full flex flex-col items-center mt-12">
-            <div>
-              <p className="text-[10px] sm:text-xs font-black uppercase tracking-[0.6em] text-[#FFD700]/90 mb-12">BEST PERFORMER</p>
-              <div className="relative">
-                <div className="w-44 h-44 sm:w-64 sm:h-64 rounded-full border-[6px] border-[#FFD700]/15 overflow-hidden shadow-[0_40px_80px_rgba(0,0,0,0.6)] mx-auto bg-white/20 flex items-center justify-center relative">
-                  {customPhotos[3] ? (
-                    <img src={customPhotos[3]} className="w-full h-full object-cover" alt="Custom" />
-                  ) : (
-                    <div className="text-8xl opacity-80">{stats.teamAce?.avatar || "⭐"}</div>
-                  )}
-                </div>
-                <div className="absolute -inset-10 bg-[#FFD700]/10 blur-3xl -z-10 rounded-full" />
+        <div className="flex flex-col items-center h-full text-center px-8 sm:px-12 py-16 justify-center relative w-full">
+          <div className="flex flex-col items-center w-full space-y-10">
+            {/* Logo & Headline Group */}
+            <div className="space-y-6 flex flex-col items-center">
+              <img src="/logo.png" alt="XCEND" className="h-8 object-contain brightness-0 invert opacity-80" />
+              <p className="text-[10px] sm:text-xs font-black uppercase tracking-[0.6em] text-[#FFD700]/90 whitespace-nowrap">BEST PERFORMER</p>
+            </div>
+            
+            {/* Profile Frame */}
+            <div className="relative">
+              <div className="w-44 h-44 sm:w-60 sm:h-60 rounded-full border-[6px] border-[#FFD700]/15 overflow-hidden shadow-[0_40px_80px_rgba(0,0,0,0.6)] mx-auto bg-white/20 flex items-center justify-center relative">
+                {customPhotos[3] ? (
+                  <img src={customPhotos[3]} className="w-full h-full object-cover" alt="Custom" />
+                ) : (
+                  <div className="text-8xl opacity-80">{stats.teamAce?.avatar || "⭐"}</div>
+                )}
               </div>
+              <div className="absolute -inset-10 bg-[#FFD700]/10 blur-3xl -z-10 rounded-full" />
             </div>
 
-            <div className="space-y-8 w-full flex flex-col items-center">
-              <div className="space-y-3">
+            <div className="space-y-6 w-full flex flex-col items-center">
+              <div className="space-y-2">
                 <p className="text-[10px] sm:text-sm font-black text-[#FFD700] uppercase tracking-[0.5em] opacity-80 border-b border-[#FFD700]/20 pb-2 inline-block">
                   {stats.currentTeamName}
                 </p>
-                <h2 className="text-4xl sm:text-6xl font-black text-white italic tracking-tighter uppercase leading-tight max-w-[95%]">
+                <h2 className="text-3xl sm:text-4xl font-black text-white italic tracking-tighter uppercase leading-tight max-w-[95%]">
                   {stats.teamAce?.name || "Team Leader"}
                 </h2>
               </div>
-              <div className="pt-8 w-full border-t border-white/10">
+              <div className="pt-6 w-full border-t border-white/10">
                 <p className="text-[10px] sm:text-xs font-black text-white/30 uppercase tracking-[0.6em]">TEAM LEADER</p>
               </div>
             </div>
