@@ -3,7 +3,9 @@
 
 import { useState, useEffect, useRef } from "react";
 import * as htmlToImage from 'html-to-image';
-import Link from "next/link";
+import Link from 'next/link';
+import { RecapCanvas } from '@/components/RecapCanvas';
+import Konva from 'konva';
 import { useParams } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import MascotAvatar from "@/components/MascotAvatar";
@@ -939,6 +941,7 @@ function WrappedExperience({
   const [completedCrop, setCompletedCrop] = useState<Area | null>(null);
   const [tempImage, setTempImage] = useState<string | null>(null);
   const cardRef = useRef<HTMLDivElement>(null);
+  const stageRef = useRef<Konva.Stage>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [seriesBlobFiles, setSeriesBlobFiles] = useState<File[]>([]);
   const [isPreparingSeries, setIsPreparingSeries] = useState(false);
@@ -1090,33 +1093,22 @@ function WrappedExperience({
     if (file) {
       const reader = new FileReader();
       reader.onload = () => {
-        setTempImage(reader.result as string);
-        setIsCropping(true);
-        // Reset input value so same file can be selected again
+        setCustomPhotos(prev => ({ ...prev, [activeIndex]: reader.result as string }));
         e.target.value = '';
       };
       reader.readAsDataURL(file);
     }
   };
 
-  const handleApplyCrop = async () => {
-    if (tempImage && completedCrop) {
-      const cropped = await getCroppedImg(tempImage, completedCrop);
-      setCustomPhotos(prev => ({ ...prev, [activeIndex]: cropped }));
-      setIsCropping(false);
-      setTempImage(null);
-    }
-  };
-
   const performShare = async () => {
-    if (!cardRef.current || isSharing) return;
+    if (!stageRef.current || isSharing) return;
     setIsSharing(true);
     try {
-      await new Promise(r => setTimeout(r, 800));
-      const dataUrl = await htmlToImage.toPng(cardRef.current, { 
-        quality: 1.0, 
+      // Small delay for any final rendering
+      await new Promise(r => setTimeout(r, 100));
+      const dataUrl = stageRef.current.toDataURL({ 
         pixelRatio: 3,
-        skipAutoScale: true
+        mimeType: 'image/png'
       });
       const blob = await (await fetch(dataUrl)).blob();
       const file = new File([blob], `flyer-${cards[activeIndex].id}.png`, { type: 'image/png' });
@@ -1143,14 +1135,11 @@ function WrappedExperience({
     try {
       for (let i = 0; i < cards.length; i++) {
         setActiveIndex(i);
-        // Give more time for the image to render and decode
-        await new Promise(r => setTimeout(r, 1000));
-        if (!cardRef.current) continue;
-        const blob = await htmlToImage.toBlob(cardRef.current, { 
-          quality: 1.0, 
-          pixelRatio: 3, // Higher resolution for professional sharing
-          skipAutoScale: true
-        });
+        // Wait for state update and canvas render
+        await new Promise(r => setTimeout(r, 800));
+        if (!stageRef.current) continue;
+        const dataUrl = stageRef.current.toDataURL({ pixelRatio: 3 });
+        const blob = await (await fetch(dataUrl)).blob();
         if (blob) {
           files.push(new File([blob], `flyer-${i+1}.png`, { type: 'image/png' }));
         }
@@ -1239,37 +1228,18 @@ function WrappedExperience({
         {/* Middle: Editor & Preview */}
         <div className="flex-1 flex flex-col bg-black/40">
           <div className="flex-1 relative flex items-center justify-center p-4 md:p-8 overflow-hidden">
-            {isCropping ? (
-              <div className="relative w-full max-w-[320px] md:max-w-md aspect-square rounded-3xl overflow-hidden border border-white/10 shadow-2xl">
-                <Cropper
-                  image={tempImage!}
-                  crop={crop}
-                  zoom={zoom}
-                  aspect={1}
-                  cropShape="round"
-                  onCropChange={setCrop}
-                  onCropComplete={(_, px) => setCompletedCrop(px)}
-                  onZoomChange={setZoom}
-                />
-              </div>
-            ) : (
-              <div 
-                ref={cardRef}
-                className="w-auto h-full max-h-[68vh] md:max-h-[75vh] max-w-[90vw] aspect-[9/16] rounded-3xl md:rounded-[2.5rem] overflow-hidden shadow-[0_40px_80px_rgba(0,0,0,0.6)] relative border border-white/10 transition-all scale-100 md:scale-100 origin-center bg-black"
-              >
-                <img 
-                  src="/flyer-bg.png" 
-                  className="absolute inset-0 w-full h-full object-cover pointer-events-none" 
-                  alt="" 
-                />
-                <div className="relative h-full z-10">
-                  {cards[activeIndex].content}
-                </div>
-              </div>
-            )}
+            <div className="w-auto h-full max-h-[68vh] md:max-h-[75vh] aspect-[9/16] relative transition-all shadow-[0_40px_120px_rgba(0,0,0,0.8)]">
+              <RecapCanvas 
+                ref={stageRef}
+                cardId={cards[activeIndex].id}
+                stats={stats}
+                customPhoto={customPhotos[activeIndex]}
+                teamColor={teamColor}
+              />
+            </div>
 
             {/* Editing Controls Overlay */}
-            {isPerformerCard && !isCropping && (
+            {isPerformerCard && (
               <div className="absolute top-6 right-6 md:top-10 md:right-10 flex flex-col gap-2 md:gap-3">
                 <button 
                   onClick={() => fileInputRef.current?.click()}
@@ -1278,25 +1248,10 @@ function WrappedExperience({
                   {hasUploadedCurrent ? 'Change Photo' : 'Upload Photo'}
                 </button>
                 {hasUploadedCurrent && (
-                  <button 
-                    onClick={() => setIsCropping(true)}
-                    className="px-4 py-2 md:px-6 md:py-3 bg-[#FFD700] text-black rounded-xl md:rounded-2xl font-black uppercase text-[8px] md:text-[10px] tracking-widest transition-all hover:scale-105 shadow-xl"
-                  >
-                    Adjust Crop
-                  </button>
+                  <p className="px-3 py-1 bg-[#FFD700]/10 border border-[#FFD700]/20 text-[#FFD700] text-[8px] uppercase font-black tracking-widest rounded-lg text-center backdrop-blur-md">
+                    Drag to Position
+                  </p>
                 )}
-              </div>
-            )}
-
-            {/* Zoom Slider for Cropper */}
-            {isCropping && (
-              <div className="absolute bottom-10 left-1/2 -translate-x-1/2 w-64 bg-black/60 backdrop-blur-xl p-4 rounded-2xl border border-white/10 flex flex-col gap-2">
-                <div className="flex justify-between text-[10px] font-black text-white/40 uppercase tracking-widest">
-                  <span>Zoom</span>
-                  <span>{Math.round(zoom * 100)}%</span>
-                </div>
-                <input type="range" value={zoom} min={1} max={3} step={0.1} onChange={(e) => setZoom(Number(e.target.value))} className="w-full" />
-                <button onClick={handleApplyCrop} className="mt-2 w-full py-3 bg-[#FFD700] text-black font-black uppercase text-[10px] tracking-[0.2em] rounded-xl">Apply Changes</button>
               </div>
             )}
           </div>
