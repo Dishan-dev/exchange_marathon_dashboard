@@ -943,8 +943,26 @@ function WrappedExperience({
   const cardRef = useRef<HTMLDivElement>(null);
   const stageRef = useRef<Konva.Stage>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [seriesBlobFiles, setSeriesBlobFiles] = useState<File[]>([]);
   const [isPreparingSeries, setIsPreparingSeries] = useState(false);
-  
+
+  const onCropComplete = (croppedArea: Area, croppedAreaPixels: Area) => {
+    setCompletedCrop(croppedAreaPixels);
+  };
+
+  const handleApplyCrop = async () => {
+    if (tempImage && completedCrop) {
+      try {
+        const croppedImg = await getCroppedImg(tempImage, completedCrop);
+        setCustomPhotos(prev => ({ ...prev, [activeIndex]: croppedImg }));
+        setIsCropping(false);
+        setTempImage(null);
+      } catch (e) {
+        console.error("Crop error:", e);
+      }
+    }
+  };
+
   useEffect(() => {
     const originalStyle = window.getComputedStyle(document.body).overflow;
     document.body.style.overflow = 'hidden';
@@ -954,7 +972,7 @@ function WrappedExperience({
   }, []);
 
   const hasUploadedCurrent = !!customPhotos[activeIndex];
-  const allPerformersUploaded = true;
+  const allPerformersUploaded = !!customPhotos[2] && !!customPhotos[3];
 
   const cards = [
     {
@@ -1092,7 +1110,8 @@ function WrappedExperience({
     if (file) {
       const reader = new FileReader();
       reader.onload = () => {
-        setCustomPhotos(prev => ({ ...prev, [activeIndex]: reader.result as string }));
+        setTempImage(reader.result as string);
+        setIsCropping(true);
         e.target.value = '';
       };
       reader.readAsDataURL(file);
@@ -1103,6 +1122,7 @@ function WrappedExperience({
     if (!stageRef.current || isSharing) return;
     setIsSharing(true);
     try {
+      // Small delay for any final rendering
       await new Promise(r => setTimeout(r, 100));
       const dataUrl = stageRef.current.toDataURL({ 
         pixelRatio: 3,
@@ -1131,10 +1151,10 @@ function WrappedExperience({
     setIsPreparingSeries(true);
     const files: File[] = [];
     try {
-      const originalIndex = activeIndex;
       for (let i = 0; i < cards.length; i++) {
         setActiveIndex(i);
-        await new Promise(r => setTimeout(r, 600));
+        // Wait for state update and canvas render
+        await new Promise(r => setTimeout(r, 800));
         if (!stageRef.current) continue;
         const dataUrl = stageRef.current.toDataURL({ pixelRatio: 3 });
         const blob = await (await fetch(dataUrl)).blob();
@@ -1142,29 +1162,30 @@ function WrappedExperience({
           files.push(new File([blob], `flyer-${i+1}.png`, { type: 'image/png' }));
         }
       }
-
-      if (files.length > 0) {
-        if (navigator.share && navigator.canShare && navigator.canShare({ files })) {
-          await navigator.share({ 
-            files, 
-            title: 'Marathon Recap Series', 
-            text: 'Check out the marathon performance recap!' 
-          });
-        } else {
-          files.forEach(file => {
-            const link = document.createElement('a');
-            link.href = URL.createObjectURL(file);
-            link.download = file.name;
-            link.click();
-            URL.revokeObjectURL(link.href);
-          });
-        }
-      }
-      setActiveIndex(originalIndex);
+      setSeriesBlobFiles(files);
     } catch (err) {
       console.error(err);
     } finally {
       setIsPreparingSeries(false);
+    }
+  };
+
+  const triggerSeriesShare = async () => {
+    if (seriesBlobFiles.length === 0) return;
+    try {
+      if (navigator.share && navigator.canShare && navigator.canShare({ files: seriesBlobFiles })) {
+        await navigator.share({ files: seriesBlobFiles, title: 'Marathon Recap Series', text: 'Check out the marathon performance recap!' });
+      } else {
+        seriesBlobFiles.forEach(file => {
+          const link = document.createElement('a');
+          link.href = URL.createObjectURL(file);
+          link.download = file.name;
+          link.click();
+        });
+      }
+      setSeriesBlobFiles([]); // Clear after success
+    } catch (err) {
+      console.error(err);
     }
   };
 
@@ -1393,6 +1414,38 @@ function UnlinkedState({ functionName, teamColor }: { functionName: string; team
       >
         Back to Home
       </Link>
+      {/* Cropper Modal */}
+      {isCropping && tempImage && (
+        <div className="fixed inset-0 z-[100] bg-black/90 flex flex-col items-center justify-center p-4">
+          <div className="relative w-full max-w-2xl aspect-square bg-[#111] rounded-3xl overflow-hidden border border-white/10">
+            <Cropper
+              image={tempImage}
+              crop={crop}
+              zoom={zoom}
+              aspect={1}
+              onCropChange={setCrop}
+              onZoomChange={setZoom}
+              onCropComplete={onCropComplete}
+              cropShape="round"
+              showGrid={false}
+            />
+          </div>
+          <div className="mt-8 flex items-center space-x-4 w-full max-w-md">
+            <button 
+              onClick={() => setIsCropping(false)}
+              className="flex-1 py-4 bg-white/5 hover:bg-white/10 text-white font-black rounded-2xl transition-all border border-white/5"
+            >
+              CANCEL
+            </button>
+            <button 
+              onClick={handleApplyCrop}
+              className="flex-1 py-4 bg-[#FFD700] hover:bg-[#FFD700]/90 text-black font-black rounded-2xl transition-all shadow-[0_20px_40px_rgba(255,215,0,0.2)]"
+            >
+              APPLY CROP
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
