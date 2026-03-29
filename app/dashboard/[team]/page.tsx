@@ -943,9 +943,8 @@ function WrappedExperience({
   const cardRef = useRef<HTMLDivElement>(null);
   const stageRef = useRef<Konva.Stage>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const [seriesBlobFiles, setSeriesBlobFiles] = useState<File[]>([]);
   const [isPreparingSeries, setIsPreparingSeries] = useState(false);
-
+  
   useEffect(() => {
     const originalStyle = window.getComputedStyle(document.body).overflow;
     document.body.style.overflow = 'hidden';
@@ -955,7 +954,7 @@ function WrappedExperience({
   }, []);
 
   const hasUploadedCurrent = !!customPhotos[activeIndex];
-  const allPerformersUploaded = !!customPhotos[2] && !!customPhotos[3];
+  const allPerformersUploaded = true;
 
   const cards = [
     {
@@ -1104,7 +1103,6 @@ function WrappedExperience({
     if (!stageRef.current || isSharing) return;
     setIsSharing(true);
     try {
-      // Small delay for any final rendering
       await new Promise(r => setTimeout(r, 100));
       const dataUrl = stageRef.current.toDataURL({ 
         pixelRatio: 3,
@@ -1133,10 +1131,10 @@ function WrappedExperience({
     setIsPreparingSeries(true);
     const files: File[] = [];
     try {
+      const originalIndex = activeIndex;
       for (let i = 0; i < cards.length; i++) {
         setActiveIndex(i);
-        // Wait for state update and canvas render
-        await new Promise(r => setTimeout(r, 800));
+        await new Promise(r => setTimeout(r, 600));
         if (!stageRef.current) continue;
         const dataUrl = stageRef.current.toDataURL({ pixelRatio: 3 });
         const blob = await (await fetch(dataUrl)).blob();
@@ -1144,30 +1142,29 @@ function WrappedExperience({
           files.push(new File([blob], `flyer-${i+1}.png`, { type: 'image/png' }));
         }
       }
-      setSeriesBlobFiles(files);
+
+      if (files.length > 0) {
+        if (navigator.share && navigator.canShare && navigator.canShare({ files })) {
+          await navigator.share({ 
+            files, 
+            title: 'Marathon Recap Series', 
+            text: 'Check out the marathon performance recap!' 
+          });
+        } else {
+          files.forEach(file => {
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(file);
+            link.download = file.name;
+            link.click();
+            URL.revokeObjectURL(link.href);
+          });
+        }
+      }
+      setActiveIndex(originalIndex);
     } catch (err) {
       console.error(err);
     } finally {
       setIsPreparingSeries(false);
-    }
-  };
-
-  const triggerSeriesShare = async () => {
-    if (seriesBlobFiles.length === 0) return;
-    try {
-      if (navigator.share && navigator.canShare && navigator.canShare({ files: seriesBlobFiles })) {
-        await navigator.share({ files: seriesBlobFiles, title: 'Marathon Recap Series', text: 'Check out the marathon performance recap!' });
-      } else {
-        seriesBlobFiles.forEach(file => {
-          const link = document.createElement('a');
-          link.href = URL.createObjectURL(file);
-          link.download = file.name;
-          link.click();
-        });
-      }
-      setSeriesBlobFiles([]); // Clear after success
-    } catch (err) {
-      console.error(err);
     }
   };
 

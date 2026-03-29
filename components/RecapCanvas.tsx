@@ -367,12 +367,12 @@ export const RecapCanvas = React.forwardRef<Konva.Stage, RecapCanvasProps>(({
                 <Rect x={width/2 - 200} y={50} width={400} height={2} fill="rgba(255,215,0,0.2)" />
                 
                 <Text 
-                  text={(performer?.name || "Member Name").toUpperCase()} 
+                  text={(performer?.name?.split(' ')[0] || (cardId === 'best-performer-tl' ? "Leader" : "Member")).toUpperCase()} 
                   x={100} 
                   y={120} 
                   width={width - 200} 
                   align="center" 
-                  fontSize={100} 
+                  fontSize={120} 
                   fontStyle="900 italic" 
                   fill="white" 
                   letterSpacing={-4}
