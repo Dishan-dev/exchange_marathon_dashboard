@@ -895,30 +895,36 @@ function PerformerModal({
 
 // Utility function to crop image
 const getCroppedImg = async (imageSrc: string, pixelCrop: Area): Promise<string> => {
-  const image = new Image();
-  image.src = imageSrc;
-  await new Promise((resolve) => (image.onload = resolve));
+  return new Promise((resolve, reject) => {
+    const image = new Image();
+    image.onload = () => {
+      const canvas = document.createElement("canvas");
+      const ctx = canvas.getContext("2d");
+      if (!ctx) {
+        reject(new Error("No canvas context"));
+        return;
+      }
 
-  const canvas = document.createElement("canvas");
-  const ctx = canvas.getContext("2d");
-  if (!ctx) return "";
+      canvas.width = pixelCrop.width;
+      canvas.height = pixelCrop.height;
 
-  canvas.width = pixelCrop.width;
-  canvas.height = pixelCrop.height;
+      ctx.drawImage(
+        image,
+        pixelCrop.x,
+        pixelCrop.y,
+        pixelCrop.width,
+        pixelCrop.height,
+        0,
+        0,
+        pixelCrop.width,
+        pixelCrop.height
+      );
 
-  ctx.drawImage(
-    image,
-    pixelCrop.x,
-    pixelCrop.y,
-    pixelCrop.width,
-    pixelCrop.height,
-    0,
-    0,
-    pixelCrop.width,
-    pixelCrop.height
-  );
-
-  return canvas.toDataURL("image/png");
+      resolve(canvas.toDataURL("image/png"));
+    };
+    image.onerror = (err) => reject(err);
+    image.src = imageSrc;
+  });
 };
 
 function WrappedExperience({ 
@@ -945,6 +951,7 @@ function WrappedExperience({
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [seriesBlobFiles, setSeriesBlobFiles] = useState<File[]>([]);
   const [isPreparingSeries, setIsPreparingSeries] = useState(false);
+  const [isProcessingCrop, setIsProcessingCrop] = useState(false);
 
   const onCropComplete = (croppedArea: Area, croppedAreaPixels: Area) => {
     setCompletedCrop(croppedAreaPixels);
@@ -952,6 +959,7 @@ function WrappedExperience({
 
   const handleApplyCrop = async () => {
     if (tempImage && completedCrop) {
+      setIsProcessingCrop(true);
       try {
         const croppedImg = await getCroppedImg(tempImage, completedCrop);
         setCustomPhotos(prev => ({ ...prev, [activeIndex]: croppedImg }));
@@ -959,6 +967,9 @@ function WrappedExperience({
         setTempImage(null);
       } catch (e) {
         console.error("Crop error:", e);
+        alert("Failed to crop image. Please try a different photo.");
+      } finally {
+        setIsProcessingCrop(false);
       }
     }
   };
@@ -1108,13 +1119,10 @@ function WrappedExperience({
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      const reader = new FileReader();
-      reader.onload = () => {
-        setTempImage(reader.result as string);
-        setIsCropping(true);
-        e.target.value = '';
-      };
-      reader.readAsDataURL(file);
+      const objectUrl = URL.createObjectURL(file);
+      setTempImage(objectUrl);
+      setIsCropping(true);
+      e.target.value = '';
     }
   };
 
@@ -1248,6 +1256,7 @@ function WrappedExperience({
           <div className="flex-1 relative flex items-center justify-center p-4 md:p-8 overflow-hidden">
             <div className="w-auto h-full max-h-[68vh] md:max-h-[75vh] aspect-[9/16] relative transition-all shadow-[0_40px_120px_rgba(0,0,0,0.8)]">
               <RecapCanvas 
+                key={`canvas-${activeIndex}-${(customPhotos[activeIndex] || '').slice(-20)}`}
                 ref={stageRef}
                 cardId={cards[activeIndex].id}
                 stats={stats}
@@ -1313,6 +1322,43 @@ function WrappedExperience({
         </div>
 
         <input type="file" ref={fileInputRef} className="hidden" accept="image/*" onChange={handleFileChange} />
+
+        {/* Cropper Modal - Correctly Scoped Inside WrappedExperience */}
+        {isCropping && tempImage && (
+          <div className="fixed inset-0 z-[300] bg-black/90 flex flex-col items-center justify-center p-4">
+            <div className="relative w-full max-w-2xl aspect-square bg-[#111] rounded-3xl overflow-hidden border border-white/10">
+              <Cropper
+                image={tempImage}
+                crop={crop}
+                zoom={zoom}
+                aspect={1}
+                onCropChange={setCrop}
+                onZoomChange={setZoom}
+                onCropComplete={onCropComplete}
+                cropShape="round"
+                showGrid={false}
+              />
+            </div>
+            <div className="mt-8 flex items-center space-x-4 w-full max-w-md">
+              <button 
+                onClick={() => {
+                  setIsCropping(false);
+                  setTempImage(null);
+                }}
+                className="flex-1 py-4 bg-white/5 hover:bg-white/10 text-white font-black rounded-2xl transition-all border border-white/5"
+              >
+                CANCEL
+              </button>
+              <button 
+                onClick={handleApplyCrop}
+                disabled={isProcessingCrop}
+                className={`flex-1 py-4 font-black rounded-2xl transition-all shadow-[0_20px_40px_rgba(255,215,0,0.2)] ${isProcessingCrop ? 'bg-white/10 text-white/40 cursor-not-allowed' : 'bg-[#FFD700] hover:bg-[#FFD700]/90 text-black'}`}
+              >
+                {isProcessingCrop ? "PROCESSING..." : "APPLY CROP"}
+              </button>
+            </div>
+          </div>
+        )}
       </motion.div>
     </div>
   );
@@ -1371,6 +1417,7 @@ function ConstructionOverlay({ teamColor }: { teamColor: string }) {
           Exit to Home
         </Link>
       </div>
+
     </div>
   );
 }
@@ -1414,38 +1461,6 @@ function UnlinkedState({ functionName, teamColor }: { functionName: string; team
       >
         Back to Home
       </Link>
-      {/* Cropper Modal */}
-      {isCropping && tempImage && (
-        <div className="fixed inset-0 z-[100] bg-black/90 flex flex-col items-center justify-center p-4">
-          <div className="relative w-full max-w-2xl aspect-square bg-[#111] rounded-3xl overflow-hidden border border-white/10">
-            <Cropper
-              image={tempImage}
-              crop={crop}
-              zoom={zoom}
-              aspect={1}
-              onCropChange={setCrop}
-              onZoomChange={setZoom}
-              onCropComplete={onCropComplete}
-              cropShape="round"
-              showGrid={false}
-            />
-          </div>
-          <div className="mt-8 flex items-center space-x-4 w-full max-w-md">
-            <button 
-              onClick={() => setIsCropping(false)}
-              className="flex-1 py-4 bg-white/5 hover:bg-white/10 text-white font-black rounded-2xl transition-all border border-white/5"
-            >
-              CANCEL
-            </button>
-            <button 
-              onClick={handleApplyCrop}
-              className="flex-1 py-4 bg-[#FFD700] hover:bg-[#FFD700]/90 text-black font-black rounded-2xl transition-all shadow-[0_20px_40px_rgba(255,215,0,0.2)]"
-            >
-              APPLY CROP
-            </button>
-          </div>
-        </div>
-      )}
     </div>
   );
 }

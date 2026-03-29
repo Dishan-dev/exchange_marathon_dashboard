@@ -51,7 +51,7 @@ export const RecapCanvas = React.forwardRef<Konva.Stage, RecapCanvasProps>(({
 
   const [bgImage] = useImage('/flyer-bg.png', 'anonymous');
   const [logoBase] = useImage('/logo.png', 'anonymous');
-  const [performerImage] = useImage(customPhoto || '', 'anonymous');
+  const [performerImage, imageStatus] = useImage(customPhoto || '');
   const [flagMascot] = useImage('/mascot/flag.png', 'anonymous');
   const [laptopMascot] = useImage('/mascot/laptop.png', 'anonymous');
   
@@ -82,7 +82,7 @@ export const RecapCanvas = React.forwardRef<Konva.Stage, RecapCanvasProps>(({
       setPhotoPos({ 
         x: centerX, 
         y: centerY, 
-        scale: Math.max(260 / performerImage.width, 260 / performerImage.height) * 1.5
+        scale: Math.max(600 / performerImage.width, 600 / performerImage.height)
       });
     }
   }, [performerImage, width, height]);
@@ -311,8 +311,12 @@ export const RecapCanvas = React.forwardRef<Konva.Stage, RecapCanvasProps>(({
                 />
 
                 {/* Masked Photo */}
-                <Group clipFunc={(ctx) => ctx.arc(0, 0, 290, 0, Math.PI * 2, false)}>
-                  <Rect x={-300} y={-300} width={600} height={600} fill="rgba(255,255,255,0.1)" />
+                <Group clipFunc={(ctx) => {
+                  ctx.beginPath();
+                  ctx.arc(0, 0, 290, 0, Math.PI * 2, false);
+                  ctx.closePath();
+                }}>
+                  <Rect x={-300} y={-300} width={600} height={600} fill="rgba(255,255,255,0.05)" />
                   {performerImage ? (
                     <Image 
                       image={performerImage}
@@ -324,7 +328,11 @@ export const RecapCanvas = React.forwardRef<Konva.Stage, RecapCanvasProps>(({
                       offsetY={performerImage.height / 2}
                       draggable
                       onDragEnd={(e) => {
-                         setPhotoPos(p => ({ ...p, x: e.target.x() + width/2, y: e.target.y() + height * 0.42 }));
+                        setPhotoPos(p => ({ 
+                          ...p, 
+                          x: e.target.x() + width/2, 
+                          y: e.target.y() + height * 0.42 
+                        }));
                       }}
                       onWheel={(e) => {
                         e.evt.preventDefault();
