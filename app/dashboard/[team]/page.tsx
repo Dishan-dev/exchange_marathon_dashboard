@@ -959,8 +959,8 @@ function WrappedExperience({
       id: "weekly-snapshot",
       title: "Weekly Snapshot",
       content: (
-        <div className="flex flex-col h-full text-center px-6 sm:px-10 relative w-full py-16 justify-center gap-12">
-          <img src="/logo.png" alt="XCEND" className="absolute top-10 h-8 object-contain brightness-0 invert opacity-80 left-1/2 -translate-x-1/2" />
+        <div className="flex flex-col h-full text-center px-8 sm:px-12 relative w-full py-20 justify-center gap-12">
+          <img src="/logo.png" alt="XCEND" className="absolute top-12 h-8 object-contain brightness-0 invert opacity-80 left-1/2 -translate-x-1/2" />
           <div className="flex flex-col items-center">
             <div className="transform scale-[1.15] relative">
                <div className="absolute -inset-10 bg-[#FFD700]/10 blur-3xl rounded-full" />
@@ -968,7 +968,7 @@ function WrappedExperience({
             </div>
           </div>
           <div className="space-y-3 z-10">
-            <p className="text-xs sm:text-sm font-black uppercase tracking-[0.6em] text-[#FFD700]/90 italic">WEEK 01 SNAPSHOT</p>
+            <p className="text-[10px] sm:text-xs font-black uppercase tracking-[0.6em] text-[#FFD700]/90 italic">WEEK 01 SNAPSHOT</p>
             <h2 className="text-3xl sm:text-5xl font-black text-white italic tracking-tighter uppercase leading-tight max-w-[95%] mx-auto">
               {stats.currentTeamName} RECAP
             </h2>
@@ -980,23 +980,23 @@ function WrappedExperience({
       id: "best-team",
       title: "Best Team",
       content: (
-        <div className="flex flex-col h-full text-center px-6 sm:px-10 relative overflow-hidden bg-black/20 py-16 justify-center">
-          <img src="/logo.png" alt="XCEND" className="absolute top-10 h-8 object-contain brightness-0 invert opacity-80 left-1/2 -translate-x-1/2" />
+        <div className="flex flex-col h-full text-center px-8 sm:px-12 relative overflow-hidden bg-black/20 py-20 justify-center">
+          <img src="/logo.png" alt="XCEND" className="absolute top-12 h-8 object-contain brightness-0 invert opacity-80 left-1/2 -translate-x-1/2" />
           <div className="text-[10rem] sm:text-[14rem] font-black text-white/[0.03] absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 select-none tracking-widest uppercase italic pointer-events-none">
             {stats.topTeam.name.split(' ')[0]}
           </div>
-          <div className="relative z-10 space-y-8">
-            <p className="text-xs sm:text-sm font-black uppercase tracking-[0.5em] text-white/90 italic">BEST PERFORMING TEAM</p>
+          <div className="relative z-10 space-y-10">
+            <p className="text-[10px] sm:text-xs font-black uppercase tracking-[0.5em] text-white/90 italic">BEST PERFORMING TEAM</p>
             <h2 className="text-4xl sm:text-6xl font-black text-white italic tracking-tighter leading-tight uppercase max-w-[95%] mx-auto">
               {stats.topTeam.name}
             </h2>
-            <div className="inline-flex items-center justify-center rounded-full glass border border-white/20 px-8 py-3 shadow-2xl">
-              <p className="text-2xl sm:text-4xl font-black text-[#FFD700] italic mr-3">{stats.topTeam.points}</p>
+            <div className="inline-flex items-center justify-center rounded-3xl glass border border-white/20 px-10 py-4 shadow-2xl">
+              <p className="text-3xl sm:text-5xl font-black text-[#FFD700] italic mr-4">{stats.topTeam.points}</p>
               <p className="text-sm sm:text-base font-black uppercase tracking-[0.3em] text-white/60 italic">PTS</p>
             </div>
           </div>
           <div className="absolute -bottom-10 -right-10 pointer-events-none opacity-90 scale-100 origin-bottom-right">
-            <MascotAvatar type="laptop" size={280} glowColor={teamColor} />
+            <MascotAvatar type="laptop" size={300} glowColor={teamColor} />
           </div>
         </div>
       )
@@ -1005,35 +1005,35 @@ function WrappedExperience({
       id: "best-performer-member",
       title: "Best Performer",
       content: (
-        <div className="flex flex-col items-center h-full text-center px-6 sm:px-10 relative w-full pt-44 pb-24 justify-center">
-          <img src="/logo.png" alt="XCEND" className="absolute top-12 h-8 object-contain brightness-0 invert opacity-60 left-1/2 -translate-x-1/2" />
+        <div className="flex flex-col items-center h-full text-center px-8 sm:px-12 relative w-full py-20 justify-center">
+          <img src="/logo.png" alt="XCEND" className="absolute top-12 h-8 object-contain brightness-0 invert opacity-80 left-1/2 -translate-x-1/2" />
           
-          <div className="z-10 space-y-12 w-full flex flex-col items-center">
+          <div className="z-10 space-y-14 w-full flex flex-col items-center mt-12">
             <div>
-              <p className="text-[10px] sm:text-xs font-black uppercase tracking-[0.6em] text-[#FFD700]/90 mb-10">BEST PERFORMER</p>
+              <p className="text-[10px] sm:text-xs font-black uppercase tracking-[0.6em] text-[#FFD700]/90 mb-12">BEST PERFORMER</p>
               <div className="relative">
-                <div className="w-40 h-40 sm:w-56 sm:h-56 rounded-full border-[6px] border-[#FFD700]/15 overflow-hidden shadow-[0_30px_60px_rgba(0,0,0,0.5)] mx-auto bg-white/20 flex items-center justify-center relative">
+                <div className="w-44 h-44 sm:w-64 sm:h-64 rounded-full border-[6px] border-[#FFD700]/15 overflow-hidden shadow-[0_40px_80px_rgba(0,0,0,0.6)] mx-auto bg-white/20 flex items-center justify-center relative">
                   {customPhotos[2] ? (
                     <img src={customPhotos[2]} className="w-full h-full object-cover" alt="Custom" />
                   ) : (
-                    <div className="text-7xl opacity-80">{stats.globalMvp?.avatar || "👤"}</div>
+                    <div className="text-8xl opacity-80">{stats.globalMvp?.avatar || "👤"}</div>
                   )}
                 </div>
-                <div className="absolute -inset-6 bg-[#FFD700]/5 blur-3xl -z-10 rounded-full" />
+                <div className="absolute -inset-10 bg-[#FFD700]/10 blur-3xl -z-10 rounded-full" />
               </div>
             </div>
 
-            <div className="space-y-6 w-full flex flex-col items-center">
-              <div className="space-y-2">
-                <p className="text-[9px] sm:text-[11px] font-black text-[#FFD700] uppercase tracking-[0.5em] opacity-80 border-b border-[#FFD700]/20 pb-1 inline-block">
+            <div className="space-y-8 w-full flex flex-col items-center">
+              <div className="space-y-3">
+                <p className="text-[10px] sm:text-sm font-black text-[#FFD700] uppercase tracking-[0.5em] opacity-80 border-b border-[#FFD700]/20 pb-2 inline-block">
                   {stats.currentTeamName}
                 </p>
-                <h2 className="text-3xl sm:text-5xl font-black text-white italic tracking-tighter uppercase leading-tight max-w-[95%]">
+                <h2 className="text-4xl sm:text-6xl font-black text-white italic tracking-tighter uppercase leading-tight max-w-[95%]">
                   {stats.globalMvp?.name || "Member Name"}
                 </h2>
               </div>
-              <div className="pt-6 w-full border-t border-white/5">
-                <p className="text-[10px] sm:text-xs font-black text-white/30 uppercase tracking-[0.5em]">MEMBER</p>
+              <div className="pt-8 w-full border-t border-white/10">
+                <p className="text-[10px] sm:text-xs font-black text-white/30 uppercase tracking-[0.6em]">MEMBER</p>
               </div>
             </div>
           </div>
@@ -1044,35 +1044,35 @@ function WrappedExperience({
       id: "best-performer-tl",
       title: "Best TL",
       content: (
-        <div className="flex flex-col items-center h-full text-center px-6 sm:px-10 relative w-full pt-44 pb-24 justify-center">
-          <img src="/logo.png" alt="XCEND" className="absolute top-12 h-8 object-contain brightness-0 invert opacity-60 left-1/2 -translate-x-1/2" />
+        <div className="flex flex-col items-center h-full text-center px-8 sm:px-12 relative w-full py-20 justify-center">
+          <img src="/logo.png" alt="XCEND" className="absolute top-12 h-8 object-contain brightness-0 invert opacity-80 left-1/2 -translate-x-1/2" />
           
-          <div className="z-10 space-y-12 w-full flex flex-col items-center">
+          <div className="z-10 space-y-14 w-full flex flex-col items-center mt-12">
             <div>
-              <p className="text-[10px] sm:text-xs font-black uppercase tracking-[0.6em] text-[#FFD700]/90 mb-10">BEST PERFORMER</p>
+              <p className="text-[10px] sm:text-xs font-black uppercase tracking-[0.6em] text-[#FFD700]/90 mb-12">BEST PERFORMER</p>
               <div className="relative">
-                <div className="w-40 h-40 sm:w-56 sm:h-56 rounded-full border-[6px] border-[#FFD700]/15 overflow-hidden shadow-[0_30px_60px_rgba(0,0,0,0.5)] mx-auto bg-white/20 flex items-center justify-center relative">
+                <div className="w-44 h-44 sm:w-64 sm:h-64 rounded-full border-[6px] border-[#FFD700]/15 overflow-hidden shadow-[0_40px_80px_rgba(0,0,0,0.6)] mx-auto bg-white/20 flex items-center justify-center relative">
                   {customPhotos[3] ? (
                     <img src={customPhotos[3]} className="w-full h-full object-cover" alt="Custom" />
                   ) : (
-                    <div className="text-7xl opacity-80">{stats.teamAce?.avatar || "⭐"}</div>
+                    <div className="text-8xl opacity-80">{stats.teamAce?.avatar || "⭐"}</div>
                   )}
                 </div>
-                <div className="absolute -inset-6 bg-[#FFD700]/5 blur-3xl -z-10 rounded-full" />
+                <div className="absolute -inset-10 bg-[#FFD700]/10 blur-3xl -z-10 rounded-full" />
               </div>
             </div>
 
-            <div className="space-y-6 w-full flex flex-col items-center">
-              <div className="space-y-2">
-                <p className="text-[9px] sm:text-[11px] font-black text-[#FFD700] uppercase tracking-[0.5em] opacity-80 border-b border-[#FFD700]/20 pb-1 inline-block">
+            <div className="space-y-8 w-full flex flex-col items-center">
+              <div className="space-y-3">
+                <p className="text-[10px] sm:text-sm font-black text-[#FFD700] uppercase tracking-[0.5em] opacity-80 border-b border-[#FFD700]/20 pb-2 inline-block">
                   {stats.currentTeamName}
                 </p>
-                <h2 className="text-3xl sm:text-5xl font-black text-white italic tracking-tighter uppercase leading-tight max-w-[95%]">
+                <h2 className="text-4xl sm:text-6xl font-black text-white italic tracking-tighter uppercase leading-tight max-w-[95%]">
                   {stats.teamAce?.name || "Team Leader"}
                 </h2>
               </div>
-              <div className="pt-6 w-full border-t border-white/5">
-                <p className="text-[10px] sm:text-xs font-black text-white/30 uppercase tracking-[0.5em]">TEAM LEADER</p>
+              <div className="pt-8 w-full border-t border-white/10">
+                <p className="text-[10px] sm:text-xs font-black text-white/30 uppercase tracking-[0.6em]">TEAM LEADER</p>
               </div>
             </div>
           </div>
@@ -1108,8 +1108,12 @@ function WrappedExperience({
     if (!cardRef.current || isSharing) return;
     setIsSharing(true);
     try {
-      await new Promise(r => setTimeout(r, 500));
-      const dataUrl = await htmlToImage.toPng(cardRef.current, { quality: 1.0, pixelRatio: 2 });
+      await new Promise(r => setTimeout(r, 800));
+      const dataUrl = await htmlToImage.toPng(cardRef.current, { 
+        quality: 1.0, 
+        pixelRatio: 3,
+        skipAutoScale: true
+      });
       const blob = await (await fetch(dataUrl)).blob();
       const file = new File([blob], `flyer-${cards[activeIndex].id}.png`, { type: 'image/png' });
 
