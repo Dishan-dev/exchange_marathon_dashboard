@@ -18,6 +18,7 @@ interface WrappedStats {
   globalMvp: Performer | null;
   teamAce: Performer | null;
   currentTeamName: string;
+  allPerformers: Performer[];
 }
 
 interface Performer {
@@ -985,22 +986,56 @@ function WrappedExperience({
   const hasUploadedCurrent = !!customPhotos[activeIndex];
   const allPerformersUploaded = !!customPhotos[2] && !!customPhotos[3];
 
+  const sorted = [...(stats.allPerformers || [])].sort((a, b) => b.score - a.score);
+  const podiumData = [sorted[1], sorted[0], sorted[2]].filter(Boolean);
+
+  const weekLabel = (() => {
+    const startDate = new Date("2026-03-29");
+    const today = new Date();
+    const diff = today.getTime() - startDate.getTime();
+    const weekNum = Math.max(1, Math.ceil(diff / (1000 * 60 * 60 * 24 * 7)));
+    return `WEEK ${weekNum.toString().padStart(2, "0")}`;
+  })();
+
   const cards = [
     {
       id: "weekly-snapshot",
       title: "Weekly Snapshot",
       content: (
-        <div className="flex flex-col h-full text-center px-8 sm:px-12 relative w-full py-20 justify-center gap-12">
-          <img src="/logo.png" alt="XCEND" className="absolute top-12 h-8 object-contain brightness-0 invert opacity-80 left-1/2 -translate-x-1/2" />
-          <div className="flex flex-col items-center">
-            <div className="transform scale-[1.15] relative">
-               <div className="absolute -inset-10 bg-[#FFD700]/10 blur-3xl rounded-full" />
-               <MascotAvatar type="flag" size={320} glowColor={teamColor} />
-            </div>
+        <div className="flex flex-col h-full text-center px-6 sm:px-12 relative w-full pt-10 pb-16 justify-between items-center bg-black/20">
+          <img src="/logo.png" alt="XCEND" className="h-6 sm:h-8 object-contain brightness-0 invert opacity-80" />
+          
+          {/* CSS Podium for Thumbnail */}
+          <div className="w-full flex items-end justify-center gap-2 sm:gap-4 px-2 mb-4">
+             {/* 2nd */}
+             <div className="flex flex-col items-center w-1/3">
+                <div className="mb-2 text-[8px] sm:text-xs font-black text-white/40 truncate w-full">{podiumData[0]?.name?.split(' ')[0]}</div>
+                <div className="w-full h-16 sm:h-24 bg-linear-to-b from-[#E0E0E0] to-[#9E9E9E] rounded-t-xl flex items-center justify-center relative">
+                   <span className="text-2xl sm:text-4xl font-black text-black/10">2</span>
+                   <div className="absolute -top-4 w-8 h-8 rounded-full bg-white/10 flex items-center justify-center text-[10px] font-black text-white">{podiumData[0]?.name?.charAt(0)}</div>
+                </div>
+             </div>
+             {/* 1st */}
+             <div className="flex flex-col items-center w-1/3">
+                <div className="mb-2 text-[10px] sm:text-sm font-black text-[#FFD700] truncate w-full">{podiumData[1]?.name?.split(' ')[0]}</div>
+                <div className="w-full h-24 sm:h-36 bg-linear-to-b from-[#FFD700] to-[#FFA500] rounded-t-xl flex items-center justify-center relative border-x border-t border-white/20">
+                   <span className="text-4xl sm:text-6xl font-black text-black/10">1</span>
+                   <div className="absolute -top-5 w-10 h-10 rounded-full bg-[#FFD700]/20 flex items-center justify-center text-xs font-black text-white border border-[#FFD700]/30">{podiumData[1]?.name?.charAt(0)}</div>
+                </div>
+             </div>
+             {/* 3rd */}
+             <div className="flex flex-col items-center w-1/3">
+                <div className="mb-2 text-[8px] sm:text-xs font-black text-white/30 truncate w-full">{podiumData[2]?.name?.split(' ')[0]}</div>
+                <div className="w-full h-12 sm:h-20 bg-linear-to-b from-[#CD7F32] to-[#8B4513] rounded-t-xl flex items-center justify-center relative">
+                   <span className="text-xl sm:text-3xl font-black text-black/10">3</span>
+                   <div className="absolute -top-3 w-7 h-7 rounded-full bg-white/5 flex items-center justify-center text-[9px] font-black text-white">{podiumData[2]?.name?.charAt(0)}</div>
+                </div>
+             </div>
           </div>
-          <div className="space-y-3 z-10">
-            <p className="text-[10px] sm:text-xs font-black uppercase tracking-[0.6em] text-[#FFD700]/90 italic">WEEK 01 SNAPSHOT</p>
-            <h2 className="text-2xl sm:text-4xl font-black text-white italic tracking-tighter uppercase leading-tight max-w-[95%] mx-auto">
+
+          <div className="space-y-2 z-10 w-full">
+            <p className="text-[10px] sm:text-xs font-black uppercase tracking-[0.5em] text-[#FFD700]/90 italic">{weekLabel} SNAPSHOT</p>
+            <h2 className="text-xl sm:text-3xl font-black text-white italic tracking-tighter uppercase leading-tight">
               {stats.currentTeamName} RECAP
             </h2>
           </div>
@@ -1255,14 +1290,22 @@ function WrappedExperience({
         <div className="flex-1 flex flex-col bg-black/40">
           <div className="flex-1 relative flex items-center justify-center p-4 md:p-8 overflow-hidden">
             <div className="w-auto h-full max-h-[68vh] md:max-h-[75vh] aspect-[9/16] relative transition-all shadow-[0_40px_120px_rgba(0,0,0,0.8)]">
-              <RecapCanvas 
-                key={`canvas-${activeIndex}-${(customPhotos[activeIndex] || '').slice(-20)}`}
-                ref={stageRef}
-                cardId={cards[activeIndex].id}
-                stats={stats}
-                customPhoto={customPhotos[activeIndex]}
-                teamColor={teamColor}
-              />
+              {(() => {
+                const sorted = [...(stats.allPerformers || [])].sort((a, b) => b.score - a.score);
+                const podiumData = [sorted[1], sorted[0], sorted[2]].filter(Boolean);
+                
+                return (
+                  <RecapCanvas 
+                    key={`canvas-${activeIndex}-${(customPhotos[activeIndex] || '').slice(-20)}`}
+                    ref={stageRef}
+                    cardId={cards[activeIndex].id}
+                    stats={stats}
+                    customPhoto={customPhotos[activeIndex]}
+                    teamColor={teamColor}
+                    topPerformers={podiumData}
+                  />
+                );
+              })()}
             </div>
 
             {/* Editing Controls Overlay */}
@@ -1297,26 +1340,19 @@ function WrappedExperience({
             <div className="flex items-center gap-3 md:gap-4 w-full md:w-auto">
                <button onClick={onClose} className="flex-1 md:flex-none px-4 py-3 md:px-6 md:py-4 text-white/40 hover:text-white font-black uppercase text-[10px] tracking-widest transition-colors">Close</button>
                
-               <div className="flex gap-2 flex-[2] md:flex-none">
-                 <button 
-                   onClick={performShare}
-                   disabled={isSharing || (isPerformerCard && !hasUploadedCurrent)}
-                   className={`flex-1 md:flex-none px-4 py-3 md:px-8 md:py-5 bg-white/5 hover:bg-white/10 text-white border border-white/10 font-black uppercase text-[9px] md:text-[10px] tracking-widest rounded-xl md:rounded-2xl shadow-xl transition-all active:scale-95 disabled:opacity-20`}
-                 >
-                   {isSharing ? '...' : 'Share Selected'}
-                 </button>
-                 
-                 <button 
-                   onClick={performShareAll}
-                   disabled={isSharing || !allPerformersUploaded}
-                   className={`flex-1 md:flex-none px-6 py-3 md:px-10 md:py-5 bg-linear-to-r from-[#FFD700] to-[#FFA000] text-black font-black uppercase text-[9px] md:text-[11px] tracking-[0.2em] md:tracking-[0.25em] rounded-xl md:rounded-2xl shadow-2xl transition-all active:scale-95 disabled:opacity-30 disabled:grayscale`}
-                 >
-                   {isSharing ? '...' : (
-                      <span className="md:hidden">ALL</span>
-                   )}
-                   <span className="hidden md:inline">SHARE ALL SERIES</span>
-                 </button>
-               </div>
+                <div className="flex gap-2 flex-[2] md:flex-none">
+                  <button 
+                    onClick={performShare}
+                    disabled={isSharing || (isPerformerCard && !hasUploadedCurrent)}
+                    className={`flex-1 md:flex-none w-full md:w-auto md:min-w-[280px] px-8 py-4 md:px-16 md:py-6 bg-linear-to-r from-[#FFD700] to-[#FFA000] text-black font-black uppercase text-[12px] md:text-[14px] tracking-[0.3em] rounded-2xl md:rounded-[2.5rem] shadow-[0_20px_50px_rgba(255,215,0,0.3)] transition-all hover:scale-[1.02] active:scale-95 disabled:opacity-20 disabled:grayscale`}
+                  >
+                    {isSharing ? '...' : (
+                      <span className="flex items-center gap-2">
+                        SHARE <span className="hidden md:inline">SELECTED</span>
+                      </span>
+                    )}
+                  </button>
+                </div>
             </div>
           </div>
         </div>
@@ -1649,7 +1685,8 @@ export default function TeamDashboard() {
     topTeam: { name: topTeam.name, points: topTeam.points },
     globalMvp: bestMember,
     teamAce: bestTL,
-    currentTeamName: teamData.name
+    currentTeamName: teamData.name,
+    allPerformers: podiumRows
   };
 
   const marathonEndMs = (teamParam === 'igt_b2b') 

@@ -13,6 +13,9 @@ interface RecapCanvasProps {
   width?: number;
   height?: number;
   onExport?: (dataUrl: string) => void;
+  photoPos?: { x: number, y: number, scale: number };
+  onPhotoPosChange?: (pos: { x: number, y: number, scale: number }) => void;
+  topPerformers?: any[];
 }
 
 export const RecapCanvas = React.forwardRef<Konva.Stage, RecapCanvasProps>(({ 
@@ -22,7 +25,10 @@ export const RecapCanvas = React.forwardRef<Konva.Stage, RecapCanvasProps>(({
   teamColor, 
   width = 1080, 
   height = 1920,
-  onExport 
+  onExport,
+  photoPos: propPhotoPos,
+  onPhotoPosChange,
+  topPerformers = []
 }, ref) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const internalStageRef = useRef<Konva.Stage>(null);
@@ -91,24 +97,33 @@ export const RecapCanvas = React.forwardRef<Konva.Stage, RecapCanvasProps>(({
   const isTeam = cardId === 'best-team';
   const isSnapshot = cardId === 'weekly-snapshot';
 
+  // Week calculation
+  const startDate = new Date("2026-03-29");
+  const today = new Date();
+  const diffDays = Math.max(0, Math.floor((today.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24)));
+  const currentWeekNum = Math.floor(diffDays / 7) + 1;
+  const weekLabel = `WEEK ${currentWeekNum.toString().padStart(2, '0')}`;
+
   // Performer specific data
   const performer = cardId === 'best-performer-tl' ? stats.teamAce : stats.globalMvp;
   const performerTitle = cardId === 'best-performer-tl' ? 'TEAM LEADER' : 'MEMBER';
 
   return (
-    <div ref={containerRef} className="w-full h-full flex items-center justify-center bg-black/20 overflow-hidden relative">
+    <div ref={containerRef} className="w-full h-full flex items-center justify-center bg-transparent overflow-hidden relative">
       <div style={{ 
-        transform: `scale(${dimensions.scale})`, 
+        transform: `translate(-50%, -50%) scale(${dimensions.scale})`, 
         transformOrigin: 'center center',
         width: width,
         height: height,
-        position: 'absolute'
+        position: 'absolute',
+        top: '50%',
+        left: '50%',
+        boxShadow: '0 50px 100px -20px rgba(0,0,0,0.5)'
       }}>
         <Stage 
           width={width} 
           height={height} 
           ref={internalStageRef}
-          className="shadow-2xl"
         >
           <Layer>
             {/* 1. Background Image */}
@@ -136,38 +151,94 @@ export const RecapCanvas = React.forwardRef<Konva.Stage, RecapCanvasProps>(({
             )}
 
           {/* 3. Snapshot Card */}
+          {/* 3. Snapshot Card - Podium Elite Arena */}
           {isSnapshot && (
             <Group>
-               <Group x={width / 2} y={height * 0.4}>
-                 {/* Mascot Glow */}
+               <Group x={width / 2} y={height * 0.36}>
+                 {/* Arena Glow */}
                  <Circle 
-                   radius={300} 
+                   radius={400} 
                    fillRadialGradientStartPoint={{x:0, y:0}} 
                    fillRadialGradientStartRadius={0} 
                    fillRadialGradientEndPoint={{x:0, y:0}} 
-                   fillRadialGradientEndRadius={300} 
+                   fillRadialGradientEndRadius={400} 
                    fillRadialGradientColorStops={[0, resolvedColor, 1, 'transparent']} 
-                   opacity={0.25}
+                   opacity={0.15}
                  />
-                 {flagMascot && (
-                   <Image 
-                     image={flagMascot} 
-                     width={600} 
-                     height={600 * (flagMascot.height / flagMascot.width)} 
-                     offsetX={300} 
-                     offsetY={(600 * (flagMascot.height / flagMascot.width)) / 2} 
-                     shadowColor={resolvedColor}
-                     shadowBlur={100}
-                     shadowOpacity={0.2}
-                   />
-                 )}
+
+                 {/* Podium Bars (2-1-3 order) */}
+                 <Group y={250}>
+                    {/* Position 2 (Silver) */}
+                    <Group x={-260} y={50}>
+                        <Rect 
+                          width={220} 
+                          height={180} 
+                          offsetX={110} 
+                          fillLinearGradientStartPoint={{x:0, y:0}}
+                          fillLinearGradientEndPoint={{x:0, y:180}}
+                          fillLinearGradientColorStops={[0, '#E0E0E0', 1, '#9E9E9E']}
+                          cornerRadius={20}
+                          shadowBlur={50}
+                          shadowColor="black"
+                          shadowOpacity={0.3}
+                        />
+                        <Text text="2" x={-110} y={40} width={220} align="center" fontSize={100} fontStyle="900" fill="rgba(0,0,0,0.1)" />
+                        <Text text={topPerformers[0]?.name?.split(' ')[0].toUpperCase() || 'P2'} x={-110} y={-80} width={220} align="center" fontSize={24} fontStyle="900" fill="white" opacity={0.6} letterSpacing={4} />
+                        <Text text={topPerformers[0]?.score?.toString() || '0'} x={-110} y={-40} width={220} align="center" fontSize={40} fontStyle="900" fill="white" />
+                        <Circle radius={45} y={-160} fill="#E0E0E0" opacity={0.2} />
+                        <Text text={topPerformers[0]?.name?.charAt(0) || 'P'} x={-45} y={-190} width={90} align="center" fontSize={50} fontStyle="900" fill="white" />
+                    </Group>
+
+                    {/* Position 1 (Gold) */}
+                    <Group x={0} y={-40}>
+                        <Rect 
+                          width={260} 
+                          height={270} 
+                          offsetX={130} 
+                          fillLinearGradientStartPoint={{x:0, y:0}}
+                          fillLinearGradientEndPoint={{x:0, y:270}}
+                          fillLinearGradientColorStops={[0, '#FFD700', 1, '#FFA500']}
+                          cornerRadius={25}
+                          shadowBlur={80}
+                          shadowColor="#FFD700"
+                          shadowOpacity={0.2}
+                        />
+                        <Text text="1" x={-130} y={60} width={260} align="center" fontSize={150} fontStyle="900" fill="rgba(0,0,0,0.1)" />
+                        <Text text="CHAMPION" x={-130} y={200} width={260} align="center" fontSize={20} fontStyle="900" fill="black" opacity={0.4} letterSpacing={5} />
+                        <Text text={topPerformers[1]?.name?.split(' ')[0].toUpperCase() || 'P1'} x={-130} y={-100} width={260} align="center" fontSize={30} fontStyle="900" fill="#FFD700" letterSpacing={4} />
+                        <Text text={topPerformers[1]?.score?.toString() || '0'} x={-130} y={-50} width={260} align="center" fontSize={50} fontStyle="900" fill="white" />
+                        <Circle radius={55} y={-200} fill="#FFD700" opacity={0.3} />
+                        <Text text={topPerformers[1]?.name?.charAt(0) || 'P'} x={-55} y={-235} width={110} align="center" fontSize={60} fontStyle="900" fill="white" />
+                    </Group>
+
+                    {/* Position 3 (Bronze) */}
+                    <Group x={260} y={90}>
+                        <Rect 
+                          width={220} 
+                          height={140} 
+                          offsetX={110} 
+                          fillLinearGradientStartPoint={{x:0, y:0}}
+                          fillLinearGradientEndPoint={{x:0, y:140}}
+                          fillLinearGradientColorStops={[0, '#CD7F32', 1, '#8B4513']}
+                          cornerRadius={20}
+                          shadowBlur={40}
+                          shadowColor="black"
+                          shadowOpacity={0.3}
+                        />
+                        <Text text="3" x={-110} y={30} width={220} align="center" fontSize={80} fontStyle="900" fill="rgba(0,0,0,0.1)" />
+                        <Text text={topPerformers[2]?.name?.split(' ')[0].toUpperCase() || 'P3'} x={-110} y={-80} width={220} align="center" fontSize={22} fontStyle="900" fill="white" opacity={0.5} letterSpacing={3} />
+                        <Text text={topPerformers[2]?.score?.toString() || '0'} x={-110} y={-40} width={220} align="center" fontSize={36} fontStyle="900" fill="white" />
+                        <Circle radius={40} y={-150} fill="#CD7F32" opacity={0.2} />
+                        <Text text={topPerformers[2]?.name?.charAt(0) || 'P'} x={-40} y={-175} width={80} align="center" fontSize={45} fontStyle="900" fill="white" />
+                    </Group>
+                 </Group>
                </Group>
                
-               <Group y={400}>
+               <Group y={1380}>
                   <Text 
-                    text="WEEK 01 SNAPSHOT" 
+                    text={`${weekLabel} SNAPSHOT`} 
                     x={80} 
-                    y={800} 
+                    y={0} 
                     width={width - 160} 
                     align="center" 
                     fontSize={36} 
@@ -179,7 +250,7 @@ export const RecapCanvas = React.forwardRef<Konva.Stage, RecapCanvasProps>(({
                   <Text 
                     text={(stats.currentTeamName + " RECAP").toUpperCase()} 
                     x={80} 
-                    y={880} 
+                    y={80} 
                     width={width - 160} 
                     align="center" 
                     fontSize={100} 
@@ -346,44 +417,58 @@ export const RecapCanvas = React.forwardRef<Konva.Stage, RecapCanvasProps>(({
                     />
                   ) : (
                     <Text 
-                       text={performer?.avatar || "👤"}
-                       fontSize={300}
-                       x={-150}
-                       y={-150}
-                       width={300}
+                       text={(performer?.name?.charAt(0) || performer?.avatar?.charAt(0) || "👤").toUpperCase()}
+                       fontSize={360}
+                       fontStyle="900"
+                       fill="white"
+                       x={-200}
+                       y={-220}
+                       width={400}
                        align="center"
-                       opacity={0.8}
+                       opacity={0.15}
                     />
                   )}
                 </Group>
               </Group>
 
               {/* Performer Details Group */}
-              <Group y={height * 0.68}>
+              <Group y={height * 0.66}>
+                 <Text 
+                  text={weekLabel} 
+                  x={80} 
+                  y={-20} 
+                  width={width - 160} 
+                  align="center" 
+                  fontSize={28} 
+                  fontStyle="900" 
+                  fill="white" 
+                  opacity={0.4} 
+                  letterSpacing={8}
+                />
                 <Text 
                   text={stats.currentTeamName.toUpperCase()} 
                   x={80} 
-                  y={0} 
+                  y={30} 
                   width={width - 160} 
                   align="center" 
                   fontSize={40} 
                   fontStyle="900" 
                   fill="#FFD700" 
-                  opacity={0.8} 
-                  letterSpacing={10}
+                  opacity={0.9} 
+                  letterSpacing={12}
                 />
-                <Rect x={width/2 - 200} y={50} width={400} height={2} fill="rgba(255,215,0,0.2)" />
+                <Rect x={width/2 - 200} y={90} width={400} height={2} fill="rgba(255,215,0,0.2)" />
                 
                 <Text 
                   text={(performer?.name?.split(' ')[0] || (cardId === 'best-performer-tl' ? "Leader" : "Member")).toUpperCase()} 
                   x={100} 
-                  y={120} 
+                  y={160} 
                   width={width - 200} 
                   align="center" 
-                  fontSize={120} 
+                  fontSize={140} 
                   fontStyle="900 italic" 
                   fill="white" 
-                  letterSpacing={-4}
+                  letterSpacing={-6}
                 />
                 
                 {/* Title Line */}
