@@ -153,9 +153,9 @@ export const RecapCanvas = React.forwardRef<Konva.Stage, RecapCanvasProps>(({
                    <Image 
                      image={flagMascot} 
                      width={600} 
-                     height={600} 
+                     height={600 * (flagMascot.height / flagMascot.width)} 
                      offsetX={300} 
-                     offsetY={300} 
+                     offsetY={(600 * (flagMascot.height / flagMascot.width)) / 2} 
                      shadowColor={resolvedColor}
                      shadowBlur={100}
                      shadowOpacity={0.2}
@@ -166,9 +166,9 @@ export const RecapCanvas = React.forwardRef<Konva.Stage, RecapCanvasProps>(({
                <Group y={400}>
                   <Text 
                     text="WEEK 01 SNAPSHOT" 
-                    x={0} 
+                    x={80} 
                     y={800} 
-                    width={width} 
+                    width={width - 160} 
                     align="center" 
                     fontSize={36} 
                     fontStyle="900" 
@@ -178,11 +178,11 @@ export const RecapCanvas = React.forwardRef<Konva.Stage, RecapCanvasProps>(({
                   />
                   <Text 
                     text={(stats.currentTeamName + " RECAP").toUpperCase()} 
-                    x={0} 
+                    x={80} 
                     y={880} 
-                    width={width} 
+                    width={width - 160} 
                     align="center" 
-                    fontSize={110} 
+                    fontSize={100} 
                     fontStyle="900 italic" 
                     fill="white" 
                     lineHeight={1.1}
@@ -197,9 +197,9 @@ export const RecapCanvas = React.forwardRef<Konva.Stage, RecapCanvasProps>(({
             <Group>
                <Text 
                  text={stats.topTeam.name.split(' ')[0].toUpperCase()} 
-                 x={0} 
+                 x={80} 
                  y={height / 2 - 100} 
-                 width={width} 
+                 width={width - 160} 
                  align="center" 
                  fontSize={500} 
                  fontStyle="900 italic" 
@@ -210,9 +210,9 @@ export const RecapCanvas = React.forwardRef<Konva.Stage, RecapCanvasProps>(({
                <Group y={height / 2 - 200}>
                   <Text 
                     text="BEST PERFORMING TEAM" 
-                    x={0} 
+                    x={80} 
                     y={0} 
-                    width={width} 
+                    width={width - 160} 
                     align="center" 
                     fontSize={36} 
                     fontStyle="900" 
@@ -222,19 +222,19 @@ export const RecapCanvas = React.forwardRef<Konva.Stage, RecapCanvasProps>(({
                   />
                   <Text 
                     text={stats.topTeam.name.toUpperCase()} 
-                    x={0} 
+                    x={80} 
                     y={80} 
-                    width={width} 
+                    width={width - 160} 
                     align="center" 
-                    fontSize={130} 
+                    fontSize={110} 
                     fontStyle="900 italic" 
                     fill="white" 
-                    lineHeight={1.1}
+                    lineHeight={1}
                     letterSpacing={-4}
                   />
                   
-                  {/* Points Box */}
-                  <Group x={width / 2 - 180} y={320}>
+                  {/* Points Box - Pushed Lower */}
+                  <Group x={width / 2 - 180} y={450}>
                     <Rect 
                       width={360} 
                       height={120} 
@@ -263,16 +263,16 @@ export const RecapCanvas = React.forwardRef<Konva.Stage, RecapCanvasProps>(({
                   </Group>
                </Group>
 
-               {/* Laptop Mascot at bottom right */}
+               {/* Laptop Mascot - Lower and Proportional */}
                {laptopMascot && (
                  <Image 
                    image={laptopMascot} 
                    x={width - 50} 
-                   y={height - 50} 
-                   width={560} 
-                   height={560} 
-                   offsetX={560} 
-                   offsetY={560}
+                   y={height - 80} 
+                   width={500} 
+                   height={500 * (laptopMascot.height / laptopMascot.width)} 
+                   offsetX={500} 
+                   offsetY={500 * (laptopMascot.height / laptopMascot.width)}
                    shadowColor={resolvedColor}
                    shadowBlur={80}
                    shadowOpacity={0.2}
@@ -286,9 +286,9 @@ export const RecapCanvas = React.forwardRef<Konva.Stage, RecapCanvasProps>(({
             <Group>
               <Text 
                 text="BEST PERFORMER" 
-                x={0} 
+                x={80} 
                 y={280} 
-                width={width} 
+                width={width - 160} 
                 align="center" 
                 fontSize={32} 
                 fontStyle="900" 
@@ -354,9 +354,9 @@ export const RecapCanvas = React.forwardRef<Konva.Stage, RecapCanvasProps>(({
               <Group y={height * 0.68}>
                 <Text 
                   text={stats.currentTeamName.toUpperCase()} 
-                  x={0} 
+                  x={80} 
                   y={0} 
-                  width={width} 
+                  width={width - 160} 
                   align="center" 
                   fontSize={40} 
                   fontStyle="900" 
@@ -368,11 +368,11 @@ export const RecapCanvas = React.forwardRef<Konva.Stage, RecapCanvasProps>(({
                 
                 <Text 
                   text={(performer?.name || "Member Name").toUpperCase()} 
-                  x={0} 
+                  x={100} 
                   y={120} 
-                  width={width} 
+                  width={width - 200} 
                   align="center" 
-                  fontSize={110} 
+                  fontSize={100} 
                   fontStyle="900 italic" 
                   fill="white" 
                   letterSpacing={-4}
@@ -383,9 +383,9 @@ export const RecapCanvas = React.forwardRef<Konva.Stage, RecapCanvasProps>(({
                    <Rect x={width/2 - 400} y={0} width={800} height={2} fill="rgba(255,255,255,0.1)" />
                    <Text 
                      text={performerTitle} 
-                     x={0} 
+                     x={100} 
                      y={60} 
-                     width={width} 
+                     width={width - 200} 
                      align="center" 
                      fontSize={36} 
                      fontStyle="900" 
