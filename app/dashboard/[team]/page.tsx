@@ -41,6 +41,14 @@ interface Performer {
     realized?: number;
     igt_team_meeting?: number;
     igt_team_bonus?: number;
+    // iGT IR & Matching Specific
+    igt_ir_calls?: number;
+    igt_ir_cvs?: number;
+    igt_ir_participated?: number;
+    igt_m_outreach?: number;
+    igt_m_interviews?: number;
+    igt_m_success?: number;
+    igt_m_apds?: number;
   };
 }
 
@@ -552,6 +560,7 @@ const teamColorMap: Record<string, string> = {
   members: "var(--mst-color)",
   tls: "var(--mst-color)",
   ogt: "var(--ogt-color)",
+  "igt-ir-m": "var(--igt-color)",
 };
 
 const quickInsights = [
@@ -615,7 +624,8 @@ function MiniTeamCard({
   isMST = false,
   isOGT = false,
   isIGTB2B = false,
-  isIgvIr = false
+  isIgvIr = false,
+  isIgtIrm = false
 }: {
   team: MiniTeamData;
   isLeader: boolean;
@@ -624,6 +634,7 @@ function MiniTeamCard({
   isOGT?: boolean;
   isIGTB2B?: boolean;
   isIgvIr?: boolean;
+  isIgtIrm?: boolean;
 }) {
   return (
     <div
@@ -762,6 +773,44 @@ function MiniTeamCard({
                       </div>
                     </>
                   )
+                ) : isIgtIrm ? (
+                  <>
+                    {team.slug === 'ir' ? (
+                       <>
+                        <div className="flex justify-between items-center text-[10px] font-bold">
+                          <span className="text-white/30">IR Calls Scheduled</span>
+                          <span className="text-[#FF1744]">{team.performers.reduce((s, p) => s + (p.metrics?.igt_ir_calls || 0), 0)}</span>
+                        </div>
+                        <div className="flex justify-between items-center text-[10px] font-bold">
+                          <span className="text-white/30">IR CVs Collected</span>
+                          <span className="text-[#9d4edd]">{team.performers.reduce((s, p) => s + (p.metrics?.igt_ir_cvs || 0), 0)}</span>
+                        </div>
+                        <div className="flex justify-between items-center text-[10px] font-bold">
+                          <span className="text-white/30">IR Calls Participated</span>
+                          <span className="text-[#00f5d4]">{team.performers.reduce((s, p) => s + (p.metrics?.igt_ir_participated || 0), 0)}</span>
+                        </div>
+                       </>
+                    ) : (
+                       <>
+                        <div className="flex justify-between items-center text-[10px] font-bold">
+                          <span className="text-white/30">EPs Reached Out</span>
+                          <span className="text-[#FF1744]">{team.performers.reduce((s, p) => s + (p.metrics?.igt_m_outreach || 0), 0)}</span>
+                        </div>
+                        <div className="flex justify-between items-center text-[10px] font-bold">
+                          <span className="text-white/30">Interviews Scheduled</span>
+                          <span className="text-[#9d4edd]">{team.performers.reduce((s, p) => s + (p.metrics?.igt_m_interviews || 0), 0)}</span>
+                        </div>
+                        <div className="flex justify-between items-center text-[10px] font-bold">
+                          <span className="text-white/30">Interviews Successful</span>
+                          <span className="text-[#00f5d4]">{team.performers.reduce((s, p) => s + (p.metrics?.igt_m_success || 0), 0)}</span>
+                        </div>
+                        <div className="flex justify-between items-center text-[10px] font-bold border-t border-white/5 pt-1 mt-1">
+                          <span className="text-white/30">APDs</span>
+                          <span className="text-[#FFD700]">{team.performers.reduce((s, p) => s + (p.metrics?.igt_m_apds || 0), 0)}</span>
+                        </div>
+                       </>
+                    )}
+                  </>
                 ) : isIGTB2B ? (
                   <>
                     <div className="flex justify-between items-center text-[10px] font-bold">
@@ -1698,13 +1747,14 @@ export default function TeamDashboard() {
   const isIGTB2B = teamParam === 'igt_b2b';
   const isOGT = teamParam === 'ogt';
   const isIgvIr = teamParam === 'igv_ir' || teamParam === 'igv_ir_m';
+  const isIgtIrm = teamParam === 'igt-ir-m' || teamParam === 'igt_ir';
   const isIGV = teamParam === 'igv_b2b' || teamParam === 'igv_ir' || teamParam === 'igv_ir_m';
   const isMST = teamParam === 'marcom' || teamParam === 'members' || teamParam === 'tls' || teamParam.startsWith('irm');
   const useMSTPalette = true;
   const accentColor = teamColor;
 
 
-  const isSeparatedTeam = isB2B || isOGT || isIGTB2B || isIgvIr;
+  const isSeparatedTeam = isB2B || isOGT || isIGTB2B || isIgvIr || isIgtIrm;
   const b2bTLRows = isSeparatedTeam
     ? leaderboardRows
         .filter((row) => isTLRole(row.role || ""))
@@ -1727,10 +1777,10 @@ export default function TeamDashboard() {
   const filteredB2BMemberRows = filterRows(b2bMemberRows);
   const filteredLeaderboardRows = filterRows(leaderboardRows);
 
-  const igvIrTLRows = filterRows(isIgvIr ? b2bTLRows : []);
-  const igvIrIRMemberRows = filterRows(isIgvIr ? b2bMemberRows.filter((r: any) => r.source === 'ir') : []).map((r, index) => ({ ...r, rank: index + 1 }));
-  const igvIrMatchingMemberRows = filterRows(isIgvIr ? b2bMemberRows.filter((r: any) => r.source === 'matching') : []).map((r, index) => ({ ...r, rank: index + 1 }));
-  const igvIrMarcomMemberRows = filterRows(isIgvIr ? b2bMemberRows.filter((r: any) => r.source === 'marcom') : []).map((r, index) => ({ ...r, rank: index + 1 }));
+  const igvIrTLRows = filterRows((isIgvIr || isIgtIrm) ? b2bTLRows : []);
+  const igvIrIRMemberRows = filterRows((isIgvIr || isIgtIrm) ? b2bMemberRows.filter((r: any) => r.source === 'ir') : []).map((r, index) => ({ ...r, rank: index + 1 }));
+  const igvIrMatchingMemberRows = filterRows((isIgvIr || isIgtIrm) ? b2bMemberRows.filter((r: any) => r.source === 'matching') : []).map((r, index) => ({ ...r, rank: index + 1 }));
+  const igvIrMarcomMemberRows = filterRows((isIgvIr || isIgtIrm) ? b2bMemberRows.filter((r: any) => r.source === 'marcom') : []).map((r, index) => ({ ...r, rank: index + 1 }));
 
   const b2bActivityTotals = leaderboardRows.reduce(
     (acc, row) => {
@@ -1744,7 +1794,7 @@ export default function TeamDashboard() {
 
   const igvIrIRBlocks: any[] = [];
   const igvIrMatchingBlocks: any[] = [];
-  if (isIgvIr && teamData.miniTeams) {
+  if ((isIgvIr || isIgtIrm) && teamData.miniTeams) {
     for (const mt of teamData.miniTeams) {
       const irPerformers = mt.performers.filter((p: any) => p.source === 'ir');
       const matchingPerformers = mt.performers.filter((p: any) => p.source === 'matching');
@@ -1819,7 +1869,20 @@ export default function TeamDashboard() {
     ? `Ends in ${daysPart}d ${hoursPart.toString().padStart(2, "0")}:${minutesPart.toString().padStart(2, "0")}:${secondsPart.toString().padStart(2, "0")}`
     : "Ended";
 
-  const chartDefs = isIgvIr ? [] : [
+  const chartDefs = (isIgvIr || isIgtIrm) ? [
+    {
+      title: isIgtIrm ? "IR Performance" : "IR Matching Activity",
+      subtitle: isIgtIrm ? "Calls Scheduled | CVs Collected | Calls Participated" : "IR Calls | Apps | Approvals",
+      type: "stacked-bar",
+      entries: igvIrIRBlocks
+    },
+    {
+      title: isIgtIrm ? "Matching Performance" : "Matching Activity",
+      subtitle: isIgtIrm ? "Outreach | Interviews | Success" : "Interviews | Acceptance | Approvals",
+      type: "stacked-bar",
+      entries: igvIrMatchingBlocks
+    }
+  ] : [
     {
       title: isMST ? "Total Member Points" : isIGTB2B ? "IGT B2B Activity Totals" : isOGT ? "OGT Activity Totals" : "B2B Activity Totals",
       subtitle: isMST ? "Points Accumulation" : isIGTB2B ? "Cumulative Meetings | Cold Calls | Follow Ups" : isOGT ? "Cumulative SU | APL | APD" : "Cumulative MOUs | Cold Calls | Followups",
@@ -1950,7 +2013,7 @@ export default function TeamDashboard() {
   };
 
   const dashboardFunctionName = getFunctionName(teamParam);
-  const isFinished = teamParam === 'members' || teamParam === 'tls' || teamParam === 'igv_b2b' || teamParam === 'ogt' || teamParam === 'igt_b2b' || isIgvIr;
+  const isFinished = teamParam === 'members' || teamParam === 'tls' || teamParam === 'igv_b2b' || teamParam === 'ogt' || teamParam === 'igt_b2b' || isIgvIr || isIgtIrm;
   const showUnlinked = !teamData && !remoteTeamData;
 
   return (
@@ -2190,7 +2253,7 @@ export default function TeamDashboard() {
               </div>
 
               <div className="relative z-10 space-y-3 sm:hidden">
-                {(isIgvIr
+                {((isIgvIr || isIgtIrm)
                   ? [
                       { title: "TLs", rows: igvIrTLRows },
                       { title: "IR Members", rows: igvIrIRMemberRows },
@@ -2321,7 +2384,7 @@ export default function TeamDashboard() {
 
               <div className="relative z-10 hidden overflow-visible custom-scrollbar sm:block">
                 <div className="min-w-[750px] space-y-6">
-                  {(isIgvIr
+                  {((isIgvIr || isIgtIrm)
                     ? [
                         { title: "TLs", rows: igvIrTLRows },
                         { title: "IR Members", rows: igvIrIRMemberRows },
@@ -2441,7 +2504,7 @@ export default function TeamDashboard() {
                                               <span className="font-black text-white shrink-0">{row.metrics?.followups || 0}</span>
                                             </div>
                                           </>
-                                        ) : isIgvIr ? (
+                                        ) : (isIgvIr || isIgtIrm) ? (
                                           <>
                                             <div className="flex justify-between items-center bg-white/5 rounded-lg px-2 py-1.5 min-w-0">
                                               <span className="text-white/30 uppercase tracking-tighter truncate mr-2">
@@ -2556,8 +2619,8 @@ export default function TeamDashboard() {
                   <h4 className="text-xl sm:text-2xl font-black text-[#F7F7F8] tracking-widest uppercase italic">Squad Performance Matchups</h4>
                   <p className="text-[9px] sm:text-[10px] font-bold text-white/30 uppercase tracking-[0.2em] sm:tracking-[0.3em]">Total Active Squads: {(isIgvIr ? teamData.miniTeams?.filter(t => t.name.toLowerCase() !== 'general') : teamData.miniTeams)?.length || 0}</p>
                 </div>
-                <div className={`grid grid-cols-1 gap-4 sm:gap-6 ${isIgvIr ? 'md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3' : isIGTB2B ? 'md:grid-cols-3' : isB2B ? 'md:grid-cols-2' : 'md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4'}`}>
-                  {(isIgvIr ? teamData.miniTeams?.filter(t => t.name.toLowerCase() !== 'general') : teamData.miniTeams)?.map((team, index) => (
+                <div className={`grid grid-cols-1 gap-4 sm:gap-6 ${(isIgvIr || isIgtIrm) ? 'md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3' : isIGTB2B ? 'md:grid-cols-3' : isB2B ? 'md:grid-cols-2' : 'md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4'}`}>
+                  {((isIgvIr || isIgtIrm) ? teamData.miniTeams?.filter(t => t.name.toLowerCase() !== 'general') : teamData.miniTeams)?.map((team, index) => (
                     <MiniTeamCard 
                       key={team.slug || team.name}
                       team={team} 
@@ -2567,6 +2630,7 @@ export default function TeamDashboard() {
                       isMST={isMST}
                       isIGTB2B={isIGTB2B}
                       isIgvIr={isIgvIr}
+                      isIgtIrm={isIgtIrm}
                     />
                   ))}
                 </div>
@@ -2660,6 +2724,10 @@ export default function TeamDashboard() {
                                 <span className="text-[10px] font-bold text-[#F7F7F8]/65 uppercase tracking-widest whitespace-nowrap">
                                   {isOGT 
                                     ? (i === 0 ? "SU" : i === 1 ? "APL" : "APD")
+                                    : chart.title === "IR Performance"
+                                      ? (i === 0 ? "Calls" : i === 1 ? "CVs" : "Participated")
+                                    : chart.title === "Matching Performance"
+                                      ? (i === 0 ? "Outreach" : i === 1 ? "Interviews" : "Success")
                                     : chart.title === "IR Activity Totals"
                                       ? (i === 0 ? "IR Calls" : i === 1 ? "IR Application" : "IR Approvals")
                                     : chart.title === "Matching Activity Totals"
