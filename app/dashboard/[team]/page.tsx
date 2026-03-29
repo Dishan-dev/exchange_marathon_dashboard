@@ -2259,6 +2259,30 @@ export default function TeamDashboard() {
                                     <div className="flex justify-between"><span>Follow Ups:</span> <span className="text-white">{row.metrics?.followups || 0}</span></div>
                                   </div>
                                 </>
+                              ) : isIgvIr ? (
+                                <>
+                                  <div className="grid grid-cols-2 gap-x-6 gap-y-2">
+                                    {row.source === 'ir' ? (
+                                      <>
+                                        <div className="flex justify-between"><span>IR Calls:</span> <span className="text-[#FF1744]">{row.metrics?.mous || 0}</span></div>
+                                        <div className="flex justify-between"><span>Application:</span> <span className="text-[#9d4edd]">{row.metrics?.coldCalls || 0}</span></div>
+                                        <div className="flex justify-between"><span>Approvals:</span> <span className="text-[#00f5d4]">{row.metrics?.followups || 0}</span></div>
+                                      </>
+                                    ) : row.source === 'matching' ? (
+                                      <>
+                                        <div className="flex justify-between"><span>Interviews:</span> <span className="text-[#FF1744]">{row.metrics?.mous || 0}</span></div>
+                                        <div className="flex justify-between"><span>Acceptance:</span> <span className="text-[#9d4edd]">{row.metrics?.coldCalls || 0}</span></div>
+                                        <div className="flex justify-between"><span>Approvals:</span> <span className="text-[#00f5d4]">{row.metrics?.followups || 0}</span></div>
+                                      </>
+                                    ) : (
+                                      <>
+                                        <div className="flex justify-between"><span>Flyers:</span> <span className="text-[#FF1744]">{row.metrics?.mous || 0}</span></div>
+                                        <div className="flex justify-between"><span>Videos:</span> <span className="text-[#9d4edd]">{row.metrics?.coldCalls || 0}</span></div>
+                                        <div className="flex justify-between"><span>Presos:</span> <span className="text-[#00f5d4]">{row.metrics?.followups || 0}</span></div>
+                                      </>
+                                    )}
+                                  </div>
+                                </>
                               ) : isIGTB2B ? (
                                 <>
                                   <div className="grid grid-cols-2 gap-x-6 gap-y-2">

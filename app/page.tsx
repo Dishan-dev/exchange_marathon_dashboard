@@ -221,7 +221,7 @@ export default function Home() {
           <img src="/logo.png" alt="Xcend Logo" className="w-16 h-16 sm:w-26 sm:h-26 object-contain" />
         </div>
         
-        <div className="relative flex w-full flex-col items-center justify-center pb-1 pt-20 sm:pt-24">
+        <div className="relative flex w-full flex-col items-center justify-center pb-1 pt-32 sm:pt-24">
           <div className="relative flex w-full max-w-5xl flex-col items-center">
             {/* Mascot layered above and sitting on card border */}
             <div className="pointer-events-none absolute left-0 z-20 hidden -translate-x-[52%] sm:block lg:-translate-x-[18%] -translate-y-39">
@@ -240,19 +240,14 @@ export default function Home() {
               layout
               className="relative z-10 mb-8 flex flex-col items-center text-center sm:mb-10"
             >
-              <div className="mb-6 inline-flex items-center gap-3 rounded-lg border border-white/5 bg-black/40 px-6 py-2 backdrop-blur-md">
-                <div className="bg-[#ffcd00] px-2 py-0.5 rounded text-[9px] font-black text-black">LIVE</div>
-                <span className="text-[10px] font-black uppercase tracking-[0.4em] text-white/60">
-                  {selectedFunction ? selectedFunction.name : "Season 2026 Live Arena"}
-                </span>
-              </div>
+              
 
               {/* Main title: READY? EXCHANGE GO! */}
-              <div className="relative mb-6">
+              <div className="relative mb-8">
                 <h1 className="font-black flex flex-col items-center italic">
-                  <span className="text-2xl sm:text-3xl text-white/30 tracking-[0.2em] mb-1">READY?</span>
-                  <span className="text-6xl sm:text-8xl md:text-9xl text-[#ffcd00] tracking-tight leading-none drop-shadow-[0_10px_30px_rgba(255,205,0,0.2)]">EXCHANGE</span>
-                  <span className="text-4xl sm:text-5xl text-white/60 tracking-[0.3em] mt-1">GO!</span>
+                  <span className="text-xl sm:text-2xl md:text-3xl text-white/30 tracking-[0.3em] mb-2">READY?</span>
+                  <span className="text-5xl sm:text-7xl md:text-8xl lg:text-9xl text-[#ffcd00] tracking-tighter leading-none drop-shadow-[0_10px_40px_rgba(255,205,0,0.35)] transition-all duration-500 hover:scale-[1.02]">EXCHANGE</span>
+                  <span className="text-3xl sm:text-4xl md:text-5xl text-white/60 tracking-[0.4em] mt-2">GO!</span>
                 </h1>
               </div>
 
@@ -295,7 +290,7 @@ export default function Home() {
               >
                 <div className="flex flex-col lg:flex-row items-center justify-center gap-12 lg:gap-20">
                   {/* Left: Big standing mascot */}
-                  <div className="absolute hidden lg:flex -left-100 z-10 flex-1 justify-end pointer-events-none">
+                  <div className="absolute hidden lg:flex -left-110 z-10 flex-1 justify-end pointer-events-none -top-15">
                     <MascotAvatar 
                       type="standing" 
                       size={1200} 
