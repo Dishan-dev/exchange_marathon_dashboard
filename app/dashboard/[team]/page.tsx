@@ -2067,9 +2067,11 @@ export default function TeamDashboard() {
                             >
                               {isB2B ? (
                                 <>
-                                  <div>MOUs: <span className="text-white block mt-0.5 text-xs">{row.metrics?.mous || 0}</span></div>
-                                  <div>Followups: <span className="text-white block mt-0.5 text-xs">{row.metrics?.followups || 0}</span></div>
-                                  <div>Calls: <span className="text-white block mt-0.5 text-xs">{row.metrics?.coldCalls || 0}</span></div>
+                                  <div className="grid grid-cols-2 gap-x-6 gap-y-2">
+                                    <div className="flex justify-between"><span>MOUs:</span> <span className="text-white">{row.metrics?.mous || 0}</span></div>
+                                    <div className="flex justify-between"><span>Cold Calls:</span> <span className="text-white">{row.metrics?.coldCalls || 0}</span></div>
+                                    <div className="flex justify-between"><span>Follow Ups:</span> <span className="text-white">{row.metrics?.followups || 0}</span></div>
+                                  </div>
                                 </>
                               ) : isIGTB2B ? (
                                 <>
@@ -2083,11 +2085,19 @@ export default function TeamDashboard() {
                                     <div className="flex justify-between"><span>Training:</span> <span className="text-white">{row.metrics?.igt_training || 0}</span></div>
                                   </div>
                                 </>
+                              ) : isOGT ? (
+                                <>
+                                  <div className="grid grid-cols-2 gap-x-6 gap-y-2">
+                                    <div className="flex justify-between"><span>SU:</span> <span className="text-white">{row.metrics?.mous || 0}</span></div>
+                                    <div className="flex justify-between"><span>APD:</span> <span className="text-white">{row.metrics?.followups || 0}</span></div>
+                                    <div className="flex justify-between"><span>APL:</span> <span className="text-white">{row.metrics?.coldCalls || 0}</span></div>
+                                  </div>
+                                </>
                               ) : (
                                 <>
-                                  <div>SU: <span className="text-white block mt-0.5 text-xs">{row.metrics?.mous || 0}</span></div>
-                                  <div>APD: <span className="text-white block mt-0.5 text-xs">{row.metrics?.followups || 0}</span></div>
-                                  <div>APL: <span className="text-white block mt-0.5 text-xs">{row.metrics?.coldCalls || 0}</span></div>
+                                  <div>MOUs: <span className="text-white block mt-0.5 text-xs">{row.metrics?.mous || 0}</span></div>
+                                  <div>Followups: <span className="text-white block mt-0.5 text-xs">{row.metrics?.followups || 0}</span></div>
+                                  <div>Calls: <span className="text-white block mt-0.5 text-xs">{row.metrics?.coldCalls || 0}</span></div>
                                 </>
                               )}
                             </motion.div>
@@ -2184,34 +2194,68 @@ export default function TeamDashboard() {
                                       <div className="h-px w-full bg-gradient-to-r from-transparent via-white/15 to-transparent shadow-[0_0_10px_rgba(255,255,255,0.1)]" />
                                       
                                       <div className="grid grid-cols-2 gap-x-4 gap-y-3 text-[10px]">
-                                        <div className="flex justify-between items-center bg-white/5 rounded-lg px-2 py-1.5 min-w-0">
-                                          <span className="text-white/30 uppercase tracking-tighter truncate mr-2">Cold Calls</span>
-                                          <span className="font-black text-white shrink-0">{row.metrics?.coldCalls || 0}</span>
-                                        </div>
-                                        <div className="flex justify-between items-center bg-white/5 rounded-lg px-2 py-1.5 min-w-0">
-                                          <span className="text-white/30 uppercase tracking-tighter truncate mr-2">Follow Ups</span>
-                                          <span className="font-black text-white shrink-0">{row.metrics?.followups || 0}</span>
-                                        </div>
-                                        <div className="flex justify-between items-center bg-white/5 rounded-lg px-2 py-1.5 min-w-0">
-                                          <span className="text-white/30 uppercase tracking-tighter truncate mr-2">Proposals</span>
-                                          <span className="font-black text-white shrink-0">{row.metrics?.igt_proposals || 0}</span>
-                                        </div>
-                                        <div className="flex justify-between items-center bg-white/5 rounded-lg px-2 py-1.5 min-w-0">
-                                          <span className="text-white/30 uppercase tracking-tighter truncate mr-2">Scheduled</span>
-                                          <span className="font-black text-white shrink-0">{row.metrics?.igt_meetings || 0}</span>
-                                        </div>
-                                        <div className="flex justify-between items-center bg-white/5 rounded-lg px-2 py-1.5 min-w-0">
-                                          <span className="text-white/30 uppercase tracking-tighter truncate mr-2">Leads Gen</span>
-                                          <span className="font-black text-white shrink-0">{row.metrics?.leads || 0}</span>
-                                        </div>
-                                        <div className="flex justify-between items-center bg-white/5 rounded-lg px-2 py-1.5 min-w-0">
-                                          <span className="text-white/30 uppercase tracking-tighter truncate mr-2">Contracts</span>
-                                          <span className="font-black text-white shrink-0">{row.metrics?.igt_contracts || 0}</span>
-                                        </div>
-                                        <div className="flex justify-between items-center bg-white/5 rounded-lg px-2 py-1.5 min-w-0">
-                                          <span className="text-white/30 uppercase tracking-tighter truncate mr-2">Training</span>
-                                          <span className="font-black text-white shrink-0">{row.metrics?.igt_training || 0}</span>
-                                        </div>
+                                        {isOGT ? (
+                                          <>
+                                            <div className="flex justify-between items-center bg-white/5 rounded-lg px-2 py-1.5 min-w-0">
+                                              <span className="text-white/30 uppercase tracking-tighter truncate mr-2">SU</span>
+                                              <span className="font-black text-white shrink-0">{row.metrics?.mous || 0}</span>
+                                            </div>
+                                            <div className="flex justify-between items-center bg-white/5 rounded-lg px-2 py-1.5 min-w-0">
+                                              <span className="text-white/30 uppercase tracking-tighter truncate mr-2">APD</span>
+                                              <span className="font-black text-white shrink-0">{row.metrics?.followups || 0}</span>
+                                            </div>
+                                            <div className="flex justify-between items-center bg-white/5 rounded-lg px-2 py-1.5 min-w-0">
+                                              <span className="text-white/30 uppercase tracking-tighter truncate mr-2">APL</span>
+                                              <span className="font-black text-white shrink-0">{row.metrics?.coldCalls || 0}</span>
+                                            </div>
+                                          </>
+                                        ) : isB2B ? (
+                                          <>
+                                            <div className="flex justify-between items-center bg-white/5 rounded-lg px-2 py-1.5 min-w-0">
+                                              <span className="text-white/30 uppercase tracking-tighter truncate mr-2">MOUs</span>
+                                              <span className="font-black text-white shrink-0">{row.metrics?.mous || 0}</span>
+                                            </div>
+                                            <div className="flex justify-between items-center bg-white/5 rounded-lg px-2 py-1.5 min-w-0">
+                                              <span className="text-white/30 uppercase tracking-tighter truncate mr-2">Cold Calls</span>
+                                              <span className="font-black text-white shrink-0">{row.metrics?.coldCalls || 0}</span>
+                                            </div>
+                                            <div className="flex justify-between items-center bg-white/5 rounded-lg px-2 py-1.5 min-w-0">
+                                              <span className="text-white/30 uppercase tracking-tighter truncate mr-2">Follow Ups</span>
+                                              <span className="font-black text-white shrink-0">{row.metrics?.followups || 0}</span>
+                                            </div>
+                                          </>
+                                        ) : (
+                                          <>
+                                            <div className="flex justify-between items-center bg-white/5 rounded-lg px-2 py-1.5 min-w-0">
+                                              <span className="text-white/30 uppercase tracking-tighter truncate mr-2">Cold Calls</span>
+                                              <span className="font-black text-white shrink-0">{row.metrics?.coldCalls || 0}</span>
+                                            </div>
+                                            <div className="flex justify-between items-center bg-white/5 rounded-lg px-2 py-1.5 min-w-0">
+                                              <span className="text-white/30 uppercase tracking-tighter truncate mr-2">Follow Ups</span>
+                                              <span className="font-black text-white shrink-0">{row.metrics?.followups || 0}</span>
+                                            </div>
+                                            <div className="flex justify-between items-center bg-white/5 rounded-lg px-2 py-1.5 min-w-0">
+                                              <span className="text-white/30 uppercase tracking-tighter truncate mr-2">Proposals</span>
+                                              <span className="font-black text-white shrink-0">{row.metrics?.igt_proposals || 0}</span>
+                                            </div>
+                                            <div className="flex justify-between items-center bg-white/5 rounded-lg px-2 py-1.5 min-w-0">
+                                              <span className="text-white/30 uppercase tracking-tighter truncate mr-2">Scheduled</span>
+                                              <span className="font-black text-white shrink-0">{row.metrics?.igt_meetings || 0}</span>
+                                            </div>
+                                            <div className="flex justify-between items-center bg-white/5 rounded-lg px-2 py-1.5 min-w-0">
+                                              <span className="text-white/30 uppercase tracking-tighter truncate mr-2">Leads Gen</span>
+                                              <span className="font-black text-white shrink-0">{row.metrics?.leads || 0}</span>
+                                            </div>
+                                            <div className="flex justify-between items-center bg-white/5 rounded-lg px-2 py-1.5 min-w-0">
+                                              <span className="text-white/30 uppercase tracking-tighter truncate mr-2">Contracts</span>
+                                              <span className="font-black text-white shrink-0">{row.metrics?.igt_contracts || 0}</span>
+                                            </div>
+                                            <div className="flex justify-between items-center bg-white/5 rounded-lg px-2 py-1.5 min-w-0">
+                                              <span className="text-white/30 uppercase tracking-tighter truncate mr-2">Training</span>
+                                              <span className="font-black text-white shrink-0">{row.metrics?.igt_training || 0}</span>
+                                            </div>
+                                          </>
+                                        )}
                                       </div>
                                     </div>
                                     {/* Arrow pointing down */}
