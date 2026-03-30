@@ -1818,6 +1818,8 @@ export default function TeamDashboard() {
   const filteredB2BMemberRows = filterRows(b2bMemberRows);
   const filteredLeaderboardRows = filterRows(leaderboardRows);
 
+  const filteredIgtIrmManagerRows = filterRows(igtIrmManagerRows);
+  const filteredIgtIrmTLRows = filterRows(igtIrmTLRows);
   const filteredIgtIrmSpecialistRows = filterRows(igtIrmSpecialistRows);
   const filteredIgtIrmMemberRows = filterRows(igtIrmMemberRows);
 
@@ -2429,7 +2431,7 @@ export default function TeamDashboard() {
                                     <div className="flex justify-between"><span>Follow Ups:</span> <span className="text-white">{row.metrics?.followups || 0}</span></div>
                                   </div>
                                 </>
-                              ) : isIgvIr ? (
+                              ) : (isIgvIr || isIgtIrm) ? (
                                 <>
                                   <div className="grid grid-cols-2 gap-x-6 gap-y-2">
                                     {row.source === 'ir' ? (
@@ -2471,6 +2473,24 @@ export default function TeamDashboard() {
                                     <div className="flex justify-between"><span>SU:</span> <span className="text-white">{row.metrics?.mous || 0}</span></div>
                                     <div className="flex justify-between"><span>APD:</span> <span className="text-white">{row.metrics?.followups || 0}</span></div>
                                     <div className="flex justify-between"><span>APL:</span> <span className="text-white">{row.metrics?.coldCalls || 0}</span></div>
+                                  </div>
+                                </>
+                              ) : isOgvPs ? (
+                                <>
+                                  <div className="grid grid-cols-2 gap-x-6 gap-y-2">
+                                    {row.team === "CR Performance" ? (
+                                      <>
+                                        <div className="flex justify-between"><span>Sign Ups:</span> <span className="text-[#FFCD00]">{row.metrics?.cr_signups || 0}</span></div>
+                                        <div className="flex justify-between"><span>Applications:</span> <span className="text-[#FFCD00]">{row.metrics?.cr_apps || 0}</span></div>
+                                        <div className="flex justify-between"><span>Approvals:</span> <span className="text-[#FFCD00]">{row.metrics?.cr_approvals || 0}</span></div>
+                                      </>
+                                    ) : (
+                                      <>
+                                        <div className="flex justify-between"><span>IR Scheduled:</span> <span className="text-[#FFCD00]">{row.metrics?.ir_scheduled || 0}</span></div>
+                                        <div className="flex justify-between"><span>IR Calls:</span> <span className="text-[#FFCD00]">{row.metrics?.ir_calls || 0}</span></div>
+                                        <div className="flex justify-between"><span>Matching:</span> <span className="text-[#FFCD00]">{row.metrics?.ir_matching || 0}</span></div>
+                                      </>
+                                    )}
                                   </div>
                                 </>
                               ) : (
@@ -2608,6 +2628,33 @@ export default function TeamDashboard() {
                                             <div className="flex justify-between items-center bg-white/5 rounded-lg px-2 py-1.5 min-w-0">
                                               <span className="text-white/30 uppercase tracking-tighter truncate mr-2">APL</span>
                                               <span className="font-black text-white shrink-0">{row.metrics?.coldCalls || 0}</span>
+                                            </div>
+                                          </>
+                                        ) : isOgvPs ? (
+                                          <>
+                                            <div className="flex justify-between items-center bg-white/5 rounded-lg px-2 py-1.5 min-w-0">
+                                              <span className="text-white/30 uppercase tracking-tighter truncate mr-2">
+                                                {row.team === 'CR Performance' ? 'Sign Ups' : 'IR Scheduled'}
+                                              </span>
+                                              <span className="font-black text-white shrink-0">
+                                                {row.team === 'CR Performance' ? (row.metrics?.cr_signups || 0) : (row.metrics?.ir_scheduled || 0)}
+                                              </span>
+                                            </div>
+                                            <div className="flex justify-between items-center bg-white/5 rounded-lg px-2 py-1.5 min-w-0">
+                                              <span className="text-white/30 uppercase tracking-tighter truncate mr-2">
+                                                {row.team === 'CR Performance' ? 'Applications' : 'IR Calls'}
+                                              </span>
+                                              <span className="font-black text-white shrink-0">
+                                                {row.team === 'CR Performance' ? (row.metrics?.cr_apps || 0) : (row.metrics?.ir_calls || 0)}
+                                              </span>
+                                            </div>
+                                            <div className="flex justify-between items-center bg-white/5 rounded-lg px-2 py-1.5 min-w-0">
+                                              <span className="text-white/30 uppercase tracking-tighter truncate mr-2">
+                                                {row.team === 'CR Performance' ? 'Approvals' : 'Matching'}
+                                              </span>
+                                              <span className="font-black text-white shrink-0">
+                                                {row.team === 'CR Performance' ? (row.metrics?.cr_approvals || 0) : (row.metrics?.ir_matching || 0)}
+                                              </span>
                                             </div>
                                           </>
                                         ) : isB2B ? (
