@@ -604,9 +604,25 @@ const mstTeamNames: Record<string, string> = {
   "irm2_t02": "IRM2 T02"
 };
 
+const isManagerRole = (role: string): boolean => {
+  const r = role.toLowerCase();
+  return r.includes('manager') || r.includes('vp') || r.includes('director') || r.includes('eb') || r.includes('lcvp');
+};
+
 const isTLRole = (role: string): boolean => {
-  const normalized = role.trim().toLowerCase();
-  return normalized === "tl" || normalized === "team leader" || normalized === "team lead" || normalized === "teamlead";
+  const r = role.trim().toLowerCase();
+  if (isManagerRole(role)) return false;
+  return r === "tl" || r === "team leader" || r === "team lead" || r === "teamlead" || r.includes('head');
+};
+
+const isSpecialistRole = (role: string): boolean => {
+  const r = role.toLowerCase();
+  if (isManagerRole(role) || isTLRole(role)) return false;
+  return r.includes('specialist') || r.includes('spec');
+};
+
+const isMemberRole = (role: string): boolean => {
+  return !isManagerRole(role) && !isTLRole(role) && !isSpecialistRole(role);
 };
 
 const formatTeamName = (name: string, isMST: boolean) => {
@@ -1746,6 +1762,7 @@ export default function TeamDashboard() {
   const isB2B = teamParam === 'igv_b2b';
   const isIGTB2B = teamParam === 'igt_b2b';
   const isOGT = teamParam === 'ogt';
+  const isOgvPs = teamParam === 'ogv_ps';
   const isIgvIr = teamParam === 'igv_ir' || teamParam === 'igv_ir_m';
   const isIgtIrm = teamParam === 'igt-ir-m' || teamParam === 'igt_ir';
   const isIGV = teamParam === 'igv_b2b' || teamParam === 'igv_ir' || teamParam === 'igv_ir_m';
@@ -1754,20 +1771,44 @@ export default function TeamDashboard() {
   const accentColor = teamColor;
 
 
-  const isSeparatedTeam = isB2B || isOGT || isIGTB2B || isIgvIr || isIgtIrm;
-  const b2bTLRows = isSeparatedTeam
+  const isSeparatedTeam = isB2B || isOGT || isIGTB2B || isIgvIr || isIgtIrm || isOgvPs;
+  const b2bTLRows = (isSeparatedTeam && !isIgtIrm)
     ? leaderboardRows
         .filter((row) => isTLRole(row.role || ""))
         .map((row, index) => ({ ...row, rank: index + 1 }))
     : [];
 
-  const b2bMemberRows = isSeparatedTeam
+  const b2bMemberRows = (isSeparatedTeam && !isIgtIrm)
     ? leaderboardRows
         .filter((row) => !isTLRole(row.role || ""))
         .map((row, index) => ({ ...row, rank: index + 1 }))
     : [];
 
-  const podiumRows = isSeparatedTeam ? b2bMemberRows : leaderboardRows;
+  const igtIrmManagerRows = isIgtIrm
+    ? leaderboardRows
+        .filter((row) => isManagerRole(row.role || ""))
+        .map((row, index) => ({ ...row, rank: index + 1 }))
+    : [];
+
+  const igtIrmTLRows = isIgtIrm
+    ? leaderboardRows
+        .filter((row) => isTLRole(row.role || ""))
+        .map((row, index) => ({ ...row, rank: index + 1 }))
+    : [];
+
+  const igtIrmSpecialistRows = isIgtIrm
+    ? leaderboardRows
+        .filter((row) => isSpecialistRole(row.role || ""))
+        .map((row, index) => ({ ...row, rank: index + 1 }))
+    : [];
+
+  const igtIrmMemberRows = isIgtIrm
+    ? leaderboardRows
+        .filter((row) => isMemberRole(row.role || ""))
+        .map((row, index) => ({ ...row, rank: index + 1 }))
+    : [];
+
+  const podiumRows = isIgtIrm ? igtIrmMemberRows : (isSeparatedTeam ? b2bMemberRows : leaderboardRows);
   const podiumVisualOrder = [podiumRows[1], podiumRows[0], podiumRows[2]].filter(Boolean);
 
   const filterRows = (rows: any[]) => 
@@ -1777,10 +1818,15 @@ export default function TeamDashboard() {
   const filteredB2BMemberRows = filterRows(b2bMemberRows);
   const filteredLeaderboardRows = filterRows(leaderboardRows);
 
-  const igvIrTLRows = filterRows((isIgvIr || isIgtIrm) ? b2bTLRows : []);
-  const igvIrIRMemberRows = filterRows((isIgvIr || isIgtIrm) ? b2bMemberRows.filter((r: any) => r.source === 'ir') : []).map((r, index) => ({ ...r, rank: index + 1 }));
-  const igvIrMatchingMemberRows = filterRows((isIgvIr || isIgtIrm) ? b2bMemberRows.filter((r: any) => r.source === 'matching') : []).map((r, index) => ({ ...r, rank: index + 1 }));
-  const igvIrMarcomMemberRows = filterRows((isIgvIr || isIgtIrm) ? b2bMemberRows.filter((r: any) => r.source === 'marcom') : []).map((r, index) => ({ ...r, rank: index + 1 }));
+  const filteredIgtIrmManagerRows = filterRows(igtIrmManagerRows);
+  const filteredIgtIrmTLRows = filterRows(igtIrmTLRows);
+  const filteredIgtIrmSpecialistRows = filterRows(igtIrmSpecialistRows);
+  const filteredIgtIrmMemberRows = filterRows(igtIrmMemberRows);
+
+  const igvIrTLRows = filterRows(isIgvIr ? b2bTLRows : isIgtIrm ? igtIrmTLRows : []);
+  const igvIrIRMemberRows = filterRows(isIgvIr ? b2bMemberRows.filter((r: any) => r.source === 'ir') : isIgtIrm ? igtIrmMemberRows.filter((r: any) => r.source === 'ir') : []).map((r, index) => ({ ...r, rank: index + 1 }));
+  const igvIrMatchingMemberRows = filterRows(isIgvIr ? b2bMemberRows.filter((r: any) => r.source === 'matching') : isIgtIrm ? igtIrmMemberRows.filter((r: any) => r.source === 'matching') : []).map((r, index) => ({ ...r, rank: index + 1 }));
+  const igvIrMarcomMemberRows = filterRows(isIgvIr ? b2bMemberRows.filter((r: any) => r.source === 'marcom') : []).map((r, index) => ({ ...r, rank: index + 1 }));
 
   const b2bActivityTotals = leaderboardRows.reduce(
     (acc, row) => {
@@ -1794,6 +1840,25 @@ export default function TeamDashboard() {
 
   const igvIrIRBlocks: any[] = [];
   const igvIrMatchingBlocks: any[] = [];
+  const ogvPsCRBlocks: any[] = [];
+  const ogvPsIRBlocks: any[] = [];
+
+  if (isOgvPs && teamData.miniTeams) {
+    for (const mt of teamData.miniTeams) {
+      const blocks = mt.performers.map(p => ({
+        email: p.email,
+        label: p.name,
+        values: [p.metrics?.mous || 0, p.metrics?.coldCalls || 0, p.metrics?.followups || 0]
+      }));
+      
+      if (mt.name === "CR Performance") {
+        ogvPsCRBlocks.push(...blocks);
+      } else if (mt.name === "IR Performance") {
+        ogvPsIRBlocks.push(...blocks);
+      }
+    }
+  }
+
   if ((isIgvIr || isIgtIrm) && teamData.miniTeams) {
     for (const mt of teamData.miniTeams) {
       const irPerformers = mt.performers.filter((p: any) => p.source === 'ir');
@@ -1869,18 +1934,18 @@ export default function TeamDashboard() {
     ? `Ends in ${daysPart}d ${hoursPart.toString().padStart(2, "0")}:${minutesPart.toString().padStart(2, "0")}:${secondsPart.toString().padStart(2, "0")}`
     : "Ended";
 
-  const chartDefs = (isIgvIr || isIgtIrm) ? [
+  const chartDefs = (isIgvIr || isIgtIrm || isOgvPs) ? [
     {
-      title: isIgtIrm ? "IR Performance" : "IR Matching Activity",
-      subtitle: isIgtIrm ? "Calls Scheduled | CVs Collected | Calls Participated" : "IR Calls | Apps | Approvals",
+      title: isOgvPs ? "CR Performance" : isIgtIrm ? "IR Performance" : "IR Matching Activity",
+      subtitle: isOgvPs ? "Sign Ups | Applications | Approvals" : isIgtIrm ? "Calls Scheduled | CVs Collected | Calls Participated" : "IR Calls | Apps | Approvals",
       type: "stacked-bar",
-      entries: igvIrIRBlocks
+      entries: isOgvPs ? ogvPsCRBlocks : igvIrIRBlocks
     },
     {
-      title: isIgtIrm ? "Matching Performance" : "Matching Activity",
-      subtitle: isIgtIrm ? "Outreach | Interviews | Success" : "Interviews | Acceptance | Approvals",
+      title: isOgvPs ? "IR Performance" : isIgtIrm ? "Matching Performance" : "Matching Activity",
+      subtitle: isOgvPs ? "IR Scheduled | IR Calls | Matching" : isIgtIrm ? "Outreach | Interviews | Success" : "Interviews | Acceptance | Approvals",
       type: "stacked-bar",
-      entries: igvIrMatchingBlocks
+      entries: isOgvPs ? ogvPsIRBlocks : igvIrMatchingBlocks
     }
   ] : [
     {
@@ -2013,7 +2078,7 @@ export default function TeamDashboard() {
   };
 
   const dashboardFunctionName = getFunctionName(teamParam);
-  const isFinished = teamParam === 'members' || teamParam === 'tls' || teamParam === 'igv_b2b' || teamParam === 'ogt' || teamParam === 'igt_b2b' || isIgvIr || isIgtIrm;
+  const isFinished = teamParam === 'members' || teamParam === 'tls' || teamParam === 'igv_b2b' || teamParam === 'ogt' || teamParam === 'igt_b2b' || isIgvIr || isIgtIrm || isOgvPs;
   const showUnlinked = !teamData && !remoteTeamData;
 
   return (
@@ -2052,6 +2117,7 @@ export default function TeamDashboard() {
                     igv_b2b: 'iGV B2B',
                     igv_ir: 'iGV IR&M',
                     igv_ir_m: 'iGV IR&M',
+                    ogv_ps: 'oGV PS',
                     igt_b2b: 'iGT B2B',
                     igt_ir: 'iGT IR&M',
                     ogt: 'oGT',
@@ -2161,7 +2227,7 @@ export default function TeamDashboard() {
             
             <div className="relative z-10 mb-10 sm:mb-16 flex flex-col items-center">
               <h3 className="text-2xl sm:text-3xl font-black text-[#F7F7F8] tracking-widest uppercase">The Podium</h3>
-              {(isB2B || isIGTB2B || isIgvIr) && (
+              {(isB2B || isIGTB2B || isIgvIr || isIgtIrm) && (
                 <p className="mt-2 text-[10px] sm:text-xs font-semibold uppercase tracking-[0.15em] text-white/55 text-center">
                   Podium ranking considers only member performance.
                 </p>
@@ -2253,7 +2319,14 @@ export default function TeamDashboard() {
               </div>
 
               <div className="relative z-10 space-y-3 sm:hidden">
-                {((isIgvIr || isIgtIrm)
+                {(isIgtIrm
+                  ? [
+                      { title: "Managers", rows: filteredIgtIrmManagerRows },
+                      { title: "TLs", rows: filteredIgtIrmTLRows },
+                      { title: "Specialists", rows: filteredIgtIrmSpecialistRows },
+                      { title: "Members", rows: filteredIgtIrmMemberRows }
+                    ].filter(s => s.rows.length > 0)
+                  : isIgvIr
                   ? [
                       { title: "TLs", rows: igvIrTLRows },
                       { title: "IR Members", rows: igvIrIRMemberRows },
@@ -2384,7 +2457,14 @@ export default function TeamDashboard() {
 
               <div className="relative z-10 hidden overflow-visible custom-scrollbar sm:block">
                 <div className="min-w-[750px] space-y-6">
-                  {((isIgvIr || isIgtIrm)
+                  {(isIgtIrm
+                    ? [
+                        { title: "Managers", rows: filteredIgtIrmManagerRows },
+                        { title: "TLs", rows: filteredIgtIrmTLRows },
+                        { title: "Specialists", rows: filteredIgtIrmSpecialistRows },
+                        { title: "Members", rows: filteredIgtIrmMemberRows }
+                      ].filter(s => s.rows.length > 0)
+                    : isIgvIr
                     ? [
                         { title: "TLs", rows: igvIrTLRows },
                         { title: "IR Members", rows: igvIrIRMemberRows },
@@ -2619,7 +2699,7 @@ export default function TeamDashboard() {
                   <h4 className="text-xl sm:text-2xl font-black text-[#F7F7F8] tracking-widest uppercase italic">Squad Performance Matchups</h4>
                   <p className="text-[9px] sm:text-[10px] font-bold text-white/30 uppercase tracking-[0.2em] sm:tracking-[0.3em]">Total Active Squads: {(isIgvIr ? teamData.miniTeams?.filter(t => t.name.toLowerCase() !== 'general') : teamData.miniTeams)?.length || 0}</p>
                 </div>
-                <div className={`grid grid-cols-1 gap-4 sm:gap-6 ${(isIgvIr || isIgtIrm) ? 'md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3' : isIGTB2B ? 'md:grid-cols-3' : isB2B ? 'md:grid-cols-2' : 'md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4'}`}>
+                <div className={`grid grid-cols-1 gap-4 sm:gap-6 ${(isIgvIr || isIgtIrm || isOgvPs) ? (isIgtIrm || isOgvPs ? 'md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-2' : 'md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3') : isIGTB2B ? 'md:grid-cols-3' : isB2B ? 'md:grid-cols-2' : 'md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4'}`}>
                   {((isIgvIr || isIgtIrm) ? teamData.miniTeams?.filter(t => t.name.toLowerCase() !== 'general') : teamData.miniTeams)?.map((team, index) => (
                     <MiniTeamCard 
                       key={team.slug || team.name}
@@ -2724,10 +2804,10 @@ export default function TeamDashboard() {
                                 <span className="text-[10px] font-bold text-[#F7F7F8]/65 uppercase tracking-widest whitespace-nowrap">
                                   {isOGT 
                                     ? (i === 0 ? "SU" : i === 1 ? "APL" : "APD")
-                                    : chart.title === "IR Performance"
-                                      ? (i === 0 ? "Calls" : i === 1 ? "CVs" : "Participated")
-                                    : chart.title === "Matching Performance"
-                                      ? (i === 0 ? "Outreach" : i === 1 ? "Interviews" : "Success")
+                                    : chart.title === "IR Performance" || (isOgvPs && chart.title === "IR Performance")
+                                      ? (i === 0 ? (isOgvPs ? "Scheduled" : "Calls") : i === 1 ? (isOgvPs ? "Calls" : "CVs") : (isOgvPs ? "Matching" : "Participated"))
+                                    : chart.title === "Matching Performance" || (isOgvPs && chart.title === "CR Performance")
+                                      ? (i === 0 ? (isOgvPs ? "Sign Ups" : "Outreach") : i === 1 ? (isOgvPs ? "Apps" : "Interviews") : (isOgvPs ? "Approvals" : "Success"))
                                     : chart.title === "IR Activity Totals"
                                       ? (i === 0 ? "IR Calls" : i === 1 ? "IR Application" : "IR Approvals")
                                     : chart.title === "Matching Activity Totals"
