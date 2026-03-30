@@ -1818,10 +1818,37 @@ export default function TeamDashboard() {
   const filteredB2BMemberRows = filterRows(b2bMemberRows);
   const filteredLeaderboardRows = filterRows(leaderboardRows);
 
-  const filteredIgtIrmManagerRows = filterRows(igtIrmManagerRows);
-  const filteredIgtIrmTLRows = filterRows(igtIrmTLRows);
   const filteredIgtIrmSpecialistRows = filterRows(igtIrmSpecialistRows);
   const filteredIgtIrmMemberRows = filterRows(igtIrmMemberRows);
+
+  const ogvPsCrTLRows = isOgvPs
+    ? leaderboardRows
+        .filter((row) => row.team === "CR Performance" && isTLRole(row.role || ""))
+        .map((row, index) => ({ ...row, rank: index + 1 }))
+    : [];
+
+  const ogvPsCrMemberRows = isOgvPs
+    ? leaderboardRows
+        .filter((row) => row.team === "CR Performance" && !isTLRole(row.role || ""))
+        .map((row, index) => ({ ...row, rank: index + 1 }))
+    : [];
+
+  const ogvPsIrTLRows = isOgvPs
+    ? leaderboardRows
+        .filter((row) => row.team === "IR Performance" && isTLRole(row.role || ""))
+        .map((row, index) => ({ ...row, rank: index + 1 }))
+    : [];
+
+  const ogvPsIrMemberRows = isOgvPs
+    ? leaderboardRows
+        .filter((row) => row.team === "IR Performance" && !isTLRole(row.role || ""))
+        .map((row, index) => ({ ...row, rank: index + 1 }))
+    : [];
+
+  const filteredOgvPsCrTLRows = filterRows(ogvPsCrTLRows);
+  const filteredOgvPsCrMemberRows = filterRows(ogvPsCrMemberRows);
+  const filteredOgvPsIrTLRows = filterRows(ogvPsIrTLRows);
+  const filteredOgvPsIrMemberRows = filterRows(ogvPsIrMemberRows);
 
   const igvIrTLRows = filterRows(isIgvIr ? b2bTLRows : isIgtIrm ? igtIrmTLRows : []);
   const igvIrIRMemberRows = filterRows(isIgvIr ? b2bMemberRows.filter((r: any) => r.source === 'ir') : isIgtIrm ? igtIrmMemberRows.filter((r: any) => r.source === 'ir') : []).map((r, index) => ({ ...r, rank: index + 1 }));
@@ -2333,6 +2360,13 @@ export default function TeamDashboard() {
                       { title: "Matching Members", rows: igvIrMatchingMemberRows },
                       { title: "Marcom Members", rows: igvIrMarcomMemberRows }
                     ].filter(s => s.rows.length > 0 || Object.keys(igvIrTLRows).length === 0)
+                  : isOgvPs
+                  ? [
+                      { title: "CR TLS", rows: filteredOgvPsCrTLRows },
+                      { title: "CR MEMBERS", rows: filteredOgvPsCrMemberRows },
+                      { title: "IR TLS", rows: filteredOgvPsIrTLRows },
+                      { title: "IR MEMBERS", rows: filteredOgvPsIrMemberRows }
+                    ].filter(s => s.rows.length > 0)
                   : isSeparatedTeam
                   ? [
                       { title: "TLs", rows: filteredB2BTLRows },
@@ -2471,6 +2505,13 @@ export default function TeamDashboard() {
                         { title: "Matching Members", rows: igvIrMatchingMemberRows },
                         { title: "Marcom Members", rows: igvIrMarcomMemberRows }
                       ].filter(s => s.rows.length > 0 || Object.keys(igvIrTLRows).length === 0)
+                    : isOgvPs
+                    ? [
+                        { title: "CR TLS", rows: filteredOgvPsCrTLRows },
+                        { title: "CR MEMBERS", rows: filteredOgvPsCrMemberRows },
+                        { title: "IR TLS", rows: filteredOgvPsIrTLRows },
+                        { title: "IR MEMBERS", rows: filteredOgvPsIrMemberRows }
+                      ].filter(s => s.rows.length > 0)
                     : isSeparatedTeam
                     ? [
                         { title: "TLs", rows: filteredB2BTLRows },

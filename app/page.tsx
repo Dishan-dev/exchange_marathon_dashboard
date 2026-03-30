@@ -63,7 +63,8 @@ const functions: TeamCard[] = [
     icon: "🌱",
     color: "var(--igv-color)",
     squads: [
-      { id: "ogv-ops", name: "OGV Dashboard", href: "/dashboard/ogv" }
+      { id: "ogv-ps", name: "PS Dashboard", href: "/dashboard/ogv_ps" },
+      { id: "ogv-b2c", name: "B2C Dashboard", href: "/dashboard/ogv_b2c" }
     ]
   },
   {
