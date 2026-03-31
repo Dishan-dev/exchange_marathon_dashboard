@@ -1964,16 +1964,28 @@ export default function TeamDashboard() {
       const matchingPerformers = mt.performers.filter((p: any) => p.source === 'matching');
       
       const irTotals = irPerformers.reduce((acc, p) => {
-        acc[0] += p.metrics?.mous || 0;
-        acc[1] += p.metrics?.coldCalls || 0;
-        acc[2] += p.metrics?.followups || 0;
+        if (isIgtIrm) {
+          acc[0] += p.metrics?.igt_ir_calls || 0;
+          acc[1] += p.metrics?.igt_ir_cvs || 0;
+          acc[2] += p.metrics?.igt_ir_participated || 0;
+        } else {
+          acc[0] += p.metrics?.mous || 0;
+          acc[1] += p.metrics?.coldCalls || 0;
+          acc[2] += p.metrics?.followups || 0;
+        }
         return acc;
       }, [0, 0, 0]);
 
       const matchingTotals = matchingPerformers.reduce((acc, p) => {
-        acc[0] += p.metrics?.mous || 0;
-        acc[1] += p.metrics?.coldCalls || 0;
-        acc[2] += p.metrics?.followups || 0;
+        if (isIgtIrm) {
+          acc[0] += p.metrics?.igt_m_outreach || 0;
+          acc[1] += p.metrics?.igt_m_interviews || 0;
+          acc[2] += p.metrics?.igt_m_success || 0;
+        } else {
+          acc[0] += p.metrics?.mous || 0;
+          acc[1] += p.metrics?.coldCalls || 0;
+          acc[2] += p.metrics?.followups || 0;
+        }
         return acc;
       }, [0, 0, 0]);
 
@@ -2036,13 +2048,15 @@ export default function TeamDashboard() {
   const chartDefs = (isIgvIr || isIgtIrm || isOgvPs) ? [
     {
       title: isOgvPs ? "CR Performance" : isIgtIrm ? "IR Performance" : "IR & Matching Activity",
-      subtitle: isOgvPs ? "Sign Ups | Applications | Approvals" : isIgtIrm ? "Calls Scheduled | CVs Collected | Calls Participated" : "IR Calls | Apps | Approvals",
+      subtitle: isOgvPs ? "Sign Ups | Applications | Approvals" : isIgtIrm ? "Calls | CVs | Participated" : "IR Calls | Apps | Approvals",
+      legend: isOgvPs ? ["Sign Ups", "Apps", "Approvals"] : isIgtIrm ? ["Calls", "CVs", "Participated"] : ["IR Calls", "Apps", "Approvals"],
       type: "stacked-bar",
       entries: isOgvPs ? ogvPsCRBlocks : igvIrIRBlocks
     },
     {
       title: isOgvPs ? "IR Performance" : isIgtIrm ? "Matching Performance" : "Matching Activity",
       subtitle: isOgvPs ? "IR Scheduled | IR Calls | Matching" : isIgtIrm ? "Outreach | Interviews | Success" : "Interviews | Acceptance | Approvals",
+      legend: isOgvPs ? ["Scheduled", "Calls", "Matching"] : isIgtIrm ? ["Outreach", "Interviews", "Success"] : ["Interviews", "Acceptance", "Approvals"],
       type: "stacked-bar",
       entries: isOgvPs ? ogvPsIRBlocks : igvIrMatchingBlocks
     }
@@ -2994,8 +3008,8 @@ export default function TeamDashboard() {
                             <span className="text-[10px] font-bold text-[#F7F7F8]/65 uppercase tracking-widest">Total Points</span>
                           </div>
                         ) : (
-                          ["M1", "M2", "M3"].map((l, i) => (
-                             <div key={l} className="flex items-center gap-3">
+                          ((chart as any).legend || ["MOUs", "Calls", "Follows"]).map((l: string, i: number) => (
+                             <div key={`${chart.title}-${l}`} className="flex items-center gap-3">
                                 <span 
                                   className={`h-3 w-3 rounded-full ${(!isIgvIr && !isOgvCr && !isOgvIr) ? stackedLegendDots[i] : ''}`} 
                                   style={{ 
@@ -3009,22 +3023,11 @@ export default function TeamDashboard() {
                                             ? igvB2bHexColors[i]
                                             : isOGT
                                               ? ogtHexColors[i]
-                                              : undefined 
+                                              : ["#FFD700", "#C0C0C0", "#CD7F32"][i] 
                                   }}
                                 />
                                 <span className="text-[10px] font-bold text-[#F7F7F8]/65 uppercase tracking-widest whitespace-nowrap">
-                                  {isOGT 
-                                    ? (i === 0 ? "SU" : i === 1 ? "APL" : "APD")
-                                    : chart.title === "IR Performance" || (isOgvPs && chart.title === "IR Performance")
-                                      ? (i === 0 ? (isOgvPs ? "Scheduled" : "Calls") : i === 1 ? (isOgvPs ? "Calls" : "CVs") : (isOgvPs ? "Matching" : "Participated"))
-                                    : chart.title === "Matching Performance" || (isOgvPs && chart.title === "CR Performance")
-                                      ? (i === 0 ? (isOgvPs ? "Sign Ups" : "Outreach") : i === 1 ? (isOgvPs ? "Apps" : "Interviews") : (isOgvPs ? "Approvals" : "Success"))
-                                    : chart.title === "IR Activity Totals"
-                                      ? (i === 0 ? "IR Calls" : i === 1 ? "IR Application" : "IR Approvals")
-                                    : chart.title === "Matching Activity Totals"
-                                      ? (i === 0 ? "Interviews" : i === 1 ? "Acceptance" : "Approvals")
-                                    : (i === 0 ? "MOUs" : i === 1 ? "Calls" : "Follows")
-                                  }
+                                  {l}
                                 </span>
                               </div>
                             ))
