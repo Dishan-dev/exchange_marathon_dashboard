@@ -49,6 +49,13 @@ interface Performer {
     igt_m_interviews?: number;
     igt_m_success?: number;
     igt_m_apds?: number;
+    // oGV PS Specific
+    cr_signups?: number;
+    cr_apps?: number;
+    cr_approvals?: number;
+    ir_scheduled?: number;
+    ir_calls?: number;
+    ir_matching?: number;
   };
 }
 
@@ -545,6 +552,44 @@ const teamDataMap: Record<string, TeamData> = {
     completedActions: 94,
     weeklyGrowth: 330,
   },
+  ogv_cr: {
+    name: "oGV",
+    displayName: "oGV Professional Support - CR",
+    miniTeams: [
+      {
+        slug: "cr_performance",
+        name: "CR Performance",
+        rank: 1,
+        points: 0,
+        growth: 0,
+        icon: "CR",
+        performers: [],
+      },
+    ],
+    totalPoints: 0,
+    totalGrowth: 0,
+    completedActions: 0,
+    weeklyGrowth: 0,
+  },
+  ogv_ir: {
+    name: "oGV",
+    displayName: "oGV Professional Support - IR",
+    miniTeams: [
+      {
+        slug: "ir_performance",
+        name: "IR Performance",
+        rank: 1,
+        points: 0,
+        growth: 0,
+        icon: "IR",
+        performers: [],
+      },
+    ],
+    totalPoints: 0,
+    totalGrowth: 0,
+    completedActions: 0,
+    weeklyGrowth: 0,
+  },
 };
 
 const teamColorMap: Record<string, string> = {
@@ -561,6 +606,8 @@ const teamColorMap: Record<string, string> = {
   tls: "var(--mst-color)",
   ogt: "var(--ogt-color)",
   "igt-ir-m": "var(--igt-color)",
+  ogv_cr: "var(--igv-color)",
+  ogv_ir: "var(--igv-color)",
 };
 
 const quickInsights = [
@@ -583,6 +630,11 @@ const stackedChartSegmentColors = [
 ];
 
 const stackedLegendDots = ["bg-[#E91E63]", "bg-[#9C27B0]", "var(--team-accent-bg)"];
+const ogvCrHexColors = ["#E91E63", "#9C27B0", "#FF9800"]; // Pink, Purple, Orange
+const ogvIrHexColors = ["#FFCD00", "#FFB300", "#F9A825"]; // Variations of Yellow/Gold
+const igvB2bHexColors = ["#00B0FF", "#6200EA", "#FF9800"]; // Blue, Deep Purple, Orange
+const ogtHexColors = ["#E91E63", "#9C27B0", "#FF9800"]; // Pink, Purple, Orange
+const mstVibrantColors = ["#FF5252", "#FF4081", "#E040FB", "#7C4DFF", "#536DFE", "#448AFF", "#40C4FF", "#18FFFF", "#64FFDA", "#69F0AE", "#B2FF59", "#EEFF41", "#FFFF00", "#FFD740", "#FFAB40", "#FF6E40"];
 const mstTeamNames: Record<string, string> = {
   "T01": "Team Senadi",
   "T02": "Team Yasodara",
@@ -612,7 +664,7 @@ const isManagerRole = (role: string): boolean => {
 const isTLRole = (role: string): boolean => {
   const r = role.trim().toLowerCase();
   if (isManagerRole(role)) return false;
-  return r === "tl" || r === "team leader" || r === "team lead" || r === "teamlead" || r.includes('head');
+  return r.includes("tl") || r.includes("team leader") || r.includes("team lead") || r.includes("teamlead") || r.includes('head');
 };
 
 const isSpecialistRole = (role: string): boolean => {
@@ -641,7 +693,10 @@ function MiniTeamCard({
   isOGT = false,
   isIGTB2B = false,
   isIgvIr = false,
-  isIgtIrm = false
+  isIgtIrm = false,
+  isOgvPs = false,
+  isOgvCr = false,
+  isOgvIr = false
 }: {
   team: MiniTeamData;
   isLeader: boolean;
@@ -651,6 +706,9 @@ function MiniTeamCard({
   isIGTB2B?: boolean;
   isIgvIr?: boolean;
   isIgtIrm?: boolean;
+  isOgvPs?: boolean;
+  isOgvCr?: boolean;
+  isOgvIr?: boolean;
 }) {
   return (
     <div
@@ -720,7 +778,7 @@ function MiniTeamCard({
               style={{ backgroundColor: `color-mix(in srgb, ${teamColor}, black 90%)` }}
             >
               <p className="text-[9px] font-black text-white/40 uppercase tracking-widest mb-3 text-center border-b border-white/5 pb-2">
-                {isMST ? `${formatTeamName(team.name, isMST)} Members + TLs` : isIGTB2B ? "IGT B2B Squad Activity" : isIgvIr ? "IGV IR & M Squad Activity" : isOGT ? "OGT Squad Activity" : "Squad Activity"}
+                {isMST ? `${formatTeamName(team.name, isMST)} Members + TLs` : isIGTB2B ? "IGT B2B Squad Activity" : isIgvIr ? "IGV IR & M Squad Activity" : isOGT ? "OGT Squad Activity" : isOgvPs ? (isOgvCr ? "oGV PS CR Activity" : isOgvIr ? "oGV PS IR Activity" : "oGV PS Activity") : "Squad Activity"}
               </p>
               <div className="space-y-2 max-h-48 overflow-y-auto custom-scrollbar pr-1">
                 {isMST ? (
@@ -848,6 +906,21 @@ function MiniTeamCard({
                     <div className="flex justify-between items-center text-[10px] font-bold">
                       <span className="text-white/30">Team Bonus</span>
                       <span className="text-[#4CAF50]">{team.performers[0]?.metrics.igt_team_bonus || 0}</span>
+                    </div>
+                  </>
+                ) : isOgvPs ? (
+                  <>
+                    <div className="flex justify-between items-center text-[10px] font-bold">
+                      <span className="text-white/30">{isOgvIr ? 'IR Scheduled' : 'Sign Ups'}</span>
+                      <span className="text-[#FFCD00]">{team.performers.reduce((s, p) => s + (isOgvIr ? (p.metrics.ir_scheduled || 0) : (p.metrics.cr_signups || 0)), 0)}</span>
+                    </div>
+                    <div className="flex justify-between items-center text-[10px] font-bold">
+                      <span className="text-white/30">{isOgvIr ? 'IR Calls' : 'Applications'}</span>
+                      <span className="text-[#FFCD00]">{team.performers.reduce((s, p) => s + (isOgvIr ? (p.metrics.ir_calls || 0) : (p.metrics.cr_apps || 0)), 0)}</span>
+                    </div>
+                    <div className="flex justify-between items-center text-[10px] font-bold">
+                      <span className="text-white/30">{isOgvIr ? 'Matching' : 'Approvals'}</span>
+                      <span className="text-[#FFCD00]">{team.performers.reduce((s, p) => s + (isOgvIr ? (p.metrics.ir_matching || 0) : (p.metrics.cr_approvals || 0)), 0)}</span>
                     </div>
                   </>
                 ) : (
@@ -1762,7 +1835,9 @@ export default function TeamDashboard() {
   const isB2B = teamParam === 'igv_b2b';
   const isIGTB2B = teamParam === 'igt_b2b';
   const isOGT = teamParam === 'ogt';
-  const isOgvPs = teamParam === 'ogv_ps';
+  const isOgvPs = teamParam === 'ogv_ps' || teamParam === 'ogv_cr' || teamParam === 'ogv_ir';
+  const isOgvCr = teamParam === 'ogv_cr';
+  const isOgvIr = teamParam === 'ogv_ir';
   const isIgvIr = teamParam === 'igv_ir' || teamParam === 'igv_ir_m';
   const isIgtIrm = teamParam === 'igt-ir-m' || teamParam === 'igt_ir';
   const isIGV = teamParam === 'igv_b2b' || teamParam === 'igv_ir' || teamParam === 'igv_ir_m';
@@ -1823,27 +1898,27 @@ export default function TeamDashboard() {
   const filteredIgtIrmSpecialistRows = filterRows(igtIrmSpecialistRows);
   const filteredIgtIrmMemberRows = filterRows(igtIrmMemberRows);
 
-  const ogvPsCrTLRows = isOgvPs
+  const ogvPsCrTLRows = isOgvCr
     ? leaderboardRows
-        .filter((row) => row.team === "CR Performance" && isTLRole(row.role || ""))
+        .filter((row) => isTLRole(row.role || ""))
         .map((row, index) => ({ ...row, rank: index + 1 }))
     : [];
 
-  const ogvPsCrMemberRows = isOgvPs
+  const ogvPsCrMemberRows = isOgvCr
     ? leaderboardRows
-        .filter((row) => row.team === "CR Performance" && !isTLRole(row.role || ""))
+        .filter((row) => !isTLRole(row.role || ""))
         .map((row, index) => ({ ...row, rank: index + 1 }))
     : [];
 
-  const ogvPsIrTLRows = isOgvPs
+  const ogvPsIrTLRows = isOgvIr
     ? leaderboardRows
-        .filter((row) => row.team === "IR Performance" && isTLRole(row.role || ""))
+        .filter((row) => isTLRole(row.role || ""))
         .map((row, index) => ({ ...row, rank: index + 1 }))
     : [];
 
-  const ogvPsIrMemberRows = isOgvPs
+  const ogvPsIrMemberRows = isOgvIr
     ? leaderboardRows
-        .filter((row) => row.team === "IR Performance" && !isTLRole(row.role || ""))
+        .filter((row) => !isTLRole(row.role || ""))
         .map((row, index) => ({ ...row, rank: index + 1 }))
     : [];
 
@@ -1874,15 +1949,21 @@ export default function TeamDashboard() {
 
   if (isOgvPs && teamData.miniTeams) {
     for (const mt of teamData.miniTeams) {
+      const isCrTeam = mt.name.toLowerCase().includes('cr') || mt.name.toLowerCase().includes('team') || mt.slug?.includes('team') || isOgvCr;
+      const isIrTeam = mt.name.toLowerCase().includes('ir') || mt.slug?.includes('ir') || isOgvIr;
+      
       const blocks = mt.performers.map(p => ({
         email: p.email,
         label: p.name,
-        values: [p.metrics?.mous || 0, p.metrics?.coldCalls || 0, p.metrics?.followups || 0]
+        segmentType: isCrTeam ? "cr" : (isIrTeam ? "ir" : "default"),
+        values: isCrTeam
+          ? [p.metrics?.cr_signups || 0, p.metrics?.cr_apps || 0, p.metrics?.cr_approvals || 0]
+          : [p.metrics?.ir_scheduled || 0, p.metrics?.ir_calls || 0, p.metrics?.ir_matching || 0]
       }));
       
-      if (mt.name === "CR Performance") {
+      if (isOgvCr || isCrTeam) {
         ogvPsCRBlocks.push(...blocks);
-      } else if (mt.name === "IR Performance") {
+      } else if (isOgvIr || isIrTeam) {
         ogvPsIRBlocks.push(...blocks);
       }
     }
@@ -1976,7 +2057,11 @@ export default function TeamDashboard() {
       type: "stacked-bar",
       entries: isOgvPs ? ogvPsIRBlocks : igvIrMatchingBlocks
     }
-  ] : [
+  ].filter(chart => {
+    if (isOgvCr) return chart.title === "CR Performance";
+    if (isOgvIr) return chart.title === "IR Performance";
+    return true;
+  }) : [
     {
       title: isMST ? "Total Member Points" : isIGTB2B ? "IGT B2B Activity Totals" : isOGT ? "OGT Activity Totals" : "B2B Activity Totals",
       subtitle: isMST ? "Points Accumulation" : isIGTB2B ? "Cumulative Meetings | Cold Calls | Follow Ups" : isOGT ? "Cumulative SU | APL | APD" : "Cumulative MOUs | Cold Calls | Followups",
@@ -1988,7 +2073,7 @@ export default function TeamDashboard() {
             .map((p) => ({
               email: p.email,
               label: p.name,
-              values: [p.score]
+                values: [p.score]
             }))
         : isIGTB2B
           ? leaderboardRows
@@ -2010,6 +2095,7 @@ export default function TeamDashboard() {
               .map((p) => ({
                 email: p.email,
                 label: p.name,
+                segmentType: "ogt",
                 values: [
                   p.metrics?.mous || 0, // SU
                   p.metrics?.coldCalls || 0, // APL
@@ -2017,23 +2103,19 @@ export default function TeamDashboard() {
                 ]
               }))
         : isB2B
-          ? [
-              {
-                email: "b2b-mous",
-                label: "MOUs",
-                values: [b2bActivityTotals.mous, 0, 0]
-              },
-              {
-                email: "b2b-cold-calls",
-                label: "Cold Calls",
-                values: [0, b2bActivityTotals.coldCalls, 0]
-              },
-              {
-                email: "b2b-followups",
-                label: "Followups",
-                values: [0, 0, b2bActivityTotals.followups]
-              }
-            ]
+          ? leaderboardRows
+              .filter((p) => (p.metrics?.mous || 0) + (p.metrics?.coldCalls || 0) + (p.metrics?.followups || 0) > 0)
+              .slice(0, 50)
+              .map((p) => ({
+                email: p.email,
+                label: p.name,
+                segmentType: "b2b",
+                values: [
+                  p.metrics?.mous || 0,
+                  p.metrics?.coldCalls || 0,
+                  p.metrics?.followups || 0
+                ]
+              }))
             : isIGTB2B
               ? [
                   {
@@ -2147,6 +2229,8 @@ export default function TeamDashboard() {
                     igv_ir: 'iGV IR&M',
                     igv_ir_m: 'iGV IR&M',
                     ogv_ps: 'oGV PS',
+                    ogv_cr: 'oGV PS - CR',
+                    ogv_ir: 'oGV PS - IR',
                     igt_b2b: 'iGT B2B',
                     igt_ir: 'iGT IR&M',
                     ogt: 'oGT',
@@ -2178,11 +2262,11 @@ export default function TeamDashboard() {
               </button>
               <Link
                 href="/"
-                className="group flex items-center gap-1.5 px-2.5 py-1.5 text-[8px] font-black uppercase tracking-tight rounded-full glass border border-white/10 hover:bg-white/5 transition-all sm:px-5 sm:py-2.5 sm:text-xs sm:tracking-widest"
+                className="group flex items-center gap-1.5 px-3 py-1.5 text-[8px] font-black uppercase tracking-tight rounded-full bg-[#ffcd00] text-black hover:bg-[#ffb300] transition-all sm:px-5 sm:py-2.5 sm:text-xs sm:tracking-widest shadow-[0_0_15px_rgba(255,205,0,0.3)]"
               >
-                <span className="opacity-40 group-hover:-translate-x-1 transition-transform">←</span>
-                <span className="hidden xs:inline">Exit Dashboard</span>
-                <span className="xs:hidden">Exit</span>
+                <span className="group-hover:-translate-x-1 transition-transform">←</span>
+                <span className="hidden xs:inline">EXIT DASHBOARD</span>
+                <span className="xs:hidden">EXIT</span>
               </Link>
             </div>
           </div>
@@ -2368,7 +2452,11 @@ export default function TeamDashboard() {
                       { title: "CR MEMBERS", rows: filteredOgvPsCrMemberRows },
                       { title: "IR TLS", rows: filteredOgvPsIrTLRows },
                       { title: "IR MEMBERS", rows: filteredOgvPsIrMemberRows }
-                    ].filter(s => s.rows.length > 0)
+                    ].filter(s => {
+                      if (isOgvCr) return s.title.startsWith("CR");
+                      if (isOgvIr) return s.title.startsWith("IR");
+                      return s.rows.length > 0;
+                    })
                   : isSeparatedTeam
                   ? [
                       { title: "TLs", rows: filteredB2BTLRows },
@@ -2478,7 +2566,7 @@ export default function TeamDashboard() {
                               ) : isOgvPs ? (
                                 <>
                                   <div className="grid grid-cols-2 gap-x-6 gap-y-2">
-                                    {row.team === "CR Performance" ? (
+                                    {isOgvCr ? (
                                       <>
                                         <div className="flex justify-between"><span>Sign Ups:</span> <span className="text-[#FFCD00]">{row.metrics?.cr_signups || 0}</span></div>
                                         <div className="flex justify-between"><span>Applications:</span> <span className="text-[#FFCD00]">{row.metrics?.cr_apps || 0}</span></div>
@@ -2531,7 +2619,11 @@ export default function TeamDashboard() {
                         { title: "CR MEMBERS", rows: filteredOgvPsCrMemberRows },
                         { title: "IR TLS", rows: filteredOgvPsIrTLRows },
                         { title: "IR MEMBERS", rows: filteredOgvPsIrMemberRows }
-                      ].filter(s => s.rows.length > 0)
+                      ].filter(s => {
+                        if (isOgvCr) return s.title.startsWith("CR");
+                        if (isOgvIr) return s.title.startsWith("IR");
+                        return s.rows.length > 0;
+                      })
                     : isSeparatedTeam
                     ? [
                         { title: "TLs", rows: filteredB2BTLRows },
@@ -2596,15 +2688,19 @@ export default function TeamDashboard() {
                                   
                                   {/* Hover/Tap Card for Metrics - Centered on Row with Ultra-Smooth Transition */}
                                   <div 
-                                    className={`absolute left-1/2 -top-56 z-[200] w-64 -translate-x-1/2 rounded-3xl border border-white/20 bg-black/95 p-5 shadow-[0_32px_64px_rgba(0,0,0,0.9)] backdrop-blur-3xl transition-all duration-300 ease-[cubic-bezier(0.23,1,0.32,1)] 
-                                      ${activeB2BRow === row.email 
-                                        ? 'opacity-100 scale-100 pointer-events-auto visible' 
-                                        : 'opacity-0 scale-95 pointer-events-none invisible group-hover/row:opacity-100 group-hover/row:scale-100 group-hover/row:pointer-events-auto group-hover/row:visible'}`}
-                                  >
-                                    <div className="flex w-full flex-col gap-4">
-                                      <div className="flex items-center justify-between">
+                                     className={`absolute left-1/2 -top-[13.5rem] z-[200] w-64 -translate-x-1/2 rounded-3xl border border-white/20 bg-black/95 p-5 shadow-[0_32px_64px_rgba(0,0,0,0.9)] backdrop-blur-3xl transition-all duration-300 ease-[cubic-bezier(0.23,1,0.32,1)] 
+                                       ${activeB2BRow === row.email 
+                                         ? 'opacity-100 scale-100 pointer-events-auto visible' 
+                                         : 'opacity-0 scale-95 pointer-events-none invisible group-hover/row:opacity-100 group-hover/row:scale-100 group-hover/row:pointer-events-auto group-hover/row:visible'}`}
+                                   >
+                                     {/* Pointing Arrow */}
+                                     <div className="absolute -bottom-1.5 left-1/2 h-3.5 w-3.5 -translate-x-1/2 rotate-45 border-b border-r border-white/20 bg-black/95 
+                                      shadow-[0_4px_8px_rgba(0,0,0,0.4)]" />
+                                     
+                                     <div className="relative z-10 flex w-full flex-col gap-4">
+<div className="flex items-center justify-between">
                                         <div className="flex flex-col gap-0.5">
-                                          <span className="text-[10px] font-black uppercase tracking-[0.25em] text-white/40">{isIGTB2B ? "IGT B2B Performance" : isOGT ? "OGT Performance" : "Squad Stats"}</span>
+                                          <span className="text-[10px] font-black uppercase tracking-[0.25em] text-white/40">{isIGTB2B ? "IGT B2B Performance" : isOGT ? "OGT Performance" : "Member Stats"}</span>
                                           <span className="text-[9px] font-black uppercase tracking-widest text-[#ffcd00]/80">{row.name.split(' ')[0]}</span>
                                         </div>
                                         <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-white/5 border border-white/10 shadow-inner">
@@ -2634,26 +2730,26 @@ export default function TeamDashboard() {
                                           <>
                                             <div className="flex justify-between items-center bg-white/5 rounded-lg px-2 py-1.5 min-w-0">
                                               <span className="text-white/30 uppercase tracking-tighter truncate mr-2">
-                                                {row.team === 'CR Performance' ? 'Sign Ups' : 'IR Scheduled'}
+                                                {isOgvCr ? 'Sign Ups' : 'IR Scheduled'}
                                               </span>
                                               <span className="font-black text-white shrink-0">
-                                                {row.team === 'CR Performance' ? (row.metrics?.cr_signups || 0) : (row.metrics?.ir_scheduled || 0)}
+                                                {isOgvCr ? (row.metrics?.cr_signups || 0) : (row.metrics?.ir_scheduled || 0)}
                                               </span>
                                             </div>
                                             <div className="flex justify-between items-center bg-white/5 rounded-lg px-2 py-1.5 min-w-0">
                                               <span className="text-white/30 uppercase tracking-tighter truncate mr-2">
-                                                {row.team === 'CR Performance' ? 'Applications' : 'IR Calls'}
+                                                {isOgvCr ? 'Applications' : 'IR Calls'}
                                               </span>
                                               <span className="font-black text-white shrink-0">
-                                                {row.team === 'CR Performance' ? (row.metrics?.cr_apps || 0) : (row.metrics?.ir_calls || 0)}
+                                                {isOgvCr ? (row.metrics?.cr_apps || 0) : (row.metrics?.ir_calls || 0)}
                                               </span>
                                             </div>
                                             <div className="flex justify-between items-center bg-white/5 rounded-lg px-2 py-1.5 min-w-0">
                                               <span className="text-white/30 uppercase tracking-tighter truncate mr-2">
-                                                {row.team === 'CR Performance' ? 'Approvals' : 'Matching'}
+                                                {isOgvCr ? 'Approvals' : 'Matching'}
                                               </span>
                                               <span className="font-black text-white shrink-0">
-                                                {row.team === 'CR Performance' ? (row.metrics?.cr_approvals || 0) : (row.metrics?.ir_matching || 0)}
+                                                {isOgvCr ? (row.metrics?.cr_approvals || 0) : (row.metrics?.ir_matching || 0)}
                                               </span>
                                             </div>
                                           </>
@@ -2799,6 +2895,9 @@ export default function TeamDashboard() {
                       isIGTB2B={isIGTB2B}
                       isIgvIr={isIgvIr}
                       isIgtIrm={isIgtIrm}
+                      isOgvPs={isOgvPs}
+                      isOgvCr={isOgvCr}
+                      isOgvIr={isOgvIr}
                     />
                   ))}
                 </div>
@@ -2827,7 +2926,7 @@ export default function TeamDashboard() {
                       <p className="text-[10px] sm:text-xs font-semibold uppercase tracking-[0.22em]" style={{ color: `color-mix(in srgb, ${teamColor}, white 40%)` }}>{chart.subtitle}</p>
                       <h4 className="mt-1 text-base sm:text-lg font-bold text-[#F7F7F8]">{chart.title}</h4>
                       <div className="mt-8 space-y-8">
-                        {chart.entries?.map((entry: { label: string; values: number[]; email: string }) => {
+                        {chart.entries?.map((entry: { label: string; values: number[]; email: string }, entryIdx: number) => {
                           const total = entry.values.reduce((a: number, b: number) => a + b, 0);
                           const maxRowTotal = Math.max(...(chart.entries || []).map((e: { values: number[] }) => e.values.reduce((a: number, b: number) => a + b, 0)));
                           return (
@@ -2856,12 +2955,26 @@ export default function TeamDashboard() {
                                     return (
                                       <motion.div
                                         key={valIdx}
-                                        initial={{ opacity: 0, scaleX: 0 }}
-                                        whileInView={{ opacity: 1, scaleX: 1 }}
-                                        viewport={{ once: true }}
-                                        transition={{ duration: 0.5, delay: 0.8 + valIdx * 0.15 }}
-                                        className={`relative flex items-center justify-center transition-all duration-700 hover:brightness-125 origin-left ${!isIgvIr ? colors[valIdx] : ''}`}
-                                        style={{ width: `${pct}%`, ...(isIgvIr ? { backgroundColor: igvIrHexColors[valIdx] } : {}) }}
+                                        initial={{ scaleX: 0 }}
+                                        animate={{ scaleX: 1 }}
+                                         transition={{ duration: 0.5, delay: 0.1 + valIdx * 0.1 }}
+                                        className={`relative flex items-center justify-center transition-all duration-700 hover:brightness-125 origin-left ${(!isIgvIr && !isOgvCr && !isOgvIr && !isB2B && !isMST) ? colors[valIdx] : ""}`}
+                                        style={{ 
+                                          width: `${pct}%`, 
+                                          backgroundColor: isIgvIr 
+                                               ? ["#FF1744", "#9d4edd", "#00f5d4"][valIdx] 
+                                               : ((entry as any).segmentType === "cr" || isOgvCr) 
+                                                 ? ogvCrHexColors[valIdx] 
+                                                 : ((entry as any).segmentType === "ir" || isOgvIr) 
+                                                   ? ogvIrHexColors[valIdx] 
+                                                   : ((entry as any).segmentType === "b2b" || isB2B)
+                                                     ? igvB2bHexColors[valIdx]
+                                                     : ((entry as any).segmentType === "ogt" || isOGT)
+                                                       ? ogtHexColors[valIdx]
+                                                       : isMST
+                                                       ? (mstVibrantColors[entryIdx % mstVibrantColors.length] || "#FFFFFF")
+                                                       : undefined 
+                                        }}
                                       >
                                         {val > 0 && <span className="text-[10px] sm:text-xs font-black text-white drop-shadow-md">{val}</span>}
                                       </motion.div>
@@ -2886,8 +2999,20 @@ export default function TeamDashboard() {
                           ["M1", "M2", "M3"].map((l, i) => (
                              <div key={l} className="flex items-center gap-3">
                                 <span 
-                                  className={`h-3 w-3 rounded-full ${!isIgvIr ? stackedLegendDots[i] : ''}`} 
-                                  style={isIgvIr ? { backgroundColor: ["#FF1744", "#9d4edd", "#00f5d4"][i] } : undefined}
+                                  className={`h-3 w-3 rounded-full ${(!isIgvIr && !isOgvCr && !isOgvIr) ? stackedLegendDots[i] : ''}`} 
+                                  style={{ 
+                                    backgroundColor: isIgvIr 
+                                      ? ["#FF1744", "#9d4edd", "#00f5d4"][i] 
+                                      : isOgvCr 
+                                        ? ogvCrHexColors[i] 
+                                        : isOgvIr 
+                                          ? ogvIrHexColors[i] 
+                                          : (isB2B || isIGTB2B)
+                                            ? igvB2bHexColors[i]
+                                            : isOGT
+                                              ? ogtHexColors[i]
+                                              : undefined 
+                                  }}
                                 />
                                 <span className="text-[10px] font-bold text-[#F7F7F8]/65 uppercase tracking-widest whitespace-nowrap">
                                   {isOGT 

@@ -63,7 +63,8 @@ const functions: TeamCard[] = [
     icon: "🌱",
     color: "var(--igv-color)",
     squads: [
-      { id: "ogv-ps", name: "PS Dashboard", href: "/dashboard/ogv_ps" },
+      { id: "ogv-cr", name: "PS - CR Performance", href: "/dashboard/ogv_cr" },
+      { id: "ogv-ir", name: "PS - IR Performance", href: "/dashboard/ogv_ir" },
       { id: "ogv-b2c", name: "B2C Dashboard", href: "/dashboard/ogv_b2c" }
     ]
   },
@@ -327,7 +328,7 @@ export default function Home() {
 
 
       </main>
-
+      <Footer />
     </div>
   );
 }
