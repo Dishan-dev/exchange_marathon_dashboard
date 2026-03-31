@@ -1556,10 +1556,10 @@ function WrappedExperience({
                   <button 
                     onClick={performShare}
                     disabled={isSharing || (isPerformerCard && !hasUploadedCurrent)}
-                    className={`flex-1 md:flex-none w-full md:w-auto md:min-w-[280px] px-8 py-4 md:px-16 md:py-6 bg-linear-to-r from-[#FFD700] to-[#FFA000] text-black font-black uppercase text-[12px] md:text-[14px] tracking-[0.3em] rounded-2xl md:rounded-[2.5rem] shadow-[0_20px_50px_rgba(255,215,0,0.3)] transition-all hover:scale-[1.02] active:scale-95 disabled:opacity-20 disabled:grayscale`}
+                    className={`flex-1 md:flex-none w-full md:w-auto md:min-w-[280px] px-8 py-4 md:px-16 md:py-6 bg-linear-to-r from-[#FFD700] to-[#FFA000] text-black font-black uppercase text-[12px] md:text-[14px] tracking-[0.3em] rounded-2xl md:rounded-[2.5rem] shadow-[0_20px_50px_rgba(255,215,0,0.3)] transition-all hover:scale-[1.02] active:scale-95 disabled:opacity-20 disabled:grayscale flex items-center justify-center`}
                   >
                     {isSharing ? '...' : (
-                      <span className="flex items-center gap-2">
+                      <span className="flex items-center justify-center gap-2">
                         SHARE <span className="hidden md:inline">SELECTED</span>
                       </span>
                     )}

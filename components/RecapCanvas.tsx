@@ -142,10 +142,10 @@ export const RecapCanvas = React.forwardRef<Konva.Stage, RecapCanvasProps>(({
                 image={logoBase} 
                 x={width / 2} 
                 y={160}
-                width={200}
-                height={200 * (logoBase.height / logoBase.width)}
-                offsetX={100}
-                offsetY={(200 * (logoBase.height / logoBase.width)) / 2}
+                width={isSnapshot || isTeam ? 320 : 200}
+                height={(isSnapshot || isTeam ? 320 : 200) * (logoBase.height / logoBase.width)}
+                offsetX={(isSnapshot || isTeam ? 320 : 200) / 2}
+                offsetY={((isSnapshot || isTeam ? 320 : 200) * (logoBase.height / logoBase.width)) / 2}
                 opacity={0.8}
               />
             )}
@@ -272,10 +272,10 @@ export const RecapCanvas = React.forwardRef<Konva.Stage, RecapCanvasProps>(({
                  y={height / 2 - 100} 
                  width={width - 160} 
                  align="center" 
-                 fontSize={500} 
+                 fontSize={350} 
                  fontStyle="900 italic" 
                  fill="white" 
-                 opacity={0.03}
+                 opacity={0.015}
                  letterSpacing={20}
                />
                <Group y={height / 2 - 200}>
