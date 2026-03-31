@@ -1,5 +1,5 @@
-/* eslint-disable react-hooks/purity */
 "use client";
+/* eslint-disable react-hooks/purity */
 
 import { useState, useEffect, useRef } from "react";
 import * as htmlToImage from 'html-to-image';
@@ -375,11 +375,11 @@ const teamDataMap: Record<string, TeamData> = {
   },
   igv_ir: {
     name: "IGV",
-    displayName: "Incoming Global Volunteer - IR Matching",
+    displayName: "Incoming Global Volunteer - IR & Matching",
     miniTeams: [
       {
         slug: "ir_matching",
-        name: "IR Matching",
+        name: "IR & Matching",
         rank: 1,
         points: 1130,
         growth: 140,
@@ -429,7 +429,7 @@ const teamDataMap: Record<string, TeamData> = {
   },
   igt_ir: {
     name: "IGT",
-    displayName: "Incoming Global Talent - IR Matching",
+    displayName: "Incoming Global Talent - IR & Matching",
     miniTeams: [
       {
         slug: "ir_connectors",
@@ -483,7 +483,7 @@ const teamDataMap: Record<string, TeamData> = {
   },
   ogt_matching: {
     name: "OGT",
-    displayName: "Outgoing Global Talent - IR Matching",
+    displayName: "Outgoing Global Talent - IR & Matching",
     miniTeams: [
       {
         slug: "matching_core",
@@ -1686,6 +1686,17 @@ function UnlinkedState({ functionName, teamColor }: { functionName: string; team
 }
 
 export default function TeamDashboard() {
+  const computeRanks = (rows: any[]) => {
+    let currentRank = 0;
+    let lastScore: number | null = null;
+    return rows.map((row) => {
+      if (row.score !== lastScore) {
+        currentRank++;
+        lastScore = row.score;
+      }
+      return { ...row, rank: currentRank };
+    });
+  };
   const params = useParams();
   const teamParam = (params?.team as string)?.toLowerCase() || "b2b";
   const teamColor = teamColorMap[teamParam] || "var(--igv-color)";
@@ -1819,7 +1830,7 @@ export default function TeamDashboard() {
   const leaderTeam = teamData.miniTeams?.[0] || { name: "No Data", performers: [], points: 0 };
   const secondTeam = teamData.miniTeams?.[1] || { name: "No Data", performers: [], points: 0 };
 
-  const leaderboardRows = (teamData.miniTeams || [])
+  const rawLeaderboardRows = (teamData.miniTeams || [])
     .flatMap((mt) => (mt.performers || []).map((p) => ({ 
       ...p, 
       team: mt.name
@@ -1827,10 +1838,8 @@ export default function TeamDashboard() {
     .filter((p, index, self) => 
       index === self.findIndex((t) => t.email === p.email)
     )
-    .sort((a, b) => b.score - a.score)
-    .map((p, i) => {
-      return { ...p, rank: i + 1 };
-    });
+    .sort((a, b) => b.score - a.score);
+  const leaderboardRows = computeRanks(rawLeaderboardRows);
 
   const isB2B = teamParam === 'igv_b2b';
   const isIGTB2B = teamParam === 'igt_b2b';
@@ -1848,39 +1857,27 @@ export default function TeamDashboard() {
 
   const isSeparatedTeam = isB2B || isOGT || isIGTB2B || isIgvIr || isIgtIrm || isOgvPs;
   const b2bTLRows = (isSeparatedTeam && !isIgtIrm)
-    ? leaderboardRows
-        .filter((row) => isTLRole(row.role || ""))
-        .map((row, index) => ({ ...row, rank: index + 1 }))
+    ? computeRanks(leaderboardRows.filter((row) => isTLRole(row.role || "")))
     : [];
 
   const b2bMemberRows = (isSeparatedTeam && !isIgtIrm)
-    ? leaderboardRows
-        .filter((row) => !isTLRole(row.role || ""))
-        .map((row, index) => ({ ...row, rank: index + 1 }))
+    ? computeRanks(leaderboardRows.filter((row) => !isTLRole(row.role || "")))
     : [];
 
   const igtIrmManagerRows = isIgtIrm
-    ? leaderboardRows
-        .filter((row) => isManagerRole(row.role || ""))
-        .map((row, index) => ({ ...row, rank: index + 1 }))
+    ? computeRanks(leaderboardRows.filter((row) => isManagerRole(row.role || "")))
     : [];
 
   const igtIrmTLRows = isIgtIrm
-    ? leaderboardRows
-        .filter((row) => isTLRole(row.role || ""))
-        .map((row, index) => ({ ...row, rank: index + 1 }))
+    ? computeRanks(leaderboardRows.filter((row) => isTLRole(row.role || "")))
     : [];
 
   const igtIrmSpecialistRows = isIgtIrm
-    ? leaderboardRows
-        .filter((row) => isSpecialistRole(row.role || ""))
-        .map((row, index) => ({ ...row, rank: index + 1 }))
+    ? computeRanks(leaderboardRows.filter((row) => isSpecialistRole(row.role || "")))
     : [];
 
   const igtIrmMemberRows = isIgtIrm
-    ? leaderboardRows
-        .filter((row) => isMemberRole(row.role || ""))
-        .map((row, index) => ({ ...row, rank: index + 1 }))
+    ? computeRanks(leaderboardRows.filter((row) => isMemberRole(row.role || "")))
     : [];
 
   const podiumRows = isIgtIrm ? igtIrmMemberRows : (isSeparatedTeam ? b2bMemberRows : leaderboardRows);
@@ -1899,27 +1896,19 @@ export default function TeamDashboard() {
   const filteredIgtIrmMemberRows = filterRows(igtIrmMemberRows);
 
   const ogvPsCrTLRows = isOgvCr
-    ? leaderboardRows
-        .filter((row) => isTLRole(row.role || ""))
-        .map((row, index) => ({ ...row, rank: index + 1 }))
+    ? computeRanks(leaderboardRows.filter((row) => isTLRole(row.role || "")))
     : [];
 
   const ogvPsCrMemberRows = isOgvCr
-    ? leaderboardRows
-        .filter((row) => !isTLRole(row.role || ""))
-        .map((row, index) => ({ ...row, rank: index + 1 }))
+    ? computeRanks(leaderboardRows.filter((row) => !isTLRole(row.role || "")))
     : [];
 
   const ogvPsIrTLRows = isOgvIr
-    ? leaderboardRows
-        .filter((row) => isTLRole(row.role || ""))
-        .map((row, index) => ({ ...row, rank: index + 1 }))
+    ? computeRanks(leaderboardRows.filter((row) => isTLRole(row.role || "")))
     : [];
 
   const ogvPsIrMemberRows = isOgvIr
-    ? leaderboardRows
-        .filter((row) => !isTLRole(row.role || ""))
-        .map((row, index) => ({ ...row, rank: index + 1 }))
+    ? computeRanks(leaderboardRows.filter((row) => !isTLRole(row.role || "")))
     : [];
 
   const filteredOgvPsCrTLRows = filterRows(ogvPsCrTLRows);
@@ -1928,9 +1917,9 @@ export default function TeamDashboard() {
   const filteredOgvPsIrMemberRows = filterRows(ogvPsIrMemberRows);
 
   const igvIrTLRows = filterRows(isIgvIr ? b2bTLRows : isIgtIrm ? igtIrmTLRows : []);
-  const igvIrIRMemberRows = filterRows(isIgvIr ? b2bMemberRows.filter((r: any) => r.source === 'ir') : isIgtIrm ? igtIrmMemberRows.filter((r: any) => r.source === 'ir') : []).map((r, index) => ({ ...r, rank: index + 1 }));
-  const igvIrMatchingMemberRows = filterRows(isIgvIr ? b2bMemberRows.filter((r: any) => r.source === 'matching') : isIgtIrm ? igtIrmMemberRows.filter((r: any) => r.source === 'matching') : []).map((r, index) => ({ ...r, rank: index + 1 }));
-  const igvIrMarcomMemberRows = filterRows(isIgvIr ? b2bMemberRows.filter((r: any) => r.source === 'marcom') : []).map((r, index) => ({ ...r, rank: index + 1 }));
+  const igvIrIRMemberRows = computeRanks(filterRows(isIgvIr ? b2bMemberRows.filter((r: any) => r.source === 'ir') : isIgtIrm ? igtIrmMemberRows.filter((r: any) => r.source === 'ir') : []));
+  const igvIrMatchingMemberRows = computeRanks(filterRows(isIgvIr ? b2bMemberRows.filter((r: any) => r.source === 'matching') : isIgtIrm ? igtIrmMemberRows.filter((r: any) => r.source === 'matching') : []));
+  const igvIrMarcomMemberRows = filterRows(isIgvIr ? b2bMemberRows.filter((r: any) => r.source === 'marcom') : []);
 
   const b2bActivityTotals = leaderboardRows.reduce(
     (acc, row) => {
@@ -2046,7 +2035,7 @@ export default function TeamDashboard() {
 
   const chartDefs = (isIgvIr || isIgtIrm || isOgvPs) ? [
     {
-      title: isOgvPs ? "CR Performance" : isIgtIrm ? "IR Performance" : "IR Matching Activity",
+      title: isOgvPs ? "CR Performance" : isIgtIrm ? "IR Performance" : "IR & Matching Activity",
       subtitle: isOgvPs ? "Sign Ups | Applications | Approvals" : isIgtIrm ? "Calls Scheduled | CVs Collected | Calls Participated" : "IR Calls | Apps | Approvals",
       type: "stacked-bar",
       entries: isOgvPs ? ogvPsCRBlocks : igvIrIRBlocks
@@ -2349,12 +2338,18 @@ export default function TeamDashboard() {
 
             <div className="relative z-10 mx-auto flex h-[300px] sm:h-96 max-w-4xl items-end justify-center gap-2 sm:gap-12">
               {podiumVisualOrder.map((performer, index) => {
-                const isChampion = index === 1;
-                const podHeight = index === 0 ? '140 sm:180' : index === 1 ? '200 sm:260' : '100 sm:140';
+                const rank = performer.rank;
+                const isGold = rank === 1;
+                const isSilver = rank === 2;
+                const isBronze = rank === 3;
+                
+                // Height based on rank for visual consistency among ties
+                const heightValue = isGold ? 270 : isSilver ? 180 : 140;
+
                 return (
-                  <div key={performer.email} className={`group flex flex-col items-center ${isChampion ? "w-[40%] sm:w-[38%]" : "w-[28%] sm:w-[31%]"}`}>
+                  <div key={performer.email} className={`group flex flex-col items-center ${isGold ? "w-[40%] sm:w-[38%]" : "w-[28%] sm:w-[31%]"}`}>
                     <div className="mb-4 sm:mb-8 text-center w-full">
-                      <p className={`truncate px-1 font-black tracking-tight ${isChampion ? "text-base sm:text-xl text-white" : "text-[10px] sm:text-sm text-white/40"}`}>{performer.name}</p>
+                      <p className={`truncate px-1 font-black tracking-tight ${isGold ? "text-base sm:text-xl text-white" : "text-[10px] sm:text-sm text-white/40"}`}>{performer.name}</p>
                       <div className="mt-2 sm:mt-3 inline-flex items-center gap-1 sm:gap-2 rounded-full glass border border-white/10 px-2 sm:px-4 py-1 sm:py-1.5 shadow-xl">
                         <span className="text-[10px] sm:text-sm font-black text-white">{performer.score.toLocaleString()}</span>
                         <span className="text-[8px] sm:text-[9px] font-black uppercase tracking-widest text-white/30">XP</span>
@@ -2362,29 +2357,32 @@ export default function TeamDashboard() {
                     </div>
                     <motion.div
                       initial={{ height: 0 }}
-                      whileInView={{ height: index === 0 ? 180 : index === 1 ? 270 : 140 }}
+                      whileInView={{ height: heightValue }}
                       viewport={{ once: true }}
                       transition={{ duration: 1.5, delay: 0.2 + (index * 0.1), ease: "circOut" }}
                       className="relative w-full rounded-2xl border border-white/20 flex flex-col items-center justify-start pt-12 shadow-2xl group-hover:-translate-y-2 transition-transform duration-500"
                       style={{ 
-                        background: isChampion 
+                        background: isGold 
                           ? `linear-gradient(to bottom, #FFD700, #DAA520)` 
-                          : index === 0 
+                          : isSilver 
                             ? `linear-gradient(to bottom, #E0E0E0, #A0A0A0)`
                             : `linear-gradient(to bottom, #CD7F32, #8B4513)`,
-                        boxShadow: isChampion ? `0 15px 40px rgba(255, 215, 0, 0.2)` : 'none'
+                        boxShadow: isGold ? `0 15px 40px rgba(255, 215, 0, 0.2)` : 'none'
                       }}
                     >
                       <div className="absolute inset-0 bg-white/10 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none rounded-2xl" />
                       <div 
                         className="absolute -top-6 left-1/2 -translate-x-1/2 h-12 w-12 rounded-xl border border-white/30 flex items-center justify-center text-xl font-black shadow-2xl"
-                        style={{ backgroundColor: `color-mix(in srgb, ${teamColor}, black ${useMSTPalette ? '85%' : teamParam === 'igv_b2b' ? '60%' : '70%'})`, color: isChampion ? '#FFD700' : index === 0 ? '#E0E0E0' : '#CD7F32' }}
+                        style={{ 
+                          backgroundColor: `color-mix(in srgb, ${teamColor}, black ${useMSTPalette ? '85%' : teamParam === 'igv_b2b' ? '60%' : '70%'})`, 
+                          color: isGold ? '#FFD700' : isSilver ? '#E0E0E0' : '#CD7F32' 
+                        }}
                       >
-                        {index === 0 ? "2" : index === 1 ? "1" : "3"}
+                        {performer.rank}
                       </div>
-                      <p className="text-6xl font-black text-black/10 select-none">{index === 0 ? "2" : index === 1 ? "1" : "3"}</p>
+                      <p className="text-6xl font-black text-black/10 select-none">{performer.rank}</p>
                       <p className="mt-4 text-[9px] font-black uppercase tracking-[0.3em] text-white/80">
-                        {index === 1 ? "Champion" : index === 0 ? "Runner Up" : "Third Place"}
+                        {isGold ? "Champion" : isSilver ? "Runner Up" : "Challenger"}
                       </p>
                     </motion.div>
                   </div>

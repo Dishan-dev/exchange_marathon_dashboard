@@ -32,7 +32,7 @@ const functions: TeamCard[] = [
     color: "var(--igv-color)",
     squads: [
       { id: "igv-ops", name: "B2B", href: "/dashboard/igv_b2b" },
-      { id: "igv-ir", name: "IR Matching", href: "/dashboard/igv_ir" }
+      { id: "igv-ir", name: "IR & Matching", href: "/dashboard/igv_ir" }
     ]
   },
   {
@@ -43,7 +43,7 @@ const functions: TeamCard[] = [
     color: "var(--igt-color)",
     squads: [
       { id: "igt-b2b", name: "B2B Dashboard", href: "/dashboard/igt_b2b" },
-      { id: "igt-ir", name: "IR Matching", href: "/dashboard/igt_ir" }
+      { id: "igt-ir", name: "IR & Matching", href: "/dashboard/igt_ir" }
     ]
   },
   {
