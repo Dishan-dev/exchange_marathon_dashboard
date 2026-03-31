@@ -56,6 +56,11 @@ interface Performer {
     ir_scheduled?: number;
     ir_calls?: number;
     ir_matching?: number;
+    // oGV B2C Specific
+    b2c_country?: number;
+    b2c_project?: number;
+    b2c_trend?: number;
+    b2c_signups?: number;
   };
 }
 
@@ -608,6 +613,7 @@ const teamColorMap: Record<string, string> = {
   "igt-ir-m": "var(--igt-color)",
   ogv_cr: "var(--igv-color)",
   ogv_ir: "var(--igv-color)",
+  ogv_b2c: "var(--igv-color)",
 };
 
 const quickInsights = [
@@ -633,6 +639,7 @@ const stackedLegendDots = ["bg-[#E91E63]", "bg-[#9C27B0]", "var(--team-accent-bg
 const ogvCrHexColors = ["#E91E63", "#9C27B0", "#FF9800"]; // Pink, Purple, Orange
 const ogvIrHexColors = ["#FFCD00", "#FFB300", "#F9A825"]; // Variations of Yellow/Gold
 const igvB2bHexColors = ["#00B0FF", "#6200EA", "#FF9800"]; // Blue, Deep Purple, Orange
+const ogvB2cHexColors = ["#FFCD00", "#FF9800", "#F9A825"]; // Yellowish
 const ogtHexColors = ["#E91E63", "#9C27B0", "#FF9800"]; // Pink, Purple, Orange
 const mstVibrantColors = ["#FF5252", "#FF4081", "#E040FB", "#7C4DFF", "#536DFE", "#448AFF", "#40C4FF", "#18FFFF", "#64FFDA", "#69F0AE", "#B2FF59", "#EEFF41", "#FFFF00", "#FFD740", "#FFAB40", "#FF6E40"];
 const mstTeamNames: Record<string, string> = {
@@ -696,7 +703,8 @@ function MiniTeamCard({
   isIgtIrm = false,
   isOgvPs = false,
   isOgvCr = false,
-  isOgvIr = false
+  isOgvIr = false,
+  isOgvB2c = false
 }: {
   team: MiniTeamData;
   isLeader: boolean;
@@ -709,6 +717,7 @@ function MiniTeamCard({
   isOgvPs?: boolean;
   isOgvCr?: boolean;
   isOgvIr?: boolean;
+  isOgvB2c?: boolean;
 }) {
   return (
     <div
@@ -778,7 +787,7 @@ function MiniTeamCard({
               style={{ backgroundColor: `color-mix(in srgb, ${teamColor}, black 90%)` }}
             >
               <p className="text-[9px] font-black text-white/40 uppercase tracking-widest mb-3 text-center border-b border-white/5 pb-2">
-                {isMST ? `${formatTeamName(team.name, isMST)} Members + TLs` : isIGTB2B ? "IGT B2B Squad Activity" : isIgvIr ? "IGV IR & M Squad Activity" : isOGT ? "OGT Squad Activity" : isOgvPs ? (isOgvCr ? "oGV PS CR Activity" : isOgvIr ? "oGV PS IR Activity" : "oGV PS Activity") : "Squad Activity"}
+                {isMST ? `${formatTeamName(team.name, isMST)} Members + TLs` : isIGTB2B ? "IGT B2B Squad Activity" : isIgvIr ? "IGV IR & M Squad Activity" : isOGT ? "OGT Squad Activity" : isOgvPs ? (isOgvCr ? "oGV PS CR Activity" : isOgvIr ? "oGV PS IR Activity" : "oGV PS Activity") : isOgvB2c ? "oGV B2C Activity" : "Squad Activity"}
               </p>
               <div className="space-y-2 max-h-48 overflow-y-auto custom-scrollbar pr-1">
                 {isMST ? (
@@ -921,6 +930,25 @@ function MiniTeamCard({
                     <div className="flex justify-between items-center text-[10px] font-bold">
                       <span className="text-white/30">{isOgvIr ? 'Matching' : 'Approvals'}</span>
                       <span className="text-[#FFCD00]">{team.performers.reduce((s, p) => s + (isOgvIr ? (p.metrics.ir_matching || 0) : (p.metrics.cr_approvals || 0)), 0)}</span>
+                    </div>
+                  </>
+                ) : isOgvB2c ? (
+                  <>
+                    <div className="flex justify-between items-center text-[10px] font-bold">
+                      <span className="text-white/30">Country Based</span>
+                      <span className="text-[#ffcd00]">{team.performers.reduce((s, p) => s + (p.metrics?.b2c_country || 0), 0)}</span>
+                    </div>
+                    <div className="flex justify-between items-center text-[10px] font-bold">
+                      <span className="text-white/30">Project Based</span>
+                      <span className="text-[#ff9800]">{team.performers.reduce((s, p) => s + (p.metrics?.b2c_project || 0), 0)}</span>
+                    </div>
+                    <div className="flex justify-between items-center text-[10px] font-bold">
+                      <span className="text-white/30">Trend Based</span>
+                      <span className="text-[#f9a825]">{team.performers.reduce((s, p) => s + (p.metrics?.b2c_trend || 0), 0)}</span>
+                    </div>
+                    <div className="flex justify-between items-center text-[10px] font-bold border-t border-white/5 pt-2 mt-1">
+                      <span className="text-white/30">Sign Ups</span>
+                      <span className="text-white">{team.performers.reduce((s, p) => s + (p.metrics?.b2c_signups || 0), 0)}</span>
                     </div>
                   </>
                 ) : (
@@ -1847,6 +1875,7 @@ export default function TeamDashboard() {
   const isOgvPs = teamParam === 'ogv_ps' || teamParam === 'ogv_cr' || teamParam === 'ogv_ir';
   const isOgvCr = teamParam === 'ogv_cr';
   const isOgvIr = teamParam === 'ogv_ir';
+  const isOgvB2c = teamParam === 'ogv_b2c';
   const isIgvIr = teamParam === 'igv_ir' || teamParam === 'igv_ir_m';
   const isIgtIrm = teamParam === 'igt-ir-m' || teamParam === 'igt_ir';
   const isIGV = teamParam === 'igv_b2b' || teamParam === 'igv_ir' || teamParam === 'igv_ir_m';
@@ -1855,7 +1884,7 @@ export default function TeamDashboard() {
   const accentColor = teamColor;
 
 
-  const isSeparatedTeam = isB2B || isOGT || isIGTB2B || isIgvIr || isIgtIrm || isOgvPs;
+  const isSeparatedTeam = isB2B || isOGT || isIGTB2B || isIgvIr || isIgtIrm || isOgvPs || isOgvB2c;
   const b2bTLRows = (isSeparatedTeam && !isIgtIrm)
     ? computeRanks(leaderboardRows.filter((row) => isTLRole(row.role || "")))
     : [];
@@ -1935,6 +1964,19 @@ export default function TeamDashboard() {
   const igvIrMatchingBlocks: any[] = [];
   const ogvPsCRBlocks: any[] = [];
   const ogvPsIRBlocks: any[] = [];
+  const ogvB2cBlocks: any[] = [];
+
+  if (isOgvB2c && teamData.miniTeams) {
+    for (const mt of teamData.miniTeams) {
+      const blocks = mt.performers.map(p => ({
+        email: p.email,
+        label: p.name,
+        segmentType: "b2c",
+        values: [p.metrics?.b2c_country || 0, p.metrics?.b2c_project || 0, p.metrics?.b2c_trend || 0]
+      }));
+      ogvB2cBlocks.push(...blocks);
+    }
+  }
 
   if (isOgvPs && teamData.miniTeams) {
     for (const mt of teamData.miniTeams) {
@@ -2045,20 +2087,20 @@ export default function TeamDashboard() {
     ? `Ends in ${daysPart}d ${hoursPart.toString().padStart(2, "0")}:${minutesPart.toString().padStart(2, "0")}:${secondsPart.toString().padStart(2, "0")}`
     : "Ended";
 
-  const chartDefs = (isIgvIr || isIgtIrm || isOgvPs) ? [
+  const chartDefs = (isIgvIr || isIgtIrm || isOgvPs || isOgvB2c) ? [
     {
-      title: isOgvPs ? "CR Performance" : isIgtIrm ? "IR Performance" : "IR & Matching Activity",
-      subtitle: isOgvPs ? "Sign Ups | Applications | Approvals" : isIgtIrm ? "Calls | CVs | Participated" : "IR Calls | Apps | Approvals",
-      legend: isOgvPs ? ["Sign Ups", "Apps", "Approvals"] : isIgtIrm ? ["Calls", "CVs", "Participated"] : ["IR Calls", "Apps", "Approvals"],
+      title: isOgvPs ? "CR Performance" : isIgtIrm ? "IR Performance" : isOgvB2c ? "B2C Performance" : "IR & Matching Activity",
+      subtitle: isOgvPs ? "Sign Ups | Applications | Approvals" : isIgtIrm ? "Calls | CVs | Participated" : isOgvB2c ? "Country Based | Project Based | Trend Based" : "IR Calls | Apps | Approvals",
+      legend: isOgvPs ? ["Sign Ups", "Apps", "Approvals"] : isIgtIrm ? ["Calls", "CVs", "Participated"] : isOgvB2c ? ["Country", "Project", "Trend"] : ["IR Calls", "Apps", "Approvals"],
       type: "stacked-bar",
-      entries: isOgvPs ? ogvPsCRBlocks : igvIrIRBlocks
+      entries: isOgvPs ? ogvPsCRBlocks : isOgvB2c ? ogvB2cBlocks : igvIrIRBlocks
     },
     {
-      title: isOgvPs ? "IR Performance" : isIgtIrm ? "Matching Performance" : "Matching Activity",
-      subtitle: isOgvPs ? "IR Scheduled | IR Calls | Matching" : isIgtIrm ? "Outreach | Interviews | Success" : "Interviews | Acceptance | Approvals",
-      legend: isOgvPs ? ["Scheduled", "Calls", "Matching"] : isIgtIrm ? ["Outreach", "Interviews", "Success"] : ["Interviews", "Acceptance", "Approvals"],
+      title: isOgvPs ? "IR Performance" : isIgtIrm ? "Matching Performance" : isOgvB2c ? "B2C Signups" : "Matching Activity",
+      subtitle: isOgvPs ? "IR Scheduled | IR Calls | Matching" : isIgtIrm ? "Outreach | Interviews | Success" : isOgvB2c ? "Number of Signups" : "Interviews | Acceptance | Approvals",
+      legend: isOgvPs ? ["Scheduled", "Calls", "Matching"] : isIgtIrm ? ["Outreach", "Interviews", "Success"] : isOgvB2c ? ["Signups"] : ["Interviews", "Acceptance", "Approvals"],
       type: "stacked-bar",
-      entries: isOgvPs ? ogvPsIRBlocks : igvIrMatchingBlocks
+      entries: isOgvPs ? ogvPsIRBlocks : isOgvB2c ? ogvB2cBlocks.map(b => ({ ...b, values: [teamData.miniTeams?.flatMap(mt => mt.performers).find(p => p.email === b.email)?.metrics.b2c_signups || 0] })) : igvIrMatchingBlocks
     }
   ].filter(chart => {
     if (isOgvCr) return chart.title === "CR Performance";
@@ -2187,12 +2229,13 @@ export default function TeamDashboard() {
     if (param.startsWith('igv')) return 'IGV';
     if (param.startsWith('igt')) return 'IGT';
     if (param.startsWith('ogt')) return 'OGT';
+    if (param.startsWith('ogv')) return 'OGV';
     if (param === 'marcom' || param === 'members' || param === 'tls' || param.startsWith('irm')) return 'MST';
     return teamData.name || 'TEAM';
   };
 
   const dashboardFunctionName = getFunctionName(teamParam);
-  const isFinished = teamParam === 'members' || teamParam === 'tls' || teamParam === 'igv_b2b' || teamParam === 'ogt' || teamParam === 'igt_b2b' || isIgvIr || isIgtIrm || isOgvPs;
+  const isFinished = teamParam === 'members' || teamParam === 'tls' || teamParam === 'igv_b2b' || teamParam === 'ogt' || teamParam === 'igt_b2b' || isIgvIr || isIgtIrm || isOgvPs || isOgvB2c;
   const showUnlinked = !teamData && !remoteTeamData;
 
   return (
@@ -2234,6 +2277,7 @@ export default function TeamDashboard() {
                     ogv_ps: 'oGV PS',
                     ogv_cr: 'oGV PS - CR',
                     ogv_ir: 'oGV PS - IR',
+                    ogv_b2c: 'oGV B2C',
                     igt_b2b: 'iGT B2B',
                     igt_ir: 'iGT IR&M',
                     ogt: 'oGT',
@@ -2575,6 +2619,15 @@ export default function TeamDashboard() {
                                     <div className="flex justify-between"><span>APL:</span> <span className="text-white">{row.metrics?.coldCalls || 0}</span></div>
                                   </div>
                                 </>
+                              ) : isOgvB2c ? (
+                                <>
+                                  <div className="grid grid-cols-2 gap-x-6 gap-y-2">
+                                    <div className="flex justify-between"><span>Country Based:</span> <span className="text-[#ffcd00]">{row.metrics?.b2c_country || 0}</span></div>
+                                    <div className="flex justify-between"><span>Project Based:</span> <span className="text-[#ff9800]">{row.metrics?.b2c_project || 0}</span></div>
+                                    <div className="flex justify-between"><span>Trend Based:</span> <span className="text-[#f9a825]">{row.metrics?.b2c_trend || 0}</span></div>
+                                    <div className="flex justify-between"><span>Signups:</span> <span className="text-white/60">{row.metrics?.b2c_signups || 0}</span></div>
+                                  </div>
+                                </>
                               ) : isOgvPs ? (
                                 <>
                                   <div className="grid grid-cols-2 gap-x-6 gap-y-2">
@@ -2738,7 +2791,7 @@ export default function TeamDashboard() {
                                               <span className="font-black text-white shrink-0">{row.metrics?.coldCalls || 0}</span>
                                             </div>
                                           </>
-                                        ) : isOgvPs ? (
+                                         ) : isOgvPs ? (
                                           <>
                                             <div className="flex justify-between items-center bg-white/5 rounded-lg px-2 py-1.5 min-w-0">
                                               <span className="text-white/30 uppercase tracking-tighter truncate mr-2">
@@ -2778,6 +2831,25 @@ export default function TeamDashboard() {
                                             <div className="flex justify-between items-center bg-white/5 rounded-lg px-2 py-1.5 min-w-0">
                                               <span className="text-white/30 uppercase tracking-tighter truncate mr-2">Follow Ups</span>
                                               <span className="font-black text-white shrink-0">{row.metrics?.followups || 0}</span>
+                                            </div>
+                                          </>
+                                        ) : isOgvB2c ? (
+                                          <>
+                                            <div className="flex justify-between items-center bg-white/5 rounded-lg px-2 py-1.5 min-w-0">
+                                              <span className="text-white/30 uppercase tracking-tighter truncate mr-2">Country Based</span>
+                                              <span className="font-black text-white shrink-0">{row.metrics?.b2c_country || 0}</span>
+                                            </div>
+                                            <div className="flex justify-between items-center bg-white/5 rounded-lg px-2 py-1.5 min-w-0">
+                                              <span className="text-white/30 uppercase tracking-tighter truncate mr-2">Project Based</span>
+                                              <span className="font-black text-white shrink-0">{row.metrics?.b2c_project || 0}</span>
+                                            </div>
+                                            <div className="flex justify-between items-center bg-white/5 rounded-lg px-2 py-1.5 min-w-0">
+                                              <span className="text-white/30 uppercase tracking-tighter truncate mr-2">Trend Based</span>
+                                              <span className="font-black text-white shrink-0">{row.metrics?.b2c_trend || 0}</span>
+                                            </div>
+                                            <div className="flex justify-between items-center bg-white/5 rounded-lg px-2 py-1.5 min-w-0">
+                                              <span className="text-white/30 uppercase tracking-tighter truncate mr-2">Signups</span>
+                                              <span className="font-black text-white shrink-0">{row.metrics?.b2c_signups || 0}</span>
                                             </div>
                                           </>
                                         ) : (isIgvIr || isIgtIrm) ? (
@@ -2895,7 +2967,7 @@ export default function TeamDashboard() {
                   <h4 className="text-xl sm:text-2xl font-black text-[#F7F7F8] tracking-widest uppercase italic">Squad Performance Matchups</h4>
                   <p className="text-[9px] sm:text-[10px] font-bold text-white/30 uppercase tracking-[0.2em] sm:tracking-[0.3em]">Total Active Squads: {(isIgvIr ? teamData.miniTeams?.filter(t => t.name.toLowerCase() !== 'general') : teamData.miniTeams)?.length || 0}</p>
                 </div>
-                <div className={`grid grid-cols-1 gap-4 sm:gap-6 ${(isIgvIr || isIgtIrm || isOgvPs) ? (isIgtIrm || isOgvPs ? 'md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-2' : 'md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3') : isIGTB2B ? 'md:grid-cols-3' : isB2B ? 'md:grid-cols-2' : 'md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4'}`}>
+                <div className={`grid grid-cols-1 gap-4 sm:gap-6 ${(isIgvIr || isIgtIrm || isOgvPs || isOgvB2c || isOGT) ? (isIgtIrm || isOgvPs ? 'md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-2' : 'md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3') : isIGTB2B ? 'md:grid-cols-3' : isB2B ? 'md:grid-cols-2' : 'md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4'}`}>
                   {((isIgvIr || isIgtIrm) ? teamData.miniTeams?.filter(t => t.name.toLowerCase() !== 'general') : teamData.miniTeams)?.map((team, index) => (
                     <MiniTeamCard 
                       key={team.slug || team.name}
@@ -2910,6 +2982,7 @@ export default function TeamDashboard() {
                       isOgvPs={isOgvPs}
                       isOgvCr={isOgvCr}
                       isOgvIr={isOgvIr}
+                      isOgvB2c={isOgvB2c}
                     />
                   ))}
                 </div>
@@ -2983,6 +3056,8 @@ export default function TeamDashboard() {
                                                      ? igvB2bHexColors[valIdx]
                                                      : ((entry as any).segmentType === "ogt" || isOGT)
                                                        ? ogtHexColors[valIdx]
+                                                       : isOgvB2c
+                                                         ? ogvB2cHexColors[valIdx]
                                                        : isMST
                                                        ? (mstVibrantColors[entryIdx % mstVibrantColors.length] || "#FFFFFF")
                                                        : undefined 
