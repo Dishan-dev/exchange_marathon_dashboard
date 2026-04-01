@@ -951,6 +951,21 @@ function MiniTeamCard({
                       <span className="text-white">{team.performers.reduce((s, p) => s + (p.metrics?.b2c_signups || 0), 0)}</span>
                     </div>
                   </>
+                ) : isOGT ? (
+                  <>
+                    <div className="flex justify-between items-center text-[10px] font-bold">
+                      <span className="text-white/30">SU</span>
+                      <span className="text-[#E91E63]">{team.performers.reduce((s, p) => s + (p.metrics.mous || 0), 0)}</span>
+                    </div>
+                    <div className="flex justify-between items-center text-[10px] font-bold">
+                      <span className="text-white/30">APL</span>
+                      <span className="text-[#9C27B0]">{team.performers.reduce((s, p) => s + (p.metrics.coldCalls || 0), 0)}</span>
+                    </div>
+                    <div className="flex justify-between items-center text-[10px] font-bold">
+                      <span className="text-white/30">APD</span>
+                      <span className="text-[#00BCD4]">{team.performers.reduce((s, p) => s + (p.metrics.followups || 0), 0)}</span>
+                    </div>
+                  </>
                 ) : (
                   <>
                     <div className="flex justify-between items-center text-[10px] font-bold">
@@ -1738,6 +1753,7 @@ export default function TeamDashboard() {
   const selectedPeriod: "marathon" = "marathon";
   const [nowMs, setNowMs] = useState<number>(Date.now());
   const [searchTerm, setSearchTerm] = useState("");
+  const [podiumFilter, setPodiumFilter] = useState<"teams" | "tls" | "members">("teams");
 
   useEffect(() => {
     const timer = window.setInterval(() => setNowMs(Date.now()), 1000);
@@ -1909,7 +1925,22 @@ export default function TeamDashboard() {
     ? computeRanks(leaderboardRows.filter((row) => isMemberRole(row.role || "")))
     : [];
 
-  const podiumRows = isIgtIrm ? igtIrmMemberRows : (isSeparatedTeam ? b2bMemberRows : leaderboardRows);
+  const podiumRows = podiumFilter === "teams"
+    ? (teamData.miniTeams || [])
+        .filter(mt => isIgvIr 
+          ? (!mt.name.toLowerCase().includes("marcom") && !mt.name.toLowerCase().includes("general")) 
+          : true)
+        .map(mt => ({
+          name: mt.name,
+          score: mt.points,
+          rank: mt.rank,
+          avatar: mt.icon,
+          email: mt.slug || mt.name
+        }))
+    : podiumFilter === "tls"
+    ? computeRanks(leaderboardRows.filter((row) => isTLRole(row.role || "") || (isIgvIr && row.name.toLowerCase().includes("vidath"))))
+    : computeRanks(leaderboardRows.filter((row) => isMemberRole(row.role || "") || (!isTLRole(row.role || "") && !isManagerRole(row.role || ""))));
+
   const podiumVisualOrder = [podiumRows[1], podiumRows[0], podiumRows[2]].filter(Boolean);
 
   const filterRows = (rows: any[]) => 
@@ -1945,8 +1976,7 @@ export default function TeamDashboard() {
   const filteredOgvPsIrTLRows = filterRows(ogvPsIrTLRows);
   const filteredOgvPsIrMemberRows = filterRows(ogvPsIrMemberRows);
 
-  const igvIrManagerRows = filterRows(isIgvIr ? computeRanks(leaderboardRows.filter((row) => isManagerRole(row.role || "") || row.name.toLowerCase().includes("vidath"))) : []);
-  const igvIrTLRows = filterRows(isIgvIr ? b2bTLRows.filter(row => !row.name.toLowerCase().includes("vidath")) : isIgtIrm ? igtIrmTLRows : []);
+  const igvIrTLRows = filterRows(isIgvIr ? leaderboardRows.filter(row => isTLRole(row.role || "") || row.name.toLowerCase().includes("vidath")) : isIgtIrm ? igtIrmTLRows : []);
   const igvIrIRMemberRows = computeRanks(filterRows(isIgvIr ? b2bMemberRows.filter((r: any) => r.source === 'ir' && !isManagerRole(r.role || "") && !r.name.toLowerCase().includes("vidath")) : isIgtIrm ? igtIrmMemberRows.filter((r: any) => r.source === 'ir') : []));
   const igvIrMatchingMemberRows = computeRanks(filterRows(isIgvIr ? b2bMemberRows.filter((r: any) => r.source === 'matching' && !isManagerRole(r.role || "") && !r.name.toLowerCase().includes("vidath")) : isIgtIrm ? igtIrmMemberRows.filter((r: any) => r.source === 'matching') : []));
   const igvIrMarcomMemberRows = filterRows(isIgvIr ? b2bMemberRows.filter((r: any) => r.source === 'marcom' && !isManagerRole(r.role || "") && !r.name.toLowerCase().includes("vidath")) : []);
@@ -2111,6 +2141,7 @@ export default function TeamDashboard() {
     {
       title: isMST ? "Total Member Points" : isIGTB2B ? "IGT B2B Activity Totals" : isOGT ? "OGT Activity Totals" : "B2B Activity Totals",
       subtitle: isMST ? "Points Accumulation" : isIGTB2B ? "Cumulative Meetings | Cold Calls | Follow Ups" : isOGT ? "Cumulative SU | APL | APD" : "Cumulative MOUs | Cold Calls | Followups",
+      legend: isOGT ? ["SU", "APL", "APD"] : isIGTB2B ? ["Meetings", "Calls", "Follows"] : ["MOUs", "Calls", "Follows"],
       type: "stacked-bar",
       entries: isMST
         ? leaderboardRows
@@ -2388,9 +2419,39 @@ export default function TeamDashboard() {
             
             <div className="relative z-10 mb-10 sm:mb-16 flex flex-col items-center">
               <h3 className="text-2xl sm:text-3xl font-black text-[#F7F7F8] tracking-widest uppercase">The Podium</h3>
-              {(isB2B || isIGTB2B || isIgvIr || isIgtIrm) && (
-                <p className="mt-2 text-[10px] sm:text-xs font-semibold uppercase tracking-[0.15em] text-white/55 text-center">
-                  Podium ranking considers only member performance.
+              
+              {/* Podium Filter UI */}
+              <div className="mt-6 flex items-center p-1.5 rounded-2xl bg-white/5 border border-white/10 backdrop-blur-xl shadow-2xl">
+                {(["teams", "tls", "members"] as const).map((filter) => (
+                  <button
+                    key={filter}
+                    onClick={() => setPodiumFilter(filter)}
+                    className={`relative px-6 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all duration-300 ${
+                      podiumFilter === filter 
+                        ? "text-black" 
+                        : "text-white/40 hover:text-white/70"
+                    }`}
+                  >
+                    {podiumFilter === filter && (
+                      <motion.div
+                        layoutId="activePodiumFilter"
+                        className="absolute inset-0 rounded-xl shadow-lg"
+                        style={{ backgroundColor: '#ffcd00' }}
+                        transition={{ type: "spring", bounce: 0.25, duration: 0.5 }}
+                      />
+                    )}
+                    <span className="relative z-10">{filter}</span>
+                  </button>
+                ))}
+              </div>
+
+               {(isFinished) && (
+                <p className="mt-4 text-[10px] sm:text-xs font-semibold uppercase tracking-[0.15em] text-white/55 text-center">
+                  {podiumFilter === "members" 
+                    ? "Podium ranking considers only member performance."
+                    : podiumFilter === "tls"
+                    ? "Podium ranking considers only Team Leader performance."
+                    : "Podium ranking considers Squad/Team collective performance."}
                 </p>
               )}
             </div>
@@ -2498,7 +2559,6 @@ export default function TeamDashboard() {
                     ].filter(s => s.rows.length > 0)
                   : isIgvIr
                   ? [
-                      { title: "Managers", rows: igvIrManagerRows },
                       { title: "TLs", rows: igvIrTLRows },
                       { title: "IR Members", rows: igvIrIRMemberRows },
                       { title: "Matching Members", rows: igvIrMatchingMemberRows },
@@ -2675,7 +2735,6 @@ export default function TeamDashboard() {
                       ].filter(s => s.rows.length > 0)
                     : isIgvIr
                     ? [
-                        { title: "Managers", rows: igvIrManagerRows },
                         { title: "TLs", rows: igvIrTLRows },
                         { title: "IR Members", rows: igvIrIRMemberRows },
                         { title: "Matching Members", rows: igvIrMatchingMemberRows },
@@ -3086,7 +3145,7 @@ export default function TeamDashboard() {
                             <span className="text-[10px] font-bold text-[#F7F7F8]/65 uppercase tracking-widest">Total Points</span>
                           </div>
                         ) : (
-                          ((chart as any).legend || ["MOUs", "Calls", "Follows"]).map((l: string, i: number) => (
+                          ((chart as any).legend || (isOGT ? ["SU", "APL", "APD"] : ["MOUs", "Calls", "Follows"])).map((l: string, i: number) => (
                              <div key={`${chart.title}-${l}`} className="flex items-center gap-3">
                                 <span 
                                   className={`h-3 w-3 rounded-full ${(!isIgvIr && !isOgvCr && !isOgvIr) ? stackedLegendDots[i] : ''}`} 
