@@ -1945,10 +1945,11 @@ export default function TeamDashboard() {
   const filteredOgvPsIrTLRows = filterRows(ogvPsIrTLRows);
   const filteredOgvPsIrMemberRows = filterRows(ogvPsIrMemberRows);
 
-  const igvIrTLRows = filterRows(isIgvIr ? b2bTLRows : isIgtIrm ? igtIrmTLRows : []);
-  const igvIrIRMemberRows = computeRanks(filterRows(isIgvIr ? b2bMemberRows.filter((r: any) => r.source === 'ir') : isIgtIrm ? igtIrmMemberRows.filter((r: any) => r.source === 'ir') : []));
-  const igvIrMatchingMemberRows = computeRanks(filterRows(isIgvIr ? b2bMemberRows.filter((r: any) => r.source === 'matching') : isIgtIrm ? igtIrmMemberRows.filter((r: any) => r.source === 'matching') : []));
-  const igvIrMarcomMemberRows = filterRows(isIgvIr ? b2bMemberRows.filter((r: any) => r.source === 'marcom') : []);
+  const igvIrManagerRows = filterRows(isIgvIr ? computeRanks(leaderboardRows.filter((row) => isManagerRole(row.role || "") || row.name.toLowerCase().includes("vidath"))) : []);
+  const igvIrTLRows = filterRows(isIgvIr ? b2bTLRows.filter(row => !row.name.toLowerCase().includes("vidath")) : isIgtIrm ? igtIrmTLRows : []);
+  const igvIrIRMemberRows = computeRanks(filterRows(isIgvIr ? b2bMemberRows.filter((r: any) => r.source === 'ir' && !isManagerRole(r.role || "") && !r.name.toLowerCase().includes("vidath")) : isIgtIrm ? igtIrmMemberRows.filter((r: any) => r.source === 'ir') : []));
+  const igvIrMatchingMemberRows = computeRanks(filterRows(isIgvIr ? b2bMemberRows.filter((r: any) => r.source === 'matching' && !isManagerRole(r.role || "") && !r.name.toLowerCase().includes("vidath")) : isIgtIrm ? igtIrmMemberRows.filter((r: any) => r.source === 'matching') : []));
+  const igvIrMarcomMemberRows = filterRows(isIgvIr ? b2bMemberRows.filter((r: any) => r.source === 'marcom' && !isManagerRole(r.role || "") && !r.name.toLowerCase().includes("vidath")) : []);
 
   const b2bActivityTotals = leaderboardRows.reduce(
     (acc, row) => {
@@ -2497,11 +2498,12 @@ export default function TeamDashboard() {
                     ].filter(s => s.rows.length > 0)
                   : isIgvIr
                   ? [
+                      { title: "Managers", rows: igvIrManagerRows },
                       { title: "TLs", rows: igvIrTLRows },
                       { title: "IR Members", rows: igvIrIRMemberRows },
                       { title: "Matching Members", rows: igvIrMatchingMemberRows },
                       { title: "Marcom Members", rows: igvIrMarcomMemberRows }
-                    ].filter(s => s.rows.length > 0 || Object.keys(igvIrTLRows).length === 0)
+                    ].filter(s => s.rows.length > 0 || (s.title === "TLs" && igvIrTLRows.length === 0))
                   : isOgvPs
                   ? [
                       { title: "CR TLS", rows: filteredOgvPsCrTLRows },
@@ -2673,11 +2675,12 @@ export default function TeamDashboard() {
                       ].filter(s => s.rows.length > 0)
                     : isIgvIr
                     ? [
+                        { title: "Managers", rows: igvIrManagerRows },
                         { title: "TLs", rows: igvIrTLRows },
                         { title: "IR Members", rows: igvIrIRMemberRows },
                         { title: "Matching Members", rows: igvIrMatchingMemberRows },
                         { title: "Marcom Members", rows: igvIrMarcomMemberRows }
-                      ].filter(s => s.rows.length > 0 || Object.keys(igvIrTLRows).length === 0)
+                      ].filter(s => s.rows.length > 0 || (s.title === "TLs" && igvIrTLRows.length === 0))
                     : isOgvPs
                     ? [
                         { title: "CR TLS", rows: filteredOgvPsCrTLRows },
